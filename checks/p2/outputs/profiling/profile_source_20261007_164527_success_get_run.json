@@ -1,0 +1,64 @@
+{
+  "cleanup_duration": 1000,
+  "creator_user_name": "mykolaichuk.pn@ucu.edu.ua",
+  "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+  "end_time": 1791380763866,
+  "execution_duration": 33000,
+  "job_id": 2850227780730,
+  "job_run_id": 1029034196915021,
+  "number_in_job": 1029034196915021,
+  "run_duration": 37488,
+  "run_id": 1029034196915021,
+  "run_name": "nachalniki_stage1_profile_source",
+  "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/2850227780730/run/1029034196915021",
+  "run_type": "SUBMIT_RUN",
+  "setup_duration": 3000,
+  "start_time": 1791380726378,
+  "state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "status": {
+    "state": "TERMINATED",
+    "termination_details": {
+      "code": "SUCCESS",
+      "message": "",
+      "type": "SUCCESS"
+    }
+  },
+  "tasks": [
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 1000,
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1791380763472,
+      "execution_duration": 33000,
+      "notebook_task": {
+        "notebook_path": "/Users/mykolaichuk.pn@ucu.edu.ua/nachalniki_stage1/notebooks/profile_source",
+        "source": "WORKSPACE"
+      },
+      "run_id": 290183628902341,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/2850227780730/run/290183628902341",
+      "setup_duration": 3000,
+      "start_time": 1791380726406,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "task_key": "profile_source"
+    }
+  ]
+}

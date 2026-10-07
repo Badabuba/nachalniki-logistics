@@ -1,0 +1,64 @@
+{
+  "cleanup_duration": 0,
+  "creator_user_name": "mykolaichuk.pn@ucu.edu.ua",
+  "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+  "end_time": 1791380846255,
+  "execution_duration": 15000,
+  "job_id": 1074999836738410,
+  "job_run_id": 338580797976871,
+  "number_in_job": 338580797976871,
+  "run_duration": 18943,
+  "run_id": 338580797976871,
+  "run_name": "nachalniki_stage1_a5_entry_run2_filled_lists",
+  "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/1074999836738410/run/338580797976871",
+  "run_type": "SUBMIT_RUN",
+  "setup_duration": 3000,
+  "start_time": 1791380827312,
+  "state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "status": {
+    "state": "TERMINATED",
+    "termination_details": {
+      "code": "SUCCESS",
+      "message": "",
+      "type": "SUCCESS"
+    }
+  },
+  "tasks": [
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 0,
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1791380845817,
+      "execution_duration": 15000,
+      "notebook_task": {
+        "notebook_path": "/Users/mykolaichuk.pn@ucu.edu.ua/nachalniki_stage1/checks/p2/run_id_helpers/a5_entry",
+        "source": "WORKSPACE"
+      },
+      "run_id": 675765071486941,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/1074999836738410/run/675765071486941",
+      "setup_duration": 3000,
+      "start_time": 1791380827344,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "task_key": "a5_entry_run2_filled_lists"
+    }
+  ]
+}

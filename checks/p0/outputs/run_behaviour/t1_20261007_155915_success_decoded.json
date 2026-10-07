@@ -1,0 +1,87 @@
+[
+  {
+    "view_name": "47e56020-d43b-41d9-9f9c-f6530605363b",
+    "notebook_name": "47e56020-d43b-41d9-9f9c-f6530605363b",
+    "commands": [
+      {
+        "position": 2.0,
+        "command": "%run ./config_stub",
+        "state": "finished",
+        "results": null,
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      },
+      {
+        "position": 2.5,
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "config_stub: catalog='stub_default', CONFIG_LOADED=True\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {
+            "catalog": "stub_default"
+          },
+          "addedWidgets": {
+            "catalog": {
+              "widgetType": "text",
+              "name": "catalog",
+              "defaultValue": "stub_default",
+              "label": null,
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            }
+          },
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "script"
+      },
+      {
+        "position": 3.0,
+        "command": "print(f\"t1 caller: CONFIG_LOADED={CONFIG_LOADED}, catalog={catalog!r}\")\nassert CONFIG_LOADED is True\nprint(\"t1 RESULT: variables from %run child are visible in caller\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "t1 caller: CONFIG_LOADED=True, catalog='stub_default'\nt1 RESULT: variables from %run child are visible in caller\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      }
+    ]
+  }
+]

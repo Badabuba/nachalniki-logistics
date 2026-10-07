@@ -1,0 +1,222 @@
+[
+  {
+    "view_name": "7aac9559-d43b-4790-bedd-8adea0c28d0e",
+    "notebook_name": "7aac9559-d43b-4790-bedd-8adea0c28d0e",
+    "commands": [
+      {
+        "position": 2.0,
+        "command": "%run ./config_stub",
+        "state": "finished",
+        "results": null,
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      },
+      {
+        "position": 2.5,
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "config_stub: catalog='stub_default', CONFIG_LOADED=True\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {
+            "catalog": "stub_default"
+          },
+          "addedWidgets": {
+            "catalog": {
+              "widgetType": "text",
+              "name": "catalog",
+              "defaultValue": "stub_default",
+              "label": null,
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            }
+          },
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "script"
+      },
+      {
+        "position": 3.0,
+        "command": "import uuid\nrun_id = str(uuid.uuid4())\noriginal_run_id = run_id\nprint(f\"t3 caller: assigned run_id={run_id!r}\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "t3 caller: assigned run_id='7d884316-ba4f-4502-9a05-4596b71aa5f9'\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      },
+      {
+        "position": 4.0,
+        "command": "%run ./child_reads_run_id",
+        "state": "finished",
+        "results": null,
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      },
+      {
+        "position": 4.25,
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "child_reads_run_id: on entry run_id='7d884316-ba4f-4502-9a05-4596b71aa5f9'\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "script"
+      },
+      {
+        "position": 4.5,
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "config_stub: catalog='stub_default', CONFIG_LOADED=True\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {
+            "catalog": "stub_default"
+          },
+          "addedWidgets": {
+            "catalog": {
+              "widgetType": "text",
+              "name": "catalog",
+              "defaultValue": "stub_default",
+              "label": null,
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            }
+          },
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "script"
+      },
+      {
+        "position": 4.75,
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "child_reads_run_id: after config_stub run_id='7d884316-ba4f-4502-9a05-4596b71aa5f9'\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "script"
+      },
+      {
+        "position": 5.0,
+        "command": "print(f\"t3 caller: after child run_id={run_id!r}, child_entry_run_id={child_entry_run_id!r}, child_seen_run_id={child_seen_run_id!r}\")\nassert child_entry_run_id == original_run_id\nassert child_seen_run_id == original_run_id\nassert run_id == original_run_id\nprint(\"t3 RESULT: caller run_id visible in child and unchanged after nested %run of config_stub\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "t3 caller: after child run_id='7d884316-ba4f-4502-9a05-4596b71aa5f9', child_entry_run_id='7d884316-ba4f-4502-9a05-4596b71aa5f9', child_seen_run_id='7d884316-ba4f-4502-9a05-4596b71aa5f9'\nt3 RESULT: caller run_id visible in child and unchanged after nested %run of config_stub\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      }
+    ]
+  }
+]

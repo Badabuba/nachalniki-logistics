@@ -1,0 +1,187 @@
+[
+  {
+    "view_name": "a61912b7-ab25-46fe-a44e-f965e740467d",
+    "notebook_name": "a61912b7-ab25-46fe-a44e-f965e740467d",
+    "commands": [
+      {
+        "position": 2.0,
+        "command": "dbutils.widgets.text(\"caller_widget\", \"caller_default\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {
+            "caller_widget": {
+              "widgetType": "text",
+              "name": "caller_widget",
+              "defaultValue": "caller_default",
+              "label": null,
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            }
+          },
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      },
+      {
+        "position": 3.0,
+        "command": "%run ./config_stub",
+        "state": "finished",
+        "results": null,
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      },
+      {
+        "position": 3.5,
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "config_stub: catalog='from_job_param', CONFIG_LOADED=True\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {
+            "catalog": "from_job_param"
+          },
+          "addedWidgets": {
+            "catalog": {
+              "widgetType": "text",
+              "name": "catalog",
+              "defaultValue": "stub_default",
+              "label": null,
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            }
+          },
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "script"
+      },
+      {
+        "position": 4.0,
+        "command": "caller_catalog = dbutils.widgets.get(\"catalog\")\ncaller_caller_widget = dbutils.widgets.get(\"caller_widget\")\nprint(f\"t4 caller: catalog={caller_catalog!r}, caller_widget={caller_caller_widget!r}\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "t4 caller: catalog='from_job_param', caller_widget='from_job_param_2'\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {
+            "catalog": "from_job_param",
+            "caller_widget": "from_job_param_2"
+          },
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      },
+      {
+        "position": 5.0,
+        "command": "%run ./child_reads_widgets",
+        "state": "finished",
+        "results": null,
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      },
+      {
+        "position": 5.5,
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "child_reads_widgets: catalog='from_job_param', caller_widget='from_job_param_2'\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {
+            "catalog": "from_job_param",
+            "caller_widget": "from_job_param_2"
+          },
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "script"
+      },
+      {
+        "position": 6.0,
+        "command": "assert child_catalog == caller_catalog\nassert child_caller_widget == caller_caller_widget\nprint(\"t4 RESULT: %run child read the same widget values as the caller\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "t4 RESULT: %run child read the same widget values as the caller\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "errorSummary": null,
+        "error": null,
+        "subtype": "command"
+      }
+    ]
+  }
+]

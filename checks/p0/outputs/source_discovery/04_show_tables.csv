@@ -1,0 +1,9 @@
+database,tableName,isTemporary
+tpch,customer,false
+tpch,lineitem,false
+tpch,nation,false
+tpch,orders,false
+tpch,part,false
+tpch,partsupp,false
+tpch,region,false
+tpch,supplier,false
