@@ -2,12 +2,12 @@
 
 ## Project
 - **What:** a Bronze → Silver → Gold lakehouse on Databricks `samples.tpch` (8 tables) that answers the **Logistics** profile (§5.2) of `group_assignment_1.pdf`.
-- **Team «начальніки»** — sequential stages with handoffs (**proposed, D16** in `docs/plan.md`, until all three agree):
+- **Team «начальніки»** — sequential stages with handoffs (**D16** in `docs/plan.md`, agreed 2026-10-07):
   - M1 Nazar, Stage 1: repo, uv, access checks, config (incl. run_id helpers), Bronze, value profiling, allowed lists, own README sections and slides → handoff H1
   - M2 Yaropolk, Stage 2: Silver, `dq_helpers` and `dq_check_results`, validation, 3NF, ER, own README section and slides → handoff H2
   - M3 Max, Stage 3: Gold, analysis, charts, monitoring, `run_pipeline` and `pipeline_runs`, integration runs, final README assembly, deck assembly, rehearsal and submission
 - **Scope:** all 8 tables in Bronze and Silver. Gold covers Logistics only. PySpark/SQL notebooks in `.py` source format. No Lakeflow, asset bundles or CI.
-- **Status:** planning. No pipeline code exists yet.
+- **Status:** Stage 1 (`00_config`, `01_bronze_ingest`, `profile_source`) built and run in Databricks on 2026-10-07 and handed over in H1 (awaiting Yaropolk's review); Silver, Gold, the runner and the analysis are not built yet.
 
 ## Read before implementing
 1. `group_assignment_1.pdf`: authoritative. Read §3 and §5.2 in full.
@@ -42,7 +42,8 @@ If the documents disagree, the precedence is PDF > requirements.md > design.md >
 | Markdown, contract consistency, code review | local | manual |
 | Source access, `DESCRIBE`, CHECK/PK DDL, `percentile_cont` | Databricks | run 2026-10-07 (NAZ-01–03; plan.md evidence log) |
 | `%run` sharing, error stop, caller `run_id` and widgets | Databricks (serverless job runs) | run 2026-10-07 (NAZ-04; plan.md evidence log) |
-| Profiling, FK DDL | Databricks | not run (plan P0–P2) |
+| run_id helpers, Bronze ingest, profiling | Databricks (serverless job runs) | run 2026-10-07 (NAZ-07–09; plan.md evidence log); interactive A5 session pending (`a5_interactive`) |
+| FK DDL | Databricks | not run (YAR-06) |
 | Pipeline run, DQ results, rerun/portability, answers, charts | Databricks | not run (plan P3–P4) |
 
 Anything in the Databricks rows can only be confirmed by running it in a real workspace. Local tooling cannot verify Spark code against the data.

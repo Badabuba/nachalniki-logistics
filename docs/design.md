@@ -1,6 +1,6 @@
 # Design — Logistics lakehouse on `samples.tpch`
 
-Status: **proposed, pending team sign-off** (see [plan.md](plan.md), gate P1).
+Status: **partly agreed** (see [plan.md](plan.md), gate P1): §2 config (D9), §3.1 run_id and DQ interface (D15) and §6 allowed-list procedure (D13) agreed on 2026-10-07; the other contracts (D5–D7, D10–D12, D14) are still proposed.
 Requirements are in [requirements.md](requirements.md). The PDF `group_assignment_1.pdf` is authoritative.
 
 Tags used below:
@@ -25,7 +25,7 @@ Tags used below:
 
 ## 2. Configuration and naming
 
-Everything is driven by `notebooks/00_config.py` (planned), which is loaded with `%run`. Nothing else may hard-code a catalog, schema or source name.
+Everything is driven by `notebooks/00_config.py`, which is loaded with `%run`. Nothing else may hard-code a catalog, schema or source name.
 
 | Parameter (widget) | Default | Notes |
 |---|---|---|
@@ -80,7 +80,7 @@ run_pipeline
 - `pipeline_runs` columns: `run_id` (string uuid), `event` (`started`/`succeeded`), `event_ts`, `catalog`, `schema_prefix`, `source`.
 - `dq_check_results` columns: `run_id`, `run_ts`, `rule_id`, `layer` (`source`/`bronze`/`staging`/`gold`), `table_name`, `violation_count` (bigint), `sample_keys` (string, ≤10), `severity` (`blocking`), `passed` (boolean).
 
-### 3.1 run_id, DQ interface and ownership — **proposed (D15, D16)**
+### 3.1 run_id, DQ interface and ownership — **agreed (D15, D16; 2026-10-07)**
 
 This interface is agreed before Stage 1 is built, so that each stage runs on its own and later integration does not require rewriting earlier stages. Owners follow the stage split in [plan.md](plan.md#shared-interfaces-and-owners).
 
@@ -119,7 +119,8 @@ This interface is agreed before Stage 1 is built, so that each stage runs on its
 
 - Grain, keys and columns are identical to the source. Two metadata columns are added: `_ingested_at` (timestamp) and `_source_table` (string). These are needed to trace which source and run a copy came from. Nothing else is added.
 - Tables: `region, nation, supplier, customer, part, partsupp, orders, lineitem`.
-- Read with `spark.table(f"{source}.{t}")`, then write with `CREATE OR REPLACE TABLE`.
+- Each table is written with `CREATE OR REPLACE TABLE {bronze}.{t} AS SELECT *, <ts> AS _ingested_at, '<source>.<t>' AS _source_table FROM {source}.{t}`. `_ingested_at` is one UTC timestamp per execution, shared by all 8 tables. `_source_table` is the full source name, e.g. `samples.tpch.lineitem`.
+- The last cell of `01_bronze_ingest` compares every table with its source: the column names, order and data types (without the metadata columns) and the row counts must be equal, otherwise it raises. Verified on 2026-10-07 (NAZ-08): 8/8 tables match.
 
 ## 5. Silver
 
@@ -248,17 +249,17 @@ Examples (applied only if §5.3 confirms the FD):
 
 Any decomposition changes the Silver contract and the ER diagram, so it needs a decision-log entry and a re-check of the §5.1 frozen columns.
 
-### 5.5 Profiling results (to be filled with real outputs — currently empty)
+### 5.5 Profiling results
 
 | Check | Query / notebook | Date | Result |
 |---|---|---|---|
 | `DESCRIBE` of 8 tables | `checks/p0/01_source_discovery.py` (NAZ-02) | 2026-10-07 | 61 columns; types as listed in §5.1. Raw output: [`06_describe_tables.csv`](../checks/p0/outputs/source_discovery/06_describe_tables.csv) |
-| distinct `l_shipmode` with counts | `profile_source` | – | not run |
-| distinct `l_returnflag` with counts | `profile_source` | – | not run |
-| distinct `l_linestatus` with counts | `profile_source` | – | not run |
-| distinct `o_orderpriority` with counts | `profile_source` | – | not run |
-| min/max of `o_orderdate`, `l_shipdate`, `l_commitdate`, `l_receiptdate` | `profile_source` | – | not run |
-| lines per order: min / median / mean / max | `profile_source` | – | not run |
+| distinct `l_shipmode` with counts | `notebooks/profile_source.py`, run 2026-10-07 on Bronze (plan.md evidence log, NAZ-09): `stack()` of the 3 columns, `GROUP BY column_name, value`, with `length(value)` | 2026-10-07 | 7 values, no NULL, no extra whitespace: AIR 4285543, FOB 4287168, MAIL 4282860, RAIL 4284870, REG AIR 4285596, SHIP 4285381, TRUCK 4288377 (sum = lineitem rows, 29999795) |
+| distinct `l_returnflag` with counts | same query | 2026-10-07 | 3 values, no NULL, length 1: A 7403889, N 15189553, R 7406353 |
+| distinct `l_linestatus` with counts | same query | 2026-10-07 | 2 values, no NULL, length 1: F 15002681, O 14997114 |
+| distinct `o_orderpriority` with counts | `notebooks/profile_source.py`, run 2026-10-07 on Bronze (plan.md evidence log, NAZ-09): `GROUP BY o_orderpriority` with `length()` | 2026-10-07 | 5 values, no NULL, no extra whitespace: 1-URGENT 1501100, 2-HIGH 1499192, 3-MEDIUM 1498710, 4-NOT SPECIFIED 1501281, 5-LOW 1499717 (sum = orders rows, 7500000). The urgent literal is `1-URGENT` |
+| min/max of `o_orderdate`, `l_shipdate`, `l_commitdate`, `l_receiptdate` | `notebooks/profile_source.py`, run 2026-10-07 on Bronze (plan.md evidence log, NAZ-09): `min`, `max`, `count_if(IS NULL)` per column | 2026-10-07 | `o_orderdate` 1992-01-01 – 1998-08-02; `l_shipdate` 1992-01-02 – 1998-12-01; `l_commitdate` 1992-01-31 – 1998-10-31; `l_receiptdate` 1992-01-03 – 1998-12-31; 0 NULLs in each |
+| lines per order: min / median / mean / max | `notebooks/profile_source.py`, run 2026-10-07 on Bronze (plan.md evidence log, NAZ-09): every Bronze order `LEFT JOIN` its line count, missing count → 0; `percentile_cont(0.5)` for the median | 2026-10-07 | 7500000 orders, 0 without lines; min 1, median 4.0, mean 3.999972666666667, max 7 |
 | FD candidates (§5.3) | `profile_source` | – | not run |
 
 ## 6. Validation rules
@@ -294,12 +295,15 @@ Equality is valid in DQ-L1, DQ-L2 and DQ-L3: same-day ship, same-day receipt and
 5. Write the constants into `00_config.py`, and record which values were observed and which were only documented.
 6. An unexplained unexpected value is never silently added to a list, and its rows are never dropped: staging keeps every row, and DQ-L5–L7 fail on values outside the lists. The point of the rule is that new or unexpected values fail.
 
-The TPC-H spec values are *expected but not observed*. They are listed here only so they can be compared against the profiling output:
-- ship mode: AIR, FOB, MAIL, RAIL, REG AIR, SHIP, TRUCK
-- return flag: A, N, R
-- line status: F, O
+Result of this procedure (NAZ-10, 2026-10-07). Documentation: TPC-H Standard Specification, revision 3.0.1. Ship modes come from the "Modes" list in clause 4.2.2.13. Return flag and line status come from the LINEITEM generation rules in clause 4.2.3: `L_RETURNFLAG` is "R" or "A" if the receipt date is on or before CURRENTDATE, otherwise "N"; `L_LINESTATUS` is "O" if the ship date is after CURRENTDATE, otherwise "F".
 
-**[PROFILE]**
+| Column | Observed and documented | Documented, not observed | Observed, not documented |
+|---|---|---|---|
+| `l_shipmode` | AIR, FOB, MAIL, RAIL, REG AIR, SHIP, TRUCK | none | none |
+| `l_returnflag` | A, N, R | none | none |
+| `l_linestatus` | F, O | none | none |
+
+No discrepancy, so there is no decision-log entry for one. No NULLs and no leading or trailing whitespace were observed (§5.5). The constants in `00_config` are exactly the observed and documented values.
 
 ## 7. Metric definitions (Gold)
 
@@ -334,7 +338,7 @@ All dates are `DATE`, and all day differences are `datediff(end, start)` in inte
 **Q3.** For each `l_shipmode`: `delay_rate = late lines / lines`. The worst mode has the highest delay rate, reported together with the line counts.
 
 **Q4: urgent vs others.**
-- `is_urgent = (o_orderpriority = '1-URGENT')`. That literal is **[PROFILE]**: confirm it in §5.5.
+- `is_urgent = (o_orderpriority = '1-URGENT')`. The literal was confirmed by profiling (§5.5, 2026-10-07) and is in the TPC-H "Priorities" list (clause 4.2.2.13).
 - We measure **both** quantities:
   - *order-to-receipt* (primary, "fulfilled"): `order_to_complete_days` at order grain
   - *ship-to-receipt*: `transit_days` at line grain, plus `order_to_ship_days`, to show where any difference comes from
@@ -389,6 +393,6 @@ Notebook visuals in `06_analysis` (mandatory set):
 - [VERIFY] Whether several members can share one workspace (Free Edition), and the grants needed to read another member's schemas (plan.md D17).
 - Resolved: `ADD CONSTRAINT … CHECK` (enforced) and `PRIMARY KEY` (informational) on our compute (NAZ-03, 2026-10-07; §5.1). [VERIFY] FK DDL (YAR-06).
 - Resolved: `percentile_cont … WITHIN GROUP` works and interpolates exactly (1..4 → p50 2.5, p90 3.7) (NAZ-03, 2026-10-07).
-- [PROFILE] Allowed values, the urgent priority literal, date ranges, lines per order, and the FD candidates (§5.5).
+- Resolved: allowed values, the urgent priority literal, date ranges and lines per order (NAZ-09, NAZ-10, 2026-10-07; §5.5, §6). [PROFILE] The FD candidates (§5.5, YAR-03).
 - [VERIFY] An ER-diagram rendering source (Mermaid render vs Catalog Explorer).
 - Optional: whether the dataset README at `/dbfs/databricks-datasets/tpch/README.md` is readable. This is a helpful aid but not a blocker.
