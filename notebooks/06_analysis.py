@@ -300,10 +300,17 @@ show_answer(
 # MAGIC ## Monitoring — Monthly delay rate over time (Chart 5)
 # MAGIC
 # MAGIC Displays `agg_delay_rate_monthly` across commit months. The line chart shows `delay_rate`
-# MAGIC by commit month, with line count context and explicit annotations for boundary and edge
-# MAGIC months labelled "potentially incomplete".
+# MAGIC by commit month with the line count on a second axis. Boundary months (first and last,
+# MAGIC `is_boundary_month`) and low-count edge months are labelled "potentially incomplete".
+# MAGIC
+# MAGIC Low-count edge months are found from the observed counts, not from fixed dates: starting at
+# MAGIC each end of the series and moving inward, every month with fewer lines than
+# MAGIC `EDGE_LINE_SHARE` of the median monthly line count is an edge month, until the first month
+# MAGIC that reaches it. The remaining months form the stable period summarised below.
 
 # COMMAND ----------
+
+EDGE_LINE_SHARE = 0.9
 
 monthly = (
     spark.table(f"{gold_schema}.agg_delay_rate_monthly")
@@ -311,75 +318,96 @@ monthly = (
 )
 display(monthly)
 monthly_pdf = monthly.toPandas()
+monthly_pdf["commit_month"] = monthly_pdf["commit_month"].astype(str)
+
+
+def edge_month_positions(line_counts, threshold):
+    """Positions of the low-count months at the start and at the end of the series."""
+    positions = []
+    for order in (range(len(line_counts)), reversed(range(len(line_counts)))):
+        for position in order:
+            if line_counts[position] >= threshold:
+                break
+            positions.append(position)
+    return sorted(set(positions))
+
+
+line_counts = monthly_pdf["line_count"].astype(int).tolist()
+edge_threshold = EDGE_LINE_SHARE * float(np.median(line_counts))
+edge_positions = edge_month_positions(line_counts, edge_threshold)
+monthly_pdf["is_edge_month"] = False
+monthly_pdf.loc[monthly_pdf.index[edge_positions], "is_edge_month"] = True
+monthly_pdf["is_incomplete"] = monthly_pdf["is_boundary_month"] | monthly_pdf["is_edge_month"]
 
 fig, ax1 = plt.subplots(figsize=(13, 5.2))
-
+x = np.arange(len(monthly_pdf))
 color_rate = "#d95f02"
 
-ax1.plot(
-    monthly_pdf["commit_month"],
-    monthly_pdf["delay_rate"],
-    color=color_rate,
-    marker="o",
-    markersize=3,
-    linewidth=1.8,
-    label="Delay rate",
-)
+ax2 = ax1.twinx()
+ax2.bar(x, monthly_pdf["line_count"], color="#9ecae1", alpha=0.45, width=0.8, label="Line count")
+ax2.set_ylabel("Line count", color="#3182bd", fontsize=11)
+ax2.tick_params(axis="y", labelcolor="#3182bd")
+
+ax1.set_zorder(ax2.get_zorder() + 1)
+ax1.patch.set_visible(False)
+ax1.plot(x, monthly_pdf["delay_rate"], color=color_rate, marker="o", markersize=3, linewidth=1.8, label="Delay rate")
 ax1.set_xlabel("Commit month", fontsize=11)
 ax1.set_ylabel("Delay rate", color=color_rate, fontsize=11)
 ax1.tick_params(axis="y", labelcolor=color_rate)
-ax1.set_ylim(0.4, 0.7)
+rate_min, rate_max = monthly_pdf["delay_rate"].min(), monthly_pdf["delay_rate"].max()
+ax1.set_ylim(rate_min - 0.05, rate_max + 0.08)
 ax1.grid(alpha=0.3)
 
-boundary_mask = monthly_pdf["is_boundary_month"] | (monthly_pdf["commit_month"] == "1998-09-01")
-for _, b_row in monthly_pdf[boundary_mask].iterrows():
-    ax1.plot(
-        b_row["commit_month"],
-        b_row["delay_rate"],
-        marker="s",
-        markersize=8,
-        color="#e41a1c",
-    )
-    label_txt = f"{b_row['commit_month']}\n(potentially incomplete, n={int(b_row['line_count']):,})"
+for label_index, (position, row) in enumerate(monthly_pdf[monthly_pdf["is_incomplete"]].iterrows()):
+    kind = "boundary" if row["is_boundary_month"] else "low count"
+    ax1.plot(x[position], row["delay_rate"], marker="s", markersize=8, color="#e41a1c")
     ax1.annotate(
-        label_txt,
-        xy=(b_row["commit_month"], b_row["delay_rate"]),
-        xytext=(0, 24 if b_row["commit_month"] == "1992-01-01" else -36),
+        f"{row['commit_month'][:7]} ({kind})\npotentially incomplete, n={int(row['line_count']):,}",
+        xy=(x[position], row["delay_rate"]),
+        xytext=(40 if position < len(x) / 2 else -40, 30 - 28 * (label_index % 3)),
         textcoords="offset points",
         ha="center",
-        fontsize=8.5,
+        fontsize=8,
         bbox=dict(boxstyle="round,pad=0.25", fc="yellow", alpha=0.5, edgecolor="gray"),
-        arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=0", color="#e41a1c"),
+        arrowprops=dict(arrowstyle="->", color="#e41a1c"),
     )
 
 tick_idx = np.arange(0, len(monthly_pdf), 6)
 ax1.set_xticks(tick_idx)
-ax1.set_xticklabels(monthly_pdf["commit_month"].iloc[tick_idx], rotation=35, ha="right")
+ax1.set_xticklabels(monthly_pdf["commit_month"].str[:7].iloc[tick_idx], rotation=35, ha="right")
 ax1.set_title(
-    "Monitoring: Monthly delay rate by commit month (82 observed months; boundary/edge labelled)",
+    f"Monitoring: monthly delay rate by commit month "
+    f"({len(monthly_pdf)} observed months; potentially incomplete months labelled)",
     fontsize=12,
 )
-
 fig.tight_layout()
 plt.show()
 
 # COMMAND ----------
 
-first_m = monthly_pdf.iloc[0]
-last_m = monthly_pdf.iloc[-1]
-edge_m = monthly_pdf.iloc[-2]
-mid_series = monthly_pdf[(~monthly_pdf["is_boundary_month"]) & (monthly_pdf["commit_month"] != "1998-09-01")]
-mean_stable_rate = mid_series["delay_rate"].mean()
+stable = monthly_pdf[~monthly_pdf["is_incomplete"]]
+incomplete = monthly_pdf[monthly_pdf["is_incomplete"]]
+overall_rate = monthly_pdf["late_line_count"].sum() / monthly_pdf["line_count"].sum()
+lowest = stable.loc[stable["delay_rate"].idxmin()]
+highest = stable.loc[stable["delay_rate"].idxmax()]
+incomplete_text = "; ".join(
+    f"{row['commit_month'][:7]} ({'boundary' if row['is_boundary_month'] else 'low count'}): "
+    f"{int(row['line_count']):,} lines, {percent(row['delay_rate'])}"
+    for _, row in incomplete.iterrows()
+)
 
 show_answer(
-    "Monitoring summary — Monthly delay rate",
-    f"The delay rate is remarkably stable across {len(monthly_pdf)} observed commit months "
-    f"(1992-01 to 1998-10). The interior series averages {percent(mean_stable_rate)} delay rate "
-    f"(between ~62.9% and ~63.4%) with ~350k–389k lines/month. "
-    f"The boundary months {first_m['commit_month']} ({int(first_m['line_count']):,} lines, {percent(first_m['delay_rate'])}) "
-    f"and {last_m['commit_month']} ({int(last_m['line_count']):,} lines, {percent(last_m['delay_rate'])}) "
-    f"are flagged as 'potentially incomplete' due to truncation at source window boundaries. "
-    f"The preceding edge month {edge_m['commit_month']} also exhibits lower line count ({int(edge_m['line_count']):,} lines, {percent(edge_m['delay_rate'])} delay rate).",
+    "Monitoring summary — Monthly delay rate (see displayed result and Chart 5)",
+    f"{len(monthly_pdf)} commit months from {monthly_pdf['commit_month'].iloc[0][:7]} to "
+    f"{monthly_pdf['commit_month'].iloc[-1][:7]}; overall delay rate {percent(overall_rate)}. "
+    f"Stable period {stable['commit_month'].iloc[0][:7]} to {stable['commit_month'].iloc[-1][:7]} "
+    f"({len(stable)} months): monthly delay rate between {percent(lowest['delay_rate'])} "
+    f"({lowest['commit_month'][:7]}) and {percent(highest['delay_rate'])} ({highest['commit_month'][:7]}), "
+    f"mean {percent(stable['delay_rate'].mean())}, {int(stable['line_count'].min()):,} to "
+    f"{int(stable['line_count'].max()):,} lines per month. "
+    f"Potentially incomplete months (boundary, or fewer than {EDGE_LINE_SHARE:.0%} of the median "
+    f"{int(np.median(line_counts)):,} lines at the edges of the series): {incomplete_text}. "
+    f"Their rates come from partial months and should not be read as a change in delivery performance.",
 )
 
 # COMMAND ----------
