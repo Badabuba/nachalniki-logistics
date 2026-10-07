@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-07",
+  "workspace": "dbc-1766f78b-980d.cloud.databricks.com",
+  "successful_two_run_check": {
+    "job_run_id": 296750090868031,
+    "task_run_id": 324279025471773,
+    "result": "SUCCESS",
+    "duration_ms": 819525,
+    "notebook": "/Users/kalmuk.pn@ucu.edu.ua/nachalniki_yaropolk/checks/p3/pipeline_runner/two_runs_entry",
+    "assertions": [
+      "two consecutive executions in one notebook context produced different run_id values",
+      "each run_id retained one started and one succeeded event",
+      "the second execution retained the first execution's pipeline and DQ audit rows"
+    ],
+    "audit_statement_id": "01f1c283-fc37-1ba1-a7a0-9a5d5d43cebc",
+    "runs": [
+      {
+        "run_id": "34a3bee3-c680-44c3-8792-f3ff72b422d0",
+        "events": ["started", "succeeded"],
+        "started_at": "2026-10-07T19:03:44.752Z",
+        "finished_at": "2026-10-07T19:10:30.300Z",
+        "dq_rows": 43,
+        "failed_dq": 0
+      },
+      {
+        "run_id": "a89788f0-9a0d-48ff-93a9-733c1aa50ea7",
+        "events": ["started", "succeeded"],
+        "started_at": "2026-10-07T19:10:35.223Z",
+        "finished_at": "2026-10-07T19:16:55.971Z",
+        "dq_rows": 43,
+        "failed_dq": 0
+      }
+    ]
+  },
+  "forced_failure_check": {
+    "job_run_id": 1076691866808340,
+    "result": "FAILED_AS_EXPECTED",
+    "schema_prefix": "yaropolk_logistics_runnerfail",
+    "source": "samples.missing",
+    "audit_statement_id": "01f1c283-f0a0-1b4e-bfdf-a6f1218d0c67",
+    "note": "The one-time job service retried the failed task once, so both attempts received a fresh run_id.",
+    "events": [
+      {
+        "run_id": "006277e7-65b8-4a3d-9746-bcc5d5eb649c",
+        "event": "started",
+        "event_ts": "2026-10-07T19:17:41.558Z"
+      },
+      {
+        "run_id": "0ec23502-72c9-499b-bf9b-78ec785a7552",
+        "event": "started",
+        "event_ts": "2026-10-07T19:18:08.139Z"
+      }
+    ],
+    "succeeded_event_count": 0,
+    "cleanup": {
+      "bronze_schema_drop_statement_id": "01f1c284-35ea-11f3-bf4b-bf33f4816314",
+      "audit_schema_drop_statement_id": "01f1c284-387a-14b1-8c47-202ced05b418",
+      "result": "SUCCEEDED"
+    }
+  }
+}

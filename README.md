@@ -2,7 +2,7 @@
 
 Team **«начальніки»**: Nazar, Yaropolk, Max. UCU Big Data, Group Assignment 1.
 
-> **Status: Stages 1 and 2 plus the Gold build are implemented.** Bronze, profiling, Silver, validation and the eight Gold tables have run in Databricks. The full runner and analysis notebook are not implemented yet, so no final answers exist yet. Track progress in [docs/plan.md](docs/plan.md).
+> **Status: The Bronze → Silver → Gold pipeline and its runner are implemented and have run in Databricks.** The analysis notebook and final answers are still in progress. Track evidence and remaining work in [docs/plan.md](docs/plan.md).
 
 ## Purpose
 
@@ -67,6 +67,7 @@ notebooks/dq_helpers.py          creates and appends dq_check_results; run-scope
 notebooks/03_validate.py         all blocking rules on staging; raises on any failure
 notebooks/04_silver_publish.py   staging -> Silver plus constraints, only after validation passed
 notebooks/05_gold_build.py       Silver -> eight Logistics Gold tables plus Gold DQ checks
+notebooks/run_pipeline.py        complete Bronze -> Silver -> Gold run plus lifecycle audit
 docs/silver_er.mmd  docs/silver_er.png   ER diagram of the published Silver
 checks/p0/               P0 diagnostic notebooks (not part of the pipeline) and their raw outputs
 checks/p2/               test and entry notebooks (run_id helpers, dq_helpers, Silver stage) and raw run outputs
@@ -138,7 +139,7 @@ Order: `01_bronze_ingest`, then `profile_source`. Neither needs a `run_id` or an
 
 A value outside these lists is never added silently: the Silver validation fails on it, and no row is dropped. Other observed values: `o_orderpriority` has 5 values, and the urgent one is `1-URGENT`. Dates run from 1992-01-01 (first order) to 1998-12-31 (last receipt). Every order has between 1 and 7 lines (median 4). The full results are in [design.md §5.5](docs/design.md).
 
-## How to run (planned, not yet implemented)
+## How to run
 
 1. In Databricks, create a Git folder from this repository.
 2. Open `notebooks/run_pipeline.py`, and set the `catalog` and `schema_prefix` widgets if the defaults do not fit.
