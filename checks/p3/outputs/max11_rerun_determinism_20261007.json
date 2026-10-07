@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-07",
+  "workspace": "dbc-1766f78b-980d.cloud.databricks.com",
+  "catalog": "workspace",
+  "schema_prefix": "nachalniki_logistics",
+  "source": "samples.tpch",
+  "executed_by": "kalmuk.pn@ucu.edu.ua",
+  "rerun_job": {
+    "job_run_id": 749535949984412,
+    "task_run_id": 463487353866358,
+    "run_name": "MAX-11 rerun determinism",
+    "result": "SUCCESS",
+    "execution_duration_ms": 529000,
+    "notebook_path": "/Users/kalmuk.pn@ucu.edu.ua/nachalniki_yaropolk/notebooks/run_pipeline"
+  },
+  "pipeline_run": {
+    "run_id": "f21d3f70-1d14-4bfa-bb60-47a5fc4e8ac0",
+    "started_at": "2026-10-07T20:03:18.404Z",
+    "succeeded_at": "2026-10-07T20:11:30.192Z",
+    "pipeline_statement_id": "01f1c28c-887a-1107-922e-a0dcbd338c52"
+  },
+  "data_quality": {
+    "total_checks": 43,
+    "passed_checks": 43,
+    "failed_checks": 0,
+    "dq_statement_id": "01f1c28c-9a1a-100f-89b6-cfcee43acd4c"
+  },
+  "note": "Snapshot was taken before the rerun of pipeline run 64829233-7f8c-42e0-9fd9-c08c765f2aef (MAX-10). _ingested_at, run_id, and audit rows differ between the runs, as expected.",
+  "comparison_results": {
+    "statement_ids": {
+      "agg_delay_rate_monthly": "01f1c28c-9f37-170f-a8b3-4dbc63110e2e",
+      "agg_6_tables": "01f1c28c-a7a9-1ef1-a0ba-e1db6adf8ec4",
+      "fct_order_fulfillment": "01f1c28c-b24b-1915-8822-1167c7032bf1",
+      "fct_lineitem_delivery": "01f1c28c-ba0b-123a-985a-481f695ceedc"
+    },
+    "tables": {
+      "agg_delay_rate_monthly": {"gold_except_snapshot": 0, "snapshot_except_gold": 0},
+      "agg_on_time_by_line_count": {"gold_except_snapshot": 0, "snapshot_except_gold": 0},
+      "agg_on_time_summary": {"gold_except_snapshot": 0, "snapshot_except_gold": 0},
+      "agg_priority_fulfillment": {"gold_except_snapshot": 0, "snapshot_except_gold": 0},
+      "agg_ship_mode_performance": {"gold_except_snapshot": 0, "snapshot_except_gold": 0},
+      "agg_urgency_fulfillment": {"gold_except_snapshot": 0, "snapshot_except_gold": 0},
+      "fct_order_fulfillment": {"gold_except_snapshot": 0, "snapshot_except_gold": 0},
+      "fct_lineitem_delivery": {"gold_except_snapshot": 0, "snapshot_except_gold": 0}
+    },
+    "all_deterministic": true
+  },
+  "cleanup": {
+    "snapshot_schema_dropped": "workspace.nachalniki_logistics_gold_snapshot",
+    "cleanup_statement_id": "01f1c28c-c862-1917-acfb-6bdbbc2a0be5"
+  }
+}

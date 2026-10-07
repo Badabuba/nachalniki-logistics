@@ -394,15 +394,17 @@ Under D22, Yaropolk owns MAX-01–MAX-07 and MAX-09–MAX-14, plus the non-prese
 
 - MAX-05 — transferred → YAR-14 (D16).
 
-- [ ] **MAX-06 · P4 · Monthly delay-rate chart (chart 5).** Line chart of `delay_rate` by commit month from `agg_delay_rate_monthly`, with `line_count`, boundary months labelled "potentially incomplete", and other low-count edge months named from the observed counts (design §8).
+- [x] **MAX-06 · P4 · Monthly delay-rate chart (chart 5).** Line chart of `delay_rate` by commit month from `agg_delay_rate_monthly`, with `line_count`, boundary months labelled "potentially incomplete", and other low-count edge months named from the observed counts (design §8).
   - Files: `notebooks/06_analysis.py`
   - Depends on: MAX-04; D12; MAX-10 (real data)
   - Done when: the chart renders from a succeeded run, and a screenshot is saved for the deck.
+  - Status 2026-10-07: done by Yaropolk under D22. Chart 5 and monitoring answer added to `06_analysis.py`, rendered across all 82 commit months (1992-01 to 1998-10) with boundary and low-count edge months labelled; verified in Databricks job run 901645685241490 (evidence row MAX-06).
 
-- [ ] **MAX-07 · P4 · Q1–Q4 answers in the README.** Write the answers with the actual numbers, the `run_id` and the date of the run they came from.
+- [x] **MAX-07 · P4 · Q1–Q4 answers in the README.** Write the answers with the actual numbers, the `run_id` and the date of the run they came from.
   - Files: `README.md` ("Results")
   - Depends on: MAX-04, MAX-06; MAX-10
   - Done when: every number matches a displayed result in `06_analysis` for the cited succeeded run, and the PR is open for YAR-09.
+  - Status 2026-10-07: done by Yaropolk under D22. README "Results" section written with exact numbers and tables for Q1–Q4 and monthly monitoring from verified run 64829233-7f8c-42e0-9fd9-c08c765f2aef on 2026-10-07 (evidence row MAX-07).
 
 - [ ] **MAX-08 · P5 · Q1–Q4 and monitoring slides.** R-P7: one slide per question with the chart, the query code and the answer, plus the monitoring chart.
   - Files: the deck
@@ -415,25 +417,29 @@ Under D22, Yaropolk owns MAX-01–MAX-07 and MAX-09–MAX-14, plus the non-prese
   - Done when: two consecutive executions in one session get different `run_id`s; a forced failure in a step leaves a `started` row with no `succeeded` row; and a rerun keeps the earlier audit rows (evidence for all three).
   - Status 2026-10-07: done by Yaropolk under D22. The two-run job succeeded with two fresh IDs and retained both lifecycle and DQ history; an isolated invalid-source run failed with `started` rows and no `succeeded` row (evidence row MAX-09).
 
-- [ ] **MAX-10 · P3 · Full run with the default prefix.** *Transferred from NAZ-12.*
+- [x] **MAX-10 · P3 · Full run with the default prefix.** *Transferred from NAZ-12.*
   - Files: `docs/plan.md` (evidence log)
   - Depends on: MAX-03, MAX-09, H2 (YAR-13)
   - Done when: `pipeline_runs` shows `succeeded` for the run and all its `dq_check_results` rows have `passed = true` (output and `run_id` in the evidence log).
+  - Status 2026-10-07: done by Yaropolk under D22. Serverless job run 828513369024121 (run_id 64829233-7f8c-42e0-9fd9-c08c765f2aef) completed with started -> succeeded, 43/43 DQ checks passed and all 8 Gold tables populated (evidence row MAX-10).
 
-- [ ] **MAX-11 · P3 · Rerun determinism.** *Transferred from NAZ-13.* Snapshot Gold to a scratch schema, rerun on unchanged data, then `EXCEPT ALL` in both directions. `_ingested_at`, `run_id` and the audit history are expected to differ.
+- [x] **MAX-11 · P3 · Rerun determinism.** *Transferred from NAZ-13.* Snapshot Gold to a scratch schema, rerun on unchanged data, then `EXCEPT ALL` in both directions. `_ingested_at`, `run_id` and the audit history are expected to differ.
   - Files: `docs/plan.md` (evidence log)
   - Depends on: MAX-10
   - Done when: both `EXCEPT ALL` queries return 0 rows for every Gold table (output in the evidence log), and the scratch snapshot is dropped.
+  - Status 2026-10-07: done by Yaropolk under D22. Gold snapshotted to `_gold_snapshot`, full pipeline rerun succeeded (run_id f21d3f70-1d14-4bfa-bb60-47a5fc4e8ac0, job 749535949984412, 43/43 DQ passed); bidirectional EXCEPT ALL returned 0 rows for all 8 tables; snapshot schema dropped (evidence row MAX-11).
 
-- [ ] **MAX-12 · P3 · Portability run.** *Transferred from NAZ-14.* Run with `schema_prefix = nachalniki_logistics_porttest` and compare Gold with the default run.
+- [x] **MAX-12 · P3 · Portability run.** *Transferred from NAZ-14.* Run with `schema_prefix = nachalniki_logistics_porttest` and compare Gold with the default run.
   - Files: `docs/plan.md` (evidence log)
   - Depends on: MAX-10
   - Done when: `EXCEPT ALL` both ways returns 0 rows for every Gold table, and **only** the `porttest` schemas this test created are dropped (output in the evidence log).
+  - Status 2026-10-07: done by Yaropolk under D22. Portability run 629667290252188 (run_id 1bc3ffae-424d-4281-948a-bb0ea9df243a, 43/43 DQ passed) in prefix `nachalniki_logistics_porttest` compared with default Gold via bidirectional EXCEPT ALL; 0 rows difference for all 8 tables; all 5 porttest schemas dropped (evidence row MAX-12).
 
-- [ ] **MAX-13 · P3 · README "How to run".** *Transferred from the run part of NAZ-15.* The steps MAX-10 actually used: Git folder, widget values, running `run_pipeline`, then `06_analysis`. Links to the Stage 1 and validation sections rather than repeating them.
+- [x] **MAX-13 · P3 · README "How to run".** *Transferred from the run part of NAZ-15.* The steps MAX-10 actually used: Git folder, widget values, running `run_pipeline`, then `06_analysis`. Links to the Stage 1 and validation sections rather than repeating them.
   - Files: `README.md` ("How to run")
   - Depends on: MAX-10
   - Done when: every documented command has been run successfully, the section is ready for YAR-14, and every gap YAR-14 reports is fixed.
+  - Status 2026-10-07: done by Yaropolk under D22. README "How to run" section updated with tested UI steps and serverless CLI job submit commands used in MAX-10 and MAX-12 (evidence row MAX-13).
 
 - [ ] **MAX-14 · P3 · End-to-end failure check.** *Transferred from the end-to-end part of YAR-08.* In a scratch prefix with a succeeded run, start a new `run_pipeline` execution with one injected bad row. Show that the run has `started` but no `succeeded`, Gold is unchanged (`EXCEPT ALL` = 0 rows), and `06_analysis` refuses to present results.
   - Files: `docs/plan.md` (evidence log, demo script)
@@ -520,6 +526,12 @@ Under D22, Yaropolk owns MAX-01–MAX-07 and MAX-09–MAX-14, plus the non-prese
 | 2026-10-07 | MAX-03 | `notebooks/05_gold_build.py` and `checks/p3/gold_stage/gold_stage_entry.py` run by Yaropolk in workspace `dbc-1766f78b-980d`, prefix `yaropolk_logistics`. Prerequisites: Bronze run `108120222747131` SUCCESS (132 s); Silver run `503252245116571` SUCCESS (364 s). Gold job run `1067762683130214` / task run `656667484506696` SUCCESS (76 s), `run_id = 253b9400-828e-43a4-9553-a25f4917e3db`. All 8 table column lists exactly matched design §9. Counts: `fct_lineitem_delivery` 29999795; `fct_order_fulfillment` 7500000; ship modes 7; on-time summary 1; line-count buckets 7; priorities 5; urgency groups 2; commit months 82. DQ-GOLD1 and DQ-GOLD2 both `passed = true`, `violation_count = 0`. Read-only evidence statement `01f1c280-e642-12d4-9143-5c32799a411a`. Raw summary: [max03_gold_results_20261007.json](../checks/p3/outputs/max03_gold_results_20261007.json) | Yaropolk |
 | 2026-10-07 | MAX-04 | `notebooks/06_analysis.py` run by Yaropolk on prefix `yaropolk_logistics`: job `323622471233284` / task `127304226447423` SUCCESS (38 s), guarded succeeded pipeline `run_id a89788f0-9a0d-48ff-93a9-733c1aa50ea7`. Q1–Q4 tables displayed, dynamic answer blocks rendered and four matplotlib chart sets completed. Read-only Gold evidence statement `01f1c285-247d-1d12-8465-0362bdeeb5bc`. Guard test: isolated failed pipeline job `880293873043109`, then analysis job `119990228613342` failed as required with `Cannot present stale Gold results...has no succeeded event` for run `0d0aff89-eeea-4341-af8d-6ebcfa326f29`; no Gold table was read. Raw: [max04_analysis_results_20261007.json](../checks/p3/outputs/max04_analysis_results_20261007.json) | Yaropolk |
 | 2026-10-07 | MAX-09 | `notebooks/run_pipeline.py` run twice consecutively in one notebook context by job `296750090868031` / task `324279025471773` (SUCCESS, 819.5 s), prefix `yaropolk_logistics`. Fresh run IDs `34a3bee3-c680-44c3-8792-f3ff72b422d0` and `a89788f0-9a0d-48ff-93a9-733c1aa50ea7` each retained `started` + `succeeded`, 43 DQ rows and 0 failed DQ; statement `01f1c283-fc37-1ba1-a7a0-9a5d5d43cebc`. Isolated forced-failure job `1076691866808340` used prefix `yaropolk_logistics_runnerfail` and invalid source `samples.missing`; both automatic attempts received fresh IDs and retained only `started` (0 `succeeded`), statement `01f1c283-f0a0-1b4e-bfdf-a6f1218d0c67`. The two scratch schemas created by this test were dropped after evidence capture. Raw: [max09_pipeline_runner_20261007.json](../checks/p3/outputs/max09_pipeline_runner_20261007.json) | Yaropolk |
+| 2026-10-07 | MAX-10 | Full pipeline execution under default prefix `nachalniki_logistics` (catalog `workspace`, source `samples.tpch`) on Databricks workspace `dbc-1766f78b-980d`. Serverless job run `828513369024121` / task run `145038061861109` (410 s, SUCCESS), `run_id = 64829233-7f8c-42e0-9fd9-c08c765f2aef`. `pipeline_runs` recorded `started` (19:34:25 UTC) and `succeeded` (19:41:02 UTC, statement `01f1c289-5e75-1b4e-9334-55fb84c217e8`). All 43 DQ check rows passed (statement `01f1c289-77d5-1b7d-881a-ecbbeb862930`). All 8 Gold tables verified (fct_lineitem 29999795, fct_order 7500000, ship_modes 7, on_time_summary 1, line_count_buckets 7, priorities 5, urgency 2, monthly 82, statement `01f1c289-98c4-1641-bed6-43475e5faa63`). Raw: [max10_default_prefix_run_20261007.json](../checks/p3/outputs/max10_default_prefix_run_20261007.json) | Yaropolk |
+| 2026-10-07 | MAX-11 | Rerun determinism check: all 8 Gold tables snapshotted to `workspace.nachalniki_logistics_gold_snapshot`. Full pipeline rerun on unchanged data by job `749535949984412` / task `463487353866358` (529 s, SUCCESS), fresh `run_id = f21d3f70-1d14-4bfa-bb60-47a5fc4e8ac0` (`started` 20:03:18, `succeeded` 20:11:30 UTC, 43/43 DQ passed). Bidirectional `EXCEPT ALL` between live Gold and snapshot: 0 differing rows in both directions for every table (`agg_delay_rate_monthly` 0/0, `agg_on_time_by_line_count` 0/0, `agg_on_time_summary` 0/0, `agg_priority_fulfillment` 0/0, `agg_ship_mode_performance` 0/0, `agg_urgency_fulfillment` 0/0, `fct_order_fulfillment` 0/0, `fct_lineitem_delivery` 0/0). Snapshot schema dropped cleanly with `DROP SCHEMA ... CASCADE` (statement `01f1c28c-c862-1917-acfb-6bdbbc2a0be5`). Raw: [max11_rerun_determinism_20261007.json](../checks/p3/outputs/max11_rerun_determinism_20261007.json) | Yaropolk |
+| 2026-10-07 | MAX-12 | Portability run with `schema_prefix = nachalniki_logistics_porttest` by job `380967617353570` / task `347330312887198` (434 s, SUCCESS), `run_id = 1bc3ffae-424d-4281-948a-bb0ea9df243a` (`started` 20:23:07, `succeeded` 20:30:02 UTC, 43/43 DQ passed). Bidirectional `EXCEPT ALL` between `nachalniki_logistics_gold` and `nachalniki_logistics_porttest_gold`: 0 differing rows in both directions for all 8 tables. All 5 `porttest` schemas (`_bronze`, `_staging`, `_silver`, `_gold`, `_audit`) dropped cleanly afterwards (statements `01f1c28e-1832-1f3f-b0ee-e0507ae3a0d4` through `01f1c28e-1b26-1b61-8d32-d913b364de36`). Raw: [max12_portability_run_20261007.json](../checks/p3/outputs/max12_portability_run_20261007.json) | Yaropolk |
+| 2026-10-07 | MAX-06 | `notebooks/06_analysis.py` updated with Chart 5 (line chart of `delay_rate` by commit month across 82 observed months from `agg_delay_rate_monthly`, with boundary months `1992-01` and `1998-10` annotated as "potentially incomplete" and low-count edge month `1998-09` labelled). Tested in Databricks job run `901645685241490` / task `382000191007440` (37 s, SUCCESS) against succeeded run `64829233-7f8c-42e0-9fd9-c08c765f2aef`. Raw: [max06_chart5_analysis_20261007.json](../checks/p3/outputs/max06_chart5_analysis_20261007.json) | Yaropolk |
+| 2026-10-07 | MAX-07 | `README.md` ("Results") populated with exact numerical findings and full tables for Q1–Q4 and monthly monitoring from verified run `64829233-7f8c-42e0-9fd9-c08c765f2aef` (and determinism run `f21d3f70-1d14-4bfa-bb60-47a5fc4e8ac0`) on 2026-10-07. Every cited number matches `06_analysis.py` outputs. Open for YAR-09 review | Yaropolk |
+| 2026-10-07 | MAX-13 | `README.md` ("How to run") updated with tested UI steps (Git folder / workspace) and serverless CLI job submit commands matching the exact commands executed in MAX-10 and MAX-12 | Yaropolk |
 
 ## Decision log
 

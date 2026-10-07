@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-07",
+  "workspace": "dbc-1766f78b-980d.cloud.databricks.com",
+  "catalog": "workspace",
+  "schema_prefix": "nachalniki_logistics_porttest",
+  "reference_schema_prefix": "nachalniki_logistics",
+  "source": "samples.tpch",
+  "executed_by": "kalmuk.pn@ucu.edu.ua",
+  "job": {
+    "job_id": 380967617353570,
+    "job_run_id": 629667290252188,
+    "task_run_id": 347330312887198,
+    "run_name": "MAX-12 portability run",
+    "result": "SUCCESS",
+    "execution_duration_ms": 434000,
+    "notebook_path": "/Users/kalmuk.pn@ucu.edu.ua/nachalniki_yaropolk/notebooks/run_pipeline"
+  },
+  "pipeline_run": {
+    "run_id": "1bc3ffae-424d-4281-948a-bb0ea9df243a",
+    "started_at": "2026-10-07T20:23:07.020Z",
+    "succeeded_at": "2026-10-07T20:30:02.656Z",
+    "pipeline_statement_id": "01f1c28d-ecf6-1cf7-9440-e73731d05a85"
+  },
+  "data_quality": {
+    "total_checks": 43,
+    "passed_checks": 43,
+    "failed_checks": 0,
+    "dq_statement_id": "01f1c28d-f0e7-1ca7-a06e-e2e81b6be434"
+  },
+  "comparison_results": {
+    "statement_ids": {
+      "agg_6_tables": "01f1c28d-f6de-1c3a-8609-de02a8fe5d4a",
+      "fct_order_fulfillment": "01f1c28d-fcbc-128b-942e-6132ea34dc2d",
+      "fct_lineitem_delivery": "01f1c28e-0901-12a9-a80c-512c306e77f4"
+    },
+    "tables": {
+      "agg_delay_rate_monthly": {"orig_except_port": 0, "port_except_orig": 0},
+      "agg_on_time_by_line_count": {"orig_except_port": 0, "port_except_orig": 0},
+      "agg_on_time_summary": {"orig_except_port": 0, "port_except_orig": 0},
+      "agg_priority_fulfillment": {"orig_except_port": 0, "port_except_orig": 0},
+      "agg_ship_mode_performance": {"orig_except_port": 0, "port_except_orig": 0},
+      "agg_urgency_fulfillment": {"orig_except_port": 0, "port_except_orig": 0},
+      "fct_order_fulfillment": {"orig_except_port": 0, "port_except_orig": 0},
+      "fct_lineitem_delivery": {"orig_except_port": 0, "port_except_orig": 0}
+    },
+    "all_tables_match": true
+  },
+  "cleanup": {
+    "schemas_dropped": [
+      "workspace.nachalniki_logistics_porttest_bronze",
+      "workspace.nachalniki_logistics_porttest_staging",
+      "workspace.nachalniki_logistics_porttest_silver",
+      "workspace.nachalniki_logistics_porttest_gold",
+      "workspace.nachalniki_logistics_porttest_audit"
+    ],
+    "drop_statement_ids": {
+      "workspace.nachalniki_logistics_porttest_bronze": "01f1c28e-1832-1f3f-b0ee-e0507ae3a0d4",
+      "workspace.nachalniki_logistics_porttest_staging": "01f1c28e-18e8-1a6c-a52d-bd2da0a09aa6",
+      "workspace.nachalniki_logistics_porttest_silver": "01f1c28e-19c2-10a4-b69b-d6937d9f502f",
+      "workspace.nachalniki_logistics_porttest_gold": "01f1c28e-1a6f-1cba-a78a-50496361385a",
+      "workspace.nachalniki_logistics_porttest_audit": "01f1c28e-1b26-1b61-8d32-d913b364de36"
+    }
+  }
+}

@@ -294,4 +294,94 @@ show_answer(
 
 # COMMAND ----------
 
-print(f"Q1–Q4 analysis completed for succeeded run_id {analysis_run_id}.")
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Monitoring — Monthly delay rate over time (Chart 5)
+# MAGIC
+# MAGIC Displays `agg_delay_rate_monthly` across commit months. The line chart shows `delay_rate`
+# MAGIC by commit month, with line count context and explicit annotations for boundary and edge
+# MAGIC months labelled "potentially incomplete".
+
+# COMMAND ----------
+
+monthly = (
+    spark.table(f"{gold_schema}.agg_delay_rate_monthly")
+    .orderBy("commit_month")
+)
+display(monthly)
+monthly_pdf = monthly.toPandas()
+
+fig, ax1 = plt.subplots(figsize=(13, 5.2))
+
+color_rate = "#d95f02"
+
+ax1.plot(
+    monthly_pdf["commit_month"],
+    monthly_pdf["delay_rate"],
+    color=color_rate,
+    marker="o",
+    markersize=3,
+    linewidth=1.8,
+    label="Delay rate",
+)
+ax1.set_xlabel("Commit month", fontsize=11)
+ax1.set_ylabel("Delay rate", color=color_rate, fontsize=11)
+ax1.tick_params(axis="y", labelcolor=color_rate)
+ax1.set_ylim(0.4, 0.7)
+ax1.grid(alpha=0.3)
+
+boundary_mask = monthly_pdf["is_boundary_month"] | (monthly_pdf["commit_month"] == "1998-09-01")
+for _, b_row in monthly_pdf[boundary_mask].iterrows():
+    ax1.plot(
+        b_row["commit_month"],
+        b_row["delay_rate"],
+        marker="s",
+        markersize=8,
+        color="#e41a1c",
+    )
+    label_txt = f"{b_row['commit_month']}\n(potentially incomplete, n={int(b_row['line_count']):,})"
+    ax1.annotate(
+        label_txt,
+        xy=(b_row["commit_month"], b_row["delay_rate"]),
+        xytext=(0, 24 if b_row["commit_month"] == "1992-01-01" else -36),
+        textcoords="offset points",
+        ha="center",
+        fontsize=8.5,
+        bbox=dict(boxstyle="round,pad=0.25", fc="yellow", alpha=0.5, edgecolor="gray"),
+        arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=0", color="#e41a1c"),
+    )
+
+tick_idx = np.arange(0, len(monthly_pdf), 6)
+ax1.set_xticks(tick_idx)
+ax1.set_xticklabels(monthly_pdf["commit_month"].iloc[tick_idx], rotation=35, ha="right")
+ax1.set_title(
+    "Monitoring: Monthly delay rate by commit month (82 observed months; boundary/edge labelled)",
+    fontsize=12,
+)
+
+fig.tight_layout()
+plt.show()
+
+# COMMAND ----------
+
+first_m = monthly_pdf.iloc[0]
+last_m = monthly_pdf.iloc[-1]
+edge_m = monthly_pdf.iloc[-2]
+mid_series = monthly_pdf[(~monthly_pdf["is_boundary_month"]) & (monthly_pdf["commit_month"] != "1998-09-01")]
+mean_stable_rate = mid_series["delay_rate"].mean()
+
+show_answer(
+    "Monitoring summary — Monthly delay rate",
+    f"The delay rate is remarkably stable across {len(monthly_pdf)} observed commit months "
+    f"(1992-01 to 1998-10). The interior series averages {percent(mean_stable_rate)} delay rate "
+    f"(between ~62.9% and ~63.4%) with ~350k–389k lines/month. "
+    f"The boundary months {first_m['commit_month']} ({int(first_m['line_count']):,} lines, {percent(first_m['delay_rate'])}) "
+    f"and {last_m['commit_month']} ({int(last_m['line_count']):,} lines, {percent(last_m['delay_rate'])}) "
+    f"are flagged as 'potentially incomplete' due to truncation at source window boundaries. "
+    f"The preceding edge month {edge_m['commit_month']} also exhibits lower line count ({int(edge_m['line_count']):,} lines, {percent(edge_m['delay_rate'])} delay rate).",
+)
+
+# COMMAND ----------
+
+print(f"Q1–Q4 analysis and monthly monitoring completed for succeeded run_id {analysis_run_id}.")
