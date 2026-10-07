@@ -1,0 +1,67 @@
+{
+  "cleanup_duration": 0,
+  "creator_user_name": "matseliukh.pn@ucu.edu.ua",
+  "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+  "end_time": 1791390639428,
+  "execution_duration": 37000,
+  "job_id": 42263864031391,
+  "job_run_id": 1011468118965865,
+  "number_in_job": 1011468118965865,
+  "run_duration": 41510,
+  "run_id": 1011468118965865,
+  "run_name": "makc YAR-12 dq_helpers_test run 1",
+  "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/42263864031391/run/1011468118965865",
+  "run_type": "SUBMIT_RUN",
+  "setup_duration": 3000,
+  "start_time": 1791390597918,
+  "state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "status": {
+    "state": "TERMINATED",
+    "termination_details": {
+      "code": "SUCCESS",
+      "message": "",
+      "type": "SUCCESS"
+    }
+  },
+  "tasks": [
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 0,
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1791390638952,
+      "execution_duration": 37000,
+      "notebook_task": {
+        "base_parameters": {
+          "schema_prefix": "makc_logistics_dqtest"
+        },
+        "notebook_path": "/Users/matseliukh.pn@ucu.edu.ua/nachalniki_makc/checks/p2/dq_helpers/dq_helpers_test",
+        "source": "WORKSPACE"
+      },
+      "run_id": 919382978303535,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/42263864031391/run/919382978303535",
+      "setup_duration": 3000,
+      "start_time": 1791390597943,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "task_key": "t"
+    }
+  ]
+}

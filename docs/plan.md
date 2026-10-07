@@ -18,7 +18,7 @@ The work runs as three sequential stages. Each stage ends with a handoff; the ne
 | Stage | Owner (alias) | Scope | Ends with |
 |---|---|---|---|
 | 1. Foundation and Bronze | Nazar (M1) | Repo and uv; Databricks access and capability checks; source inventory; value profiling (categorical values, date ranges, lines per order); `00_config` (incl. the run_id helpers of D15); `01_bronze_ingest` for all 8 tables; allowed-list constants; README setup and Stage 1 sections; own slide material | H1 → Yaropolk |
-| 2. Silver and data quality | Yaropolk (M2) | FD analysis and 3NF justification; `02_silver_stage`; `dq_helpers` and `dq_check_results`; `03_validate`; `04_silver_publish` and constraints; ER diagram; stage-level success and failure demo; README validation section; own slide material | H2 → Max |
+| 2. Silver and data quality | Yaropolk (M2); **Max since 2026-10-07 (D20)** | FD analysis and 3NF justification; `02_silver_stage`; `dq_helpers` and `dq_check_results`; `03_validate`; `04_silver_publish` and constraints; ER diagram; stage-level success and failure demo; README validation section; own slide material | H2 → Max |
 | 3. Gold, analysis, integration and delivery | Max (M3) | `05_gold_build`; `06_analysis` (guard, Q1–Q4, charts, monitoring); `run_pipeline` and `pipeline_runs`; full, end-to-end failure, rerun and portability runs; README run and results sections; **final README assembly, deck assembly, demo script, rehearsal and submission** | submission |
 
 Workload note: Max carries the integration work, so each earlier owner hands over tested code, their own README section and ready-to-assemble slide material. Max assembles but does not write the other members' content. Everyone presents their own contribution. **Optional items are not assigned** (see [Optional follow-ups](#optional-follow-ups-not-acceptance-gates-unassigned)).
@@ -32,9 +32,9 @@ Every shared artifact has exactly one owner. Others change it only through a PR 
 | `notebooks/00_config.py`: widgets, derived names, `new_run_id()`, `require_run_id()`, allowed-list constants | Nazar | Later stage owners may **add** constants via PR. Renaming, removing or changing the meaning of an existing name is a contract change. |
 | `{prefix}_bronze.*` and `01_bronze_ingest` | Nazar | Bronze never reads or writes `run_id` or audit tables |
 | `profile_source`: value-profiling section | Nazar | |
-| `profile_source`: FD section | Yaropolk | Separate section, separate PR |
-| `notebooks/dq_helpers.py` and `{prefix}_audit.dq_check_results` | Yaropolk | The only code that creates or appends to `dq_check_results`; Max's `05_gold_build` calls it |
-| `{prefix}_staging.*`, `{prefix}_silver.*` and notebooks `02`–`04` | Yaropolk | |
+| `profile_source`: FD section | Max (was Yaropolk; D20) | Separate section |
+| `notebooks/dq_helpers.py` and `{prefix}_audit.dq_check_results` | Max (was Yaropolk; D20) | The only code that creates or appends to `dq_check_results`; `05_gold_build` calls it |
+| `{prefix}_staging.*`, `{prefix}_silver.*`, `notebooks/silver_contract.py` and notebooks `02`–`04` | Max (was Yaropolk; D20) | |
 | `notebooks/run_pipeline.py` and `{prefix}_audit.pipeline_runs` | Max | The only code that writes `pipeline_runs` |
 | `{prefix}_gold.*`, `05_gold_build`, `06_analysis` | Max | |
 | README sections | the author of each section | Max assembles the final README |
@@ -49,7 +49,7 @@ These cannot be given to one person; they are kept small and do not block anyone
 - **Presenting in class**: each member presents their own part and attends the rehearsal that Max organises (R-S15, R-P1).
 - **Defects**: each owner fixes defects found later in their own deliverables. This is the defect path, not planned work, and is not part of anyone's completion checklist.
 - **Contract changes** after a handoff involve the contributors whose deliverables produce or consume that contract (see [Workflow](#workflow)).
-- **Second-member README reproduction** (R-S6): the author of the run instructions cannot verify them alone, so Yaropolk does it (YAR-14).
+- **Second-member README reproduction** (R-S6): the author of the run instructions cannot verify them alone, so Yaropolk does it (YAR-14). After D20 Max owns YAR-14 on paper but authors the run instructions, so the reproduction itself needs Yaropolk or Nazar.
 
 ## Workspace model and handoff paths (D17, open)
 
@@ -73,9 +73,9 @@ The P0 checks NAZ-01–04 have run in Databricks (evidence log, 2026-10-07). Sta
 
 | Person | Can start now | Waits for |
 |---|---|---|
-| Nazar | No open Stage 1 work; fixes defects reported in the PR review or the H1 acceptance | NAZ-06, NAZ-10 and NAZ-21 wait for Yaropolk's review of the Stage 1 PR and the H1 acceptance (A1–A6), then the merge. |
-| Yaropolk | YAR-01, YAR-02 (D14); review the Stage 1 PR and run the H1 acceptance checks A1–A6 | YAR-03 and YAR-04 wait for H1 (NAZ-21). YAR-04 also needs D10. YAR-12 can start (NAZ-07 code is in the PR; D15 agreed). |
-| Max | MAX-01, MAX-02 (D5, D6, D7, D10, D11, D12: their P0 inputs exist); follow up the due date and submission method (MAX-17, NAZ-16) | MAX-03 waits for H2 (YAR-13). MAX-09 needs NAZ-07, NAZ-08, YAR-12 and D7. |
+| Nazar | No open Stage 1 work. H1 was accepted and the allowed lists were reviewed by Max on 2026-10-07 (D20; evidence rows "H1 acceptance" and "NAZ-10 review"), so NAZ-10 and NAZ-21 can be ticked | – |
+| Yaropolk | Stage 2 was taken over by Max (D20). Open for a member other than Max: YAR-09 (after MAX-07) and the R-S6 reproduction of YAR-14 (after MAX-13) | MAX-07, MAX-13 |
+| Max | Stage 2 is built and run (YAR-01–YAR-08, YAR-10–YAR-12 ticked); the H2 note waits only for its merge (YAR-13). Stage 3: MAX-01, MAX-02 (D5–D7, the Gold part of D10, D11, D12), MAX-03 (H2 code is on the Stage 2 branch), MAX-09 (YAR-12 done; needs D7); follow up the due date and submission method (MAX-17, NAZ-16) | MAX-03 against the real Silver after the H2 merge |
 
 Suggested execution order (a summary, not a dependency chain; each task's **Depends on** line is authoritative): NAZ-05 → NAZ-07 → NAZ-08 → NAZ-09 → NAZ-10 → NAZ-15, NAZ-17 → NAZ-21 (H1) → YAR-03, YAR-04 → YAR-05 → YAR-06 → YAR-07, YAR-08 → YAR-10, YAR-11 → YAR-13 (H2) → MAX-03 → MAX-04 → MAX-10 → MAX-06 → MAX-07 → MAX-08 → MAX-16 → MAX-15 → MAX-18 → MAX-17. Work that can run alongside it once its own dependencies are met: YAR-12 (after NAZ-07), MAX-09 (after YAR-12), MAX-11, MAX-12, MAX-13 (after MAX-10), MAX-14 (after MAX-04 and MAX-10), YAR-14 (after MAX-13), YAR-09 (after MAX-07).
 
@@ -93,7 +93,7 @@ P1 acceptance: D4–D7, D9–D16 marked "agreed" with all three names and a date
 
 ## Handoffs
 
-The handoff notes themselves are written in [handoffs.md](handoffs.md). A handoff is complete when its note is merged after review by the receiver. If an acceptance check fails, the receiver lists the defects in the evidence log and the sender fixes them.
+The handoff notes themselves are written in [handoffs.md](handoffs.md). A handoff is complete when its note is merged after review by the receiver (for H1, the review follows the merge: D19). If an acceptance check fails, the receiver lists the defects in the evidence log and the sender fixes them.
 
 ### H1 — Nazar → Yaropolk (NAZ-21)
 
@@ -158,6 +158,8 @@ These lists are completion conditions, not a second checklist: they are met when
 
 Remaining duties after H2 (they verify Max's work and cannot happen earlier): YAR-09 (review the answer numbers) and YAR-14 (reproduce the run from the README).
 
+Since D20 Max owns this stage; D14 counts as met when "decided" by the stage owner. Status 2026-10-07: every listed task except YAR-13 is ticked; YAR-13 waits for the merge of the H2 note.
+
 ### Max is finished when…
 - MAX-01–MAX-04 and MAX-06–MAX-18 are ticked with evidence.
 - D5, D6, D7, D10, D11 and D12 are agreed.
@@ -209,11 +211,11 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Status 2026-10-07: D4, D9, D13, D15, D16 agreed (team agreement reported by Nazar; no individual replies or PR approvals are recorded). D17 has no confirmed arrangement, so both paths are documented in H1.
   - D7 (lifecycle) — transferred → MAX-02 (D16), because Max implements the runner and the stale-output guard.
 
-- [ ] **NAZ-06 · P2 · Merge the uv setup.** `pyproject.toml`, `uv.lock` and `.gitignore` are committed on `docs/initial-plan` (local `uv lock`/`uv sync` evidence dated 2026-10-07). Get them reviewed and merged into `main`.
+- [x] **NAZ-06 · P2 · Merge the uv setup.** `pyproject.toml`, `uv.lock` and `.gitignore` are committed on `docs/initial-plan` (local `uv lock`/`uv sync` evidence dated 2026-10-07). Get them reviewed and merged into `main`.
   - Files: `pyproject.toml`, `uv.lock`, `.gitignore`; `docs/requirements.md` (R-S7 status)
   - Depends on: nothing. **Start now.**
   - Done when: the PR is merged into `main` and R-S7 cites the evidence.
-  - Status 2026-10-07: included in the Stage 1 PR from `docs/initial-plan`; waiting for review and merge.
+  - Status 2026-10-07: merged into `main` in [PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1) (squash commit `79d37e4`) without a prior review (D19); R-S7 cites the evidence.
 
 - [x] **NAZ-07 · P2 · `00_config`.** Widgets `catalog`, `schema_prefix`, `source`; derived schema names; the D15 helpers `new_run_id()` (returns a fresh `str(uuid.uuid4())`) and `require_run_id()` (returns the caller's `run_id` or raises if none is defined). `00_config` itself **never assigns `run_id`**. Placeholders for the allowed-value constants (filled in by NAZ-10).
   - Files: `notebooks/00_config.py`
@@ -235,7 +237,7 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Files: `notebooks/00_config.py`; `docs/plan.md` (decision log, if there is a mismatch)
   - Depends on: NAZ-09; D13 (NAZ-05)
   - Done when: `ALLOWED_SHIP_MODES`, `ALLOWED_RETURN_FLAGS` and `ALLOWED_LINE_STATUSES` are built from the profiled values; every value is classified as observed and documented, documented but not observed, or observed but not documented, against the cited documentation; every discrepancy is resolved in the decision log; and the PR is approved by one other member (Yaropolk preferred, as the consumer in `03_validate`).
-  - Status 2026-10-07: constants written and classified (design §6; no discrepancy). D13 agreed. Still pending: approval of the Stage 1 PR by another member.
+  - Status 2026-10-07: constants written and classified (design §6; no discrepancy), D13 agreed, merged into `main` (`79d37e4`). Still pending: Yaropolk's review of the constants. PR #1 was merged before any review (D19), so the approval is recorded as an evidence-log row by Yaropolk instead of a PR approval.
 
 - NAZ-11 — transferred → MAX-09 (`run_pipeline`, `pipeline_runs`) and YAR-12 (`dq_helpers`, `dq_check_results`) (D16).
 - NAZ-12 — transferred → MAX-10 (D16).
@@ -268,79 +270,95 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Files: `docs/handoffs.md` (H1)
   - Depends on: NAZ-01–NAZ-10, NAZ-15, NAZ-17
   - Done when: the H1 note is merged after Yaropolk's review, and the A1–A6 result is in the evidence log (defects found later follow the defect path).
-  - Status 2026-10-07: H1 note filled (handoffs.md), Stage 1 pushed and [PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1) opened; the implementer's self-check of A1–A6 is in the evidence log. Still pending: Yaropolk's review and Yaropolk's own A1–A6 run, then the merge. Whoever squash-merges PR #1 writes the resulting `main` SHA into the H1 note (in the merge PR or a direct follow-up commit); no action from Nazar is needed for that.
+  - Status 2026-10-07: implementation merged into `main` in [PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1) (squash commit `79d37e4`); H1 note filled with that SHA; the implementer's self-check of A1–A6 is in the evidence log. Still pending: Yaropolk's review of the H1 note and Yaropolk's own A1–A6 run, recorded as "H1 accepted" or a defect list (D19).
 
-### Yaropolk
+### Yaropolk (Stage 2 tasks, owner Max since D20)
 
-- [ ] **YAR-01 · P0 · Log in and read the source.** Log in to the workspace and run `SELECT count(*) FROM samples.tpch.lineitem`.
+Max took over every task in this section on 2026-10-07 (D20). The IDs stay unchanged. Max made the Stage 2 decisions (D10 Silver part, D14, D21) as the stage owner; no confirmation by Nazar or Yaropolk is recorded. All Stage 2 runs used `schema_prefix = makc_logistics` (scratch prefixes `makc_logistics_dqtest`, `makc_logistics_s2demo`) in the shared workspace, never the default prefix.
+
+- [x] **YAR-01 · P0 · Log in and read the source.** Log in to the workspace and run `SELECT count(*) FROM samples.tpch.lineitem`.
   - Files: `docs/plan.md` (evidence log)
   - Depends on: nothing. **Start now.**
   - Done when: the output is in the evidence log.
+  - Status 2026-10-07: done by Max (evidence row YAR-01).
 
-- [ ] **YAR-02 · P1 · Drive D14 to agreement.** D14: the 3NF method (design §5.3, §5.4); any decomposition is decided later in YAR-03. D13 — transferred → NAZ-05 (D16).
+- [x] **YAR-02 · P1 · Drive D14 to agreement.** D14: the 3NF method (design §5.3, §5.4); any decomposition is decided later in YAR-03. D13 — transferred → NAZ-05 (D16).
   - Files: `docs/plan.md` (decision log); `docs/design.md` §5.3, §5.4 if anything changes
   - Depends on: nothing. **Start now.**
-  - Done when: D14 is marked "agreed" with all three names and a date.
+  - Done when: D14 is marked "agreed" with all three names and a date. *Changed by D20:* decided by the Stage 2 owner with a date.
+  - Status 2026-10-07: D14 decided by Max (method of design §5.3 unchanged; one candidate added, the constant `o_shippriority`).
 
-- [ ] **YAR-03 · P2 · FD and candidate-key tests (3NF evidence).** Run the design §5.3 method: check candidate keys, test each candidate FD with `GROUP BY X HAVING count(DISTINCT A) > 1`, and classify it. Apply the §5.4 decomposition only if a real violation is confirmed.
+- [x] **YAR-03 · P2 · FD and candidate-key tests (3NF evidence).** Run the design §5.3 method: check candidate keys, test each candidate FD with `GROUP BY X HAVING count(DISTINCT A) > 1`, and classify it. Apply the §5.4 decomposition only if a real violation is confirmed.
   - Files: `notebooks/profile_source.py` (a separate FD section, in its own PR; any one member reviews); `docs/design.md` §5.3 and §5.5 (FD row)
   - Depends on: H1 (NAZ-21); D14 (YAR-02)
   - Done when: design §5.3/§5.5 hold the queries, outputs, dates and a classification for every candidate. If a decomposition is needed, it has a decision-log entry and an updated Silver contract approved by Max (the consumer).
+  - Status 2026-10-07: done (evidence row YAR-03). Three documented dependencies hold, so `brand`, `ship_date_status` and `part_quantity_price` were split off (D21); the Silver contract in design §5.1 was updated by Max, who is also its consumer.
 
-- [ ] **YAR-04 · P2 · `02_silver_stage`.** Bronze → `{prefix}_staging.stg_*`, with casts and column selection only. No row filtering, no constraints.
-  - Files: `notebooks/02_silver_stage.py`
+- [x] **YAR-04 · P2 · `02_silver_stage`.** Bronze → `{prefix}_staging.stg_*`, with casts and column selection only. No row filtering, no constraints.
+  - Files: `notebooks/02_silver_stage.py`; `notebooks/silver_contract.py` (new: the Silver contract shared by 02–04)
   - Depends on: H1 (NAZ-21); D10 (MAX-02)
   - Done when: staging columns match the design §5.1 contract, and staging counts equal Bronze counts for all 8 tables (output in the evidence log).
+  - Status 2026-10-07: done (evidence row "YAR-04, YAR-05, YAR-06 success runs"). D10 decided by Max for the Silver part only; the Gold part stays with MAX-02.
 
-- [ ] **YAR-12 · P2 · `dq_helpers` and `dq_check_results`.** *New (D16; replaces the audit-table part of NAZ-11).* Implement design §3.1: `ensure_dq_check_results()` (create if missing, never replace), `record_dq_result(run_id, rule_id, layer, table_name, violation_count, sample_keys)` and `raise_if_failed(run_id, rule_ids)`, which reads only rows of that `run_id` and those `rule_ids` and raises if any is not `passed` or any rule has no row.
-  - Files: `notebooks/dq_helpers.py`
+- [x] **YAR-12 · P2 · `dq_helpers` and `dq_check_results`.** *New (D16; replaces the audit-table part of NAZ-11).* Implement design §3.1: `ensure_dq_check_results()` (create if missing, never replace), `record_dq_result(run_id, rule_id, layer, table_name, violation_count, sample_keys)` and `raise_if_failed(run_id, rule_ids)`, which reads only rows of that `run_id` and those `rule_ids` and raises if any is not `passed` or any rule has no row.
+  - Files: `notebooks/dq_helpers.py`; test `checks/p2/dq_helpers/dq_helpers_test.py`
   - Depends on: NAZ-07; D15
   - Done when: a scratch-prefix test shows (a) the table keeps earlier rows across runs, (b) a failing row of the active run raises, and (c) a failing row of an *earlier* run does not affect the active run (evidence).
+  - Status 2026-10-07: done (evidence row YAR-12).
 
-- [ ] **YAR-05 · P2 · `03_validate`.** All rules DQ-L1–L9 and DQ-G1–G3 (design §6), recorded through `dq_helpers` with up to 10 sample keys; ends with `raise_if_failed(run_id, <its rule IDs>)`.
+- [x] **YAR-05 · P2 · `03_validate`.** All rules DQ-L1–L9 and DQ-G1–G3 (design §6), recorded through `dq_helpers` with up to 10 sample keys; ends with `raise_if_failed(run_id, <its rule IDs>)`.
   - Files: `notebooks/03_validate.py`
   - Depends on: YAR-04, YAR-12, NAZ-10 (allowed lists)
   - Done when: a run on clean data gives `passed = true` for every rule of that `run_id`, and an injected bad row in a *scratch prefix* makes the matching rule fail and raise (evidence for both).
+  - Status 2026-10-07: done (evidence rows "YAR-04, YAR-05, YAR-06 success runs" and YAR-08).
 
-- [ ] **YAR-06 · P2 · `04_silver_publish`.** Staging → `{prefix}_silver`, then the enforced NOT NULL/CHECK constraints and the informational PK/FK.
+- [x] **YAR-06 · P2 · `04_silver_publish`.** Staging → `{prefix}_silver`, then the enforced NOT NULL/CHECK constraints and the informational PK/FK.
   - Files: `notebooks/04_silver_publish.py`
   - Depends on: YAR-05; NAZ-03 (constraint DDL verified); YAR-03 (any decomposition is included)
   - Done when: `DESCRIBE TABLE EXTENDED` or `SHOW TBLPROPERTIES` shows the constraints on the Silver tables (output in the evidence log).
+  - Status 2026-10-07: done (evidence row "YAR-04, YAR-05, YAR-06 success runs"): `SHOW TBLPROPERTIES` shows the CHECK, `information_schema` shows the 11 PKs, 12 FKs and the NOT NULL columns. FK DDL `[VERIFY]` resolved.
 
-- [ ] **YAR-07 · P2 · ER diagram.** Render it from the published Silver (updated Mermaid in design §5.2, or Catalog Explorer) and save the image.
-  - Files: `docs/design.md` §5.2; `docs/silver_er.png`
+- [x] **YAR-07 · P2 · ER diagram.** Render it from the published Silver (updated Mermaid in design §5.2, or Catalog Explorer) and save the image.
+  - Files: `docs/design.md` §5.2; `docs/silver_er.mmd`; `docs/silver_er.png`
   - Depends on: YAR-06; YAR-03
   - Done when: the image matches `DESCRIBE` of `{prefix}_silver`, and the `[VERIFY]` tag on design §5.2 is removed.
+  - Status 2026-10-07: done (evidence row YAR-07).
 
-- [ ] **YAR-08 · P3 · Stage-level success and failure demo.** *Rescoped (D16).* In a scratch prefix, run the Silver stage execution (design §3.1: fresh `run_id`, then `%run` 02 → 03 → 04 in one context). (a) Clean data: every rule of that run passes and Silver is published. (b) A new execution with one injected bad row in the staging path (e.g. receipt before ship): `03_validate` raises, the rule's row for *this* `run_id` has `passed = false`, `04_silver_publish` does not execute, and Silver is unchanged (`EXCEPT ALL` both ways against a snapshot = 0 rows). The Gold and `06_analysis` part — transferred → MAX-14.
-  - Files: `docs/plan.md` (evidence log, demo script step 3)
+- [x] **YAR-08 · P3 · Stage-level success and failure demo.** *Rescoped (D16).* In a scratch prefix, run the Silver stage execution (design §3.1: fresh `run_id`, then `%run` 02 → 03 → 04 in one context). (a) Clean data: every rule of that run passes and Silver is published. (b) A new execution with one injected bad row in the staging path (e.g. receipt before ship): `03_validate` raises, the rule's row for *this* `run_id` has `passed = false`, `04_silver_publish` does not execute, and Silver is unchanged (`EXCEPT ALL` both ways against a snapshot = 0 rows). The Gold and `06_analysis` part — transferred → MAX-14.
+  - Files: `docs/plan.md` (evidence log, demo script step 3); entry and check notebooks `checks/p2/silver_stage/silver_stage_entry.py`, `silver_snapshot.py`
   - Depends on: YAR-06
   - Done when: both outcomes are captured as evidence, and only the scratch schemas this demo created are dropped.
+  - Status 2026-10-07: done (evidence row YAR-08).
 
 - [ ] **YAR-09 · P4 · Review the answer numbers.** Check every number in the README "Results" section against the Gold tables of the cited run.
   - Files: none (PR review of MAX-07)
   - Depends on: MAX-07
   - Done when: Yaropolk has approved the MAX-07 PR, or each mismatch is fixed.
+  - Status 2026-10-07: not started (needs MAX-07). The reviewer must not be the author of MAX-07, so after D20 this needs Yaropolk or Nazar.
 
-- [ ] **YAR-10 · P5 · README validation section.** The validation approach: lifecycle and blocking rules, how the allowed lists were derived (from NAZ-09/NAZ-10), the 3NF summary, where the DQ results are stored, and the Silver stage execution commands.
+- [x] **YAR-10 · P5 · README validation section.** The validation approach: lifecycle and blocking rules, how the allowed lists were derived (from NAZ-09/NAZ-10), the 3NF summary, where the DQ results are stored, and the Silver stage execution commands.
   - Files: `README.md` ("Validation approach")
   - Depends on: YAR-05, YAR-03, NAZ-10
   - Done when: the section has no "planned" wording left, and every claim links to design.md or evidence.
+  - Status 2026-10-07: done. The section links to design.md §5.3 and §6 and cites the run ids of the evidence rows; the Silver stage commands are the ones used for those runs.
 
-- [ ] **YAR-11 · P5 · Validation, 3NF and ER slide material.** R-P5 validation part (how we validate, plus the YAR-08 failure demo), R-P6 ER screenshot, and at least one challenge from Stage 2 (R-P4), with speaker notes.
-  - Files: the deck location from NAZ-16; if none, `docs/slides/yaropolk.md`
+- [x] **YAR-11 · P5 · Validation, 3NF and ER slide material.** R-P5 validation part (how we validate, plus the YAR-08 failure demo), R-P6 ER screenshot, and at least one challenge from Stage 2 (R-P4), with speaker notes.
+  - Files: the deck location from NAZ-16; if none, `docs/slides/stage2.md` (renamed from `yaropolk.md` by D20)
   - Depends on: YAR-07, YAR-08
   - Done when: the material is in place, every number cites an evidence-log row, and Max can drop it into the deck without rewriting.
+  - Status 2026-10-07: done. `docs/slides/stage2.md` (2 slides with speaker notes), images `docs/silver_er.png` and `docs/slides/img/silver_failure_demo_20261007.png` (rendered from the decoded run exports, not a live workspace screenshot).
 
 - [ ] **YAR-13 · P3 · Handoff H2 to Max.** *New (D16).* Fill the H2 note with every deliverable in [H2](#h2--yaropolk--max-yar-13).
   - Files: `docs/handoffs.md` (H2)
   - Depends on: YAR-03–YAR-08, YAR-10, YAR-11, YAR-12
   - Done when: the H2 note is merged after Max's review, and the B1–B5 result is in the evidence log.
+  - Status 2026-10-07: H2 note filled and B1–B5 checked (evidence row "H2 B1–B5"). After D20 the sender and the receiver are the same person, so the check is not independent. Still pending: the merge into `main`.
 
 - [ ] **YAR-14 · P3 · Reproduce the run from the README alone.** *New (D16; replaces MAX-05).* As the second member, follow only the README to run the full pipeline.
   - Files: `docs/plan.md` (evidence log); report README gaps to Max
   - Depends on: MAX-13
   - Done when: a `succeeded` run started by Yaropolk is in the evidence log, and every README gap found has been reported (Max fixes them in MAX-13).
+  - Status 2026-10-07: not started (needs MAX-13). R-S6 needs a member other than the author of the run instructions, so after D20 this needs Yaropolk or Nazar.
 
 ### Max
 
@@ -442,8 +460,8 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 
 1. Nazar: repo, config parameters, Bronze and how profiling produced the allowed lists (45 s).
 2. Max: run, or show the last run of, `run_pipeline`. Show `pipeline_runs` and `dq_check_results` for that `run_id` (1 min).
-3. Yaropolk: the failure demo: a bad row stops publish (1 min).
-4. Yaropolk: the Silver ER diagram (30 s).
+3. Stage 2 (Max since D20; material in `docs/slides/stage2.md`): the failure demo: a bad row stops publish (1 min).
+4. Stage 2: the 3NF decomposition and the Silver ER diagram (30 s).
 5. Max: charts Q1–Q4 and monitoring with the answers (2–3 min).
 
 ## Evidence log
@@ -475,6 +493,17 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 | 2026-10-07 | NAZ-07 A5 (interactive session) | `checks/p2/run_id_helpers/a5_interactive` (in implementation commit `2d18564`) run by Nazar in an attached notebook session: Run all twice in the same session. Execution 1: previous `None`, `run_id = 00b598c1-e0c8-49de-a5b6-f5e6117d21cf`, child saw the same id. Execution 2: previous `00b598c1-…` (still in the session after a second `%run 00_config`), `run_id = 4864114c-5760-4a56-a2df-1fae3cd3af6f`, child saw the same id. Each execution printed `A5 interactive OK`, which is reached only after `assert run_id != previous_run_id` and `assert child_seen_run_id == run_id` passed. The output pasted by Nazar is saved unchanged: [a5_interactive_20261007_reported_by_nazar.txt](../checks/p2/outputs/run_id_helpers/a5_interactive_20261007_reported_by_nazar.txt). Independent check: `workspace export --format JUPYTER` of the notebook afterwards holds the saved outputs of execution 2, identical to the pasted text, including the child's own line `a5_child: require_run_id() = 4864114c-…` ([a5_interactive_20261007_session_export.ipynb](../checks/p2/outputs/run_id_helpers/a5_interactive_20261007_session_export.ipynb)); execution 1's outputs were overwritten by execution 2 and rest on the pasted text, corroborated by execution 2's `previous` value. The deployed source equals the committed file except for the serverless environment header Databricks added on attach | Nazar (run); recorded by Claude Code session for Nazar |
 | 2026-10-07 | NAZ-17 images | The `jobs export-run` HTML of run `1104358970299952` (NAZ-08) and run `1029034196915021` (NAZ-09), already saved in `checks/p2/outputs/`, rendered with headless Chrome and cropped to the result tables: [bronze_check_20261007.png](slides/img/bronze_check_20261007.png) (8 rows, all `ok = true`, lineitem 29999795 = 29999795) and [profiling_categorical_20261007.png](slides/img/profiling_categorical_20261007.png) (12 rows, values and counts as in design §5.5). These are renderings of the run exports, not screenshots of the live workspace | Claude Code session for Nazar |
 | 2026-10-07 | H1 implementer self-check (not the receiver's acceptance) | Run by the implementer from existing evidence, without rescans. A1: passed in job run `1113516903146913` (all design §2 names defined, `run_id` not). A2: passed in the NAZ-08 run (8 tables, source columns + 2 metadata columns, counts equal; the counts were compared with the source at runtime in Nazar's workspace). A3: design §5.5 rows filled with query, date and result; the `00_config` constants equal the profiled values and the design §6 classification; no discrepancy. A4: grep of `notebooks/` repeated locally on 2026-10-07 outside `00_config.py`: only markdown text and the names `compare_bronze_with_source` and `TPCH_TABLES` matched; no catalog, schema or source literal, no row count. A5: passed in one notebook context on serverless job runs (two different ids, the child echoed each; child alone failed) and in an attached interactive session (`a5_interactive`, Run all twice; row "NAZ-07 A5 (interactive session)"). A6: remaining assumptions listed in H1. Yaropolk's own A1–A6 run: not run | Claude Code session for Nazar |
+| 2026-10-07 | NAZ-06, Stage 1 merge | [PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1) squash-merged into `main` by Nazar: commit `79d37e4772fba4ba1a7044d1a4853220e363245a` (PR head `89a3cb6`, 11 commits). Before the merge: state `MERGEABLE`/`CLEAN`, no required status checks, `main` not protected and no rulesets, no reviews (D19). After the merge, the `main` tree equals the PR head tree, and `notebooks/` and `checks/p2/run_id_helpers/` are unchanged since implementation commit `2d18564` | Claude Code session for Nazar |
+| 2026-10-07 | Stage 2 setup (D20) | Workspace `dbc-1766f78b-980d`, user `matseliukh.pn@ucu.edu.ua` (Max, `admins` group), Databricks CLI v1.19.0. Before the first write, `databricks schemas list workspace` showed no `makc_logistics*` schema; `nachalniki_logistics_bronze` (Nazar's) was never written. Notebooks of commit `79d37e4` plus the Stage 2 notebooks imported with `workspace import --format SOURCE` into `/Users/<max>/nachalniki_makc/`, mirroring the repo layout. Every run below is a serverless one-time job (`jobs submit`, no cluster) with `schema_prefix` set to `makc_logistics` or a scratch prefix starting with it; outputs from `jobs export-run`, decoded into `*_decoded.json` next to the raw files | Claude Code session for Max |
+| 2026-10-07 | YAR-01 | SQL statement `01f1c26c-18e5-1077-b92c-ec100374e382` on the Serverless Starter Warehouse at 16:28:17 UTC: `SELECT count(*) FROM samples.tpch.lineitem` = 29999795, `current_user()` = Max. Raw: [yar01_lineitem_count_statement.json](../checks/p2/outputs/h1_acceptance_makc/yar01_lineitem_count_statement.json) | Claude Code session for Max |
+| 2026-10-07 | H1 acceptance (A1–A6), run by Max for Yaropolk (D20) | On `main` `79d37e4`, prefix `makc_logistics`. **A1** passed: run `277918079425473` (`a5_entry`), every design §2 name defined, `run_id` not. **A2** passed: run `805628282881455` of `01_bronze_ingest` (133 s, `_ingested_at = 2026-10-07 16:28:41.562184` UTC): 8/8 tables with source columns in order and type plus the 2 metadata columns, counts equal to the source at runtime (lineitem 29999795 = 29999795). **A3** passed: run `451589752293543` of `profile_source` on that Bronze gives exactly the design §5.5 values (7 ship modes, 3 return flags, 2 line statuses, 5 priorities with the same counts, same date ranges, lines per order 1 / 4.0 / 3.999972666666667 / 7), and the `00_config` constants equal them. **A4** passed: grep of `notebooks/` outside `00_config.py` for catalog/source/prefix literals, layer suffixes and 4+-digit numbers matched only markdown text and function names. **A5** passed on job runs: `277918079425473` (two executions in one context, `e984db82-…` then `5b4c432d-…`, the child echoed each, a second `%run 00_config` kept `run_id`) and `611195147318783` (`a5_child` alone failed with `RuntimeError: run_id is not defined…`). The interactive `a5_interactive` step was not run by Max (his decision); Nazar's interactive run is in the row "NAZ-07 A5 (interactive session)". **A6** passed: H1 lists the remaining assumptions. Result: **H1 accepted.** Raw: [h1_acceptance_makc/](../checks/p2/outputs/h1_acceptance_makc/) | Claude Code session for Max |
+| 2026-10-07 | NAZ-10 review | The allowed lists in `00_config` were compared with the A3 profiling run and with the text of the TPC-H Standard Specification rev. 3.0.1 (PDF downloaded from tpc.org, text extracted locally): "Modes" list in 4.2.2.13 = REG AIR, AIR, RAIL, SHIP, TRUCK, MAIL, FOB; 4.2.3: `L_RETURNFLAG` "R" or "A" if `L_RECEIPTDATE <= CURRENTDATE`, else "N"; `L_LINESTATUS` "O" if `L_SHIPDATE > CURRENTDATE`, else "F". No discrepancy. **Approved** (PR #1 was merged before review, D19) | Claude Code session for Max |
+| 2026-10-07 | YAR-12 | `notebooks/dq_helpers.py` with test `checks/p2/dq_helpers/dq_helpers_test.py` in the scratch prefix `makc_logistics_dqtest`. Run 1 `1011468118965865` (42 s, SUCCESS): rows 0 → 4; execution A (`5c070211-…`) TEST-1 failed (3 violations, keys `1|1`, `1|2`, `2|1`) and `raise_if_failed` raised for it (b); execution B (`1335fe54-…`) passed although A's failed TEST-1 row exists (c); a rule with no row (TEST-3) raised. Run 2 `1029938810372979` (41 s, SUCCESS): started with the 4 rows and both run_ids of run 1, ended with 8, same (b), (c) results (a). An earlier submission `961962293132665` failed before running because the test notebook was not yet imported (a path error in the submit command, not a code result). The scratch audit schema is kept at Max's request. Raw: [dq_helpers/](../checks/p2/outputs/dq_helpers/) | Claude Code session for Max |
+| 2026-10-07 | YAR-03 | Run `146579331307204` of `profile_source` (FD section) on `makc_logistics_bronze` (SUCCESS; an earlier run `320200331536046` gave the same results without the `o_shippriority` cell). PKs 8/8 unique and non-null; `r_name`, `n_name`, `s_name`, `c_name` unique; `p_name` 999962 distinct of 1000000. Violating determinant values: `p_brand → p_mfgr` 0 of 25; `l_shipdate → l_linestatus` 0 of 2526; `l_receiptdate → l_returnflag` 1261 of 2555; `(l_partkey, l_quantity) → l_extendedprice` 0 of 22657201; `c_nationkey`/`s_nationkey → phone prefix` 0 of 25 each; `o_shippriority` 1 distinct value (0). Rows breaking the spec rules: 0 for brand/manufacturer, extended price = quantity × retail price, and both phone codes. Cutoffs: last `F` ship date 1995-06-17, first `O` 1995-06-18; last `A`/`R` receipt 1995-06-17, first `N` 1995-06-18 (spec 4.2.2.12: `CURRENTDATE = 1995-06-17`). Classification and D21 in design §5.3. Raw: [fd_analysis/](../checks/p2/outputs/fd_analysis/) | Claude Code session for Max |
+| 2026-10-07 | YAR-04, YAR-05, YAR-06 success runs | Silver stage execution (`checks/p2/silver_stage/silver_stage_entry`, `inject_bad_row = none`) in prefix `makc_logistics`. Run `250589301169014` (394 s, SUCCESS, `run_id 8ff6eb14-4b70-4860-b739-98a1e3bbfe7c`) and, after adding the `SHOW TBLPROPERTIES` cell to `04`, run `394918021530920` (388 s, SUCCESS, `run_id 159dd764-f326-4abf-ade9-279d5d540f7e`). In each: 11 staging tables equal the contract types; the 8 source tables keep every Bronze row; `03_validate` wrote 41 rows for the 12 rule IDs, all `passed` (SQL summary of `makc_logistics_audit.dq_check_results`: 41/41 for both run_ids, the first run's rows still present after the second); `04` published 11 tables with counts equal to staging (region 5, nation 25, supplier 50000, customer 750000, brand 25, part 1000000, partsupp 4000000, orders 7500000, ship_date_status 2526, part_quantity_price 22657201, lineitem 29999795); `information_schema` shows 11 PKs, 12 FKs (incl. the two-column ones) and the NOT NULL columns; `SHOW TBLPROPERTIES` shows `delta.constraints.lineitem_receipt_after_ship = l_receiptdate >= l_shipdate`. Raw: [silver_stage/](../checks/p2/outputs/silver_stage/) (`silver_stage_success*`, `dq_check_results_summary_makc_logistics_20261007.json`) | Claude Code session for Max |
+| 2026-10-07 | YAR-07 | `docs/silver_er.mmd` rendered with mermaid-cli 11.4.2 (local Chrome) to `docs/silver_er.png`. `information_schema.columns` of `makc_logistics_silver` (65 rows) compared with the diagram by table, column and type: nothing missing on either side (`decimal` drawn for `decimal(18,2)`, the only decimal type). Raw: [silver_columns_20261007.json](../checks/p2/outputs/er_diagram/silver_columns_20261007.json) | Claude Code session for Max |
+| 2026-10-07 | YAR-08 | Scratch prefix `makc_logistics_s2demo`. (1) Bronze run `210769675153697` SUCCESS. (2) Clean Silver stage run `576265280347512` SUCCESS, `run_id f6cd10e4-…`: 41/41 rows passed, Silver published. (3) Snapshot run `186898811007538` copied the 11 Silver tables to `_snapshot`. (4) Run `163038100773182` with `inject_bad_row = receipt_before_ship`: **FAILED** as intended. Attempt 1 (`run_id f8574e76-d145-42c1-8545-ad00d8135d4b`) set line `1|1` to receipt = ship − 1 in staging; `03_validate` recorded DQ-L2 `violation_count = 1`, `sample_keys = ["1|1"]`, `passed = false` (the other 40 rows passed) and raised `RuntimeError`; the `%run 04_silver_publish` cell and the final cell show "Command skipped". The job service retried the failed task once on its own (attempt 2, task run `598978273763241`): a new execution with `run_id fd003f62-fbab-4203-bd2a-69c44598e625`, same injection, same DQ-L2 failure, publish skipped. (5) Compare run `871954388201545` SUCCESS: `EXCEPT ALL` in both directions between Silver and the snapshot = 0 rows for all 11 tables. Afterwards only the five schemas this demo created (`makc_logistics_s2demo_bronze`, `_staging`, `_silver`, `_audit`, `_snapshot`) were dropped with `DROP SCHEMA … CASCADE`; the schema list afterwards shows only `makc_logistics_{bronze,staging,silver,audit}` and `makc_logistics_dqtest_audit` with Max's prefix. Raw: [silver_stage/](../checks/p2/outputs/silver_stage/) (`demo_*`) | Claude Code session for Max |
+| 2026-10-07 | H2 B1–B5 (sender = receiver, D20) | **B1** passed: `information_schema.columns` of `makc_logistics_silver` (YAR-07 row) has every frozen column of design §5.1 with the contract types (`orders`: `o_orderkey` bigint, `o_orderdate` date, `o_orderpriority` string; `lineitem`: keys bigint, `l_linenumber` int, the three dates date, `l_shipmode`, `l_returnflag` string). **B2** passed: run `394918021530920`, all 41 rows of `run_id 159dd764-…` passed. **B3** passed: YAR-12 runs (a failing row of the active run raises, rows of other runs are ignored). **B4** passed: YAR-06 evidence (11 PKs, 12 FKs, NOT NULL, CHECK). **B5** passed: the H2 note lists the remaining assumptions. Not an independent acceptance: Max is both sender and receiver | Claude Code session for Max |
 
 ## Decision log
 
@@ -489,12 +518,15 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 | D7 | 2026-10-07 | Lifecycle: Bronze → staging → validate (append DQ) → publish Silver → Gold; failed run leaves outputs flagged as stale via `pipeline_runs`. Driver moved from Nazar (NAZ-05) to Max by D16 | Max (MAX-02) | proposed |
 | D8 | 2026-10-07 | Catalog default `workspace`: the only non-system, non-sample catalog (NAZ-01); `CREATE SCHEMA` and the capability checks passed there after admin rights were granted (NAZ-03 run 2; run 1 was denied). Each member sets their own writable catalog through the `catalog` widget if their workspace differs (D17) | Nazar (NAZ-03) | decided (Nazar) |
 | D9 | 2026-10-07 | Config contract (design §2): widgets `catalog` (default `workspace`), `schema_prefix` (`nachalniki_logistics`), `source` (`samples.tpch`); schemas `{catalog}.{prefix}_bronze\|_staging\|_silver\|_gold\|_audit`; the names `00_config` provides are listed in design §2 | Nazar (NAZ-05) | agreed (Nazar, Yaropolk, Max; 2026-10-07; reported by Nazar, NAZ-05 evidence row) |
-| D10 | – | Silver frozen columns and Gold contracts | Max (MAX-02) | open (P1) |
+| D10 | 2026-10-07 (Silver part) | Silver frozen columns and Gold contracts. **Silver part decided:** design §5.1 columns and types, constraints, frozen `orders`/`lineitem` columns (without `l_linestatus` after D21). Gold part (design §9) still open | Max (MAX-02) | Silver part decided (Max, as Stage 2 owner under D20); Gold part open (P1) |
 | D11 | – | Metric definitions (design §7) | Max (MAX-02) | open (P1) |
 | D12 | – | Monitoring grain: commit month, with boundary months labelled | Max (MAX-02) | open (P1) |
 | D13 | 2026-10-07 | Allowed-list procedure (design §6): lists built by profiling the source and cross-checked against the TPC-H documentation; each value classified as observed and documented, documented but not observed, or observed but not documented; every discrepancy resolved in this log before the constants are frozen; unexpected values are never silently accepted and their rows are never dropped. Driver moved from Yaropolk (YAR-02) to Nazar by D16 | Nazar (NAZ-05) | agreed (Nazar, Yaropolk, Max; 2026-10-07; reported by Nazar, NAZ-05 evidence row) |
-| D14 | – | 3NF method; any decomposition after profiling | Yaropolk (YAR-02, YAR-03) | open (P1, P2) |
+| D14 | 2026-10-07 | 3NF method of design §5.3 as written (keys; FD test `GROUP BY X HAVING count(DISTINCT A) > 1`; a dependency that holds and is a documented rule is a violation to decompose by §5.4); the constant `o_shippriority` added as a candidate. The decomposition itself is D21 | Max (YAR-02, YAR-03; D20) | decided (Max, as Stage 2 owner under D20) |
 | D15 | 2026-10-07 | run_id and DQ interface (design §3.1): every execution (full pipeline or standalone stage) explicitly starts a fresh `run_id` with `new_run_id()`, even if the session already holds one; child notebooks only read it via `require_run_id()`; `00_config` never assigns it; `raise_if_failed` filters by the active `run_id` and the relevant rule IDs. The `%run` behaviour it relies on is shown in the NAZ-04 evidence rows; the helpers themselves are tested in NAZ-07 and H1 (A5) | Nazar (NAZ-05) | agreed (Nazar, Yaropolk, Max; 2026-10-07; reported by Nazar, NAZ-05 evidence row) |
 | D16 | 2026-10-07 | Sequential handoff distribution Nazar → Yaropolk → Max (this plan): Max owns integration, final README, deck and submission; transferred tasks keep their IDs as stubs; final cleanup (MAX-18) comes before submission (MAX-17) | Nazar (NAZ-05) | agreed (Nazar, Yaropolk, Max; 2026-10-07; reported by Nazar, NAZ-05 evidence row) |
 | D17 | – | Workspace model: one shared workspace or one per member (both handoff paths documented until decided). Asked in the NAZ-05 proposal | Nazar (NAZ-05) | open; no arrangement confirmed as of 2026-10-07, both paths documented in H1 |
 | D18 | 2026-10-07 | Due date and submission method not provided to this session (the PDF has neither); MAX-17 gets them from the course. Format rules taken from PDF §3.2/§3.4 (NAZ-16). Slide material stays in `docs/slides/<name>.md` until a deck location is decided | Nazar (NAZ-16) | recorded; follow-up MAX-17 |
+| D19 | 2026-10-07 | Stage 1 PR #1 was squash-merged into `main` by Nazar without a prior review, so Yaropolk can start from `main`. This departs from the "≥1 review, then squash-merge" rule for this PR only. Yaropolk's review of the allowed lists (NAZ-10) and of the H1 note, and the A1–A6 run, happen after the merge and are recorded in the evidence log; defects follow the defect path. NAZ-10 and NAZ-21 are complete only when that row exists | Nazar | decided (Nazar); Yaropolk to note in the H1 acceptance row |
+| D20 | 2026-10-07 | Max takes over every Stage 2 task of Yaropolk (YAR-01–YAR-14, H1 receiver, H2 sender) and decides the Stage 2 contracts as stage owner without collecting confirmations, because of time. Max runs everything under `schema_prefix = makc_logistics` in the shared workspace and never writes the default prefix or Nazar's schemas. Consequences: H2 sender and receiver are the same person, so its B1–B5 check is not independent; YAR-09 and the R-S6 reproduction of YAR-14 still need a member other than Max | Max | decided (Max); Nazar and Yaropolk not asked |
+| D21 | 2026-10-07 | 3NF decomposition from YAR-03 (design §5.3–5.4): `brand(p_brand, p_mfgr)` from `part`; `ship_date_status(l_shipdate, l_linestatus)` and `part_quantity_price(l_partkey, l_quantity, l_extendedprice)` from `lineitem`; the three columns leave their source tables, which keep the determinants as FKs. Silver has 11 tables; `l_linestatus` leaves the frozen `lineitem` contract (no Gold table uses it); DQ-L7 runs on `stg_ship_date_status`. Not decomposed: the phone country code (a dependency on part of one attribute, kept atomic) and the constant `o_shippriority` (a one-row relation would add no information); both are recorded deviations | Max (YAR-03; D20) | decided (Max) |

@@ -105,4 +105,149 @@ display(lines_per_order)
 
 # MAGIC %md
 # MAGIC ## Functional dependencies
-# MAGIC Added in a separate section by the Silver stage (candidate-key and FD tests).
+# MAGIC
+# MAGIC 3NF evidence (design §5.3): candidate keys, then each candidate non-key dependency `X → A`.
+# MAGIC A dependency holds in this snapshot when no value of `X` has more than one distinct `A`.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Candidate keys
+# MAGIC Declared primary keys must be unique and non-null. Name columns are checked as possible
+# MAGIC alternative keys; an alternative key does not break 3NF, it only makes more attributes prime.
+
+# COMMAND ----------
+
+PRIMARY_KEYS = {
+    "region": ["r_regionkey"],
+    "nation": ["n_nationkey"],
+    "supplier": ["s_suppkey"],
+    "customer": ["c_custkey"],
+    "part": ["p_partkey"],
+    "partsupp": ["ps_partkey", "ps_suppkey"],
+    "orders": ["o_orderkey"],
+    "lineitem": ["l_orderkey", "l_linenumber"],
+}
+ALTERNATIVE_KEY_CANDIDATES = {
+    "region": ["r_name"],
+    "nation": ["n_name"],
+    "supplier": ["s_name"],
+    "customer": ["c_name"],
+    "part": ["p_name"],
+}
+
+
+def key_check(table_name, key_columns, kind):
+    columns = ", ".join(key_columns)
+    any_null = " OR ".join(f"{c} IS NULL" for c in key_columns)
+    return spark.sql(f"""
+        SELECT '{table_name}' AS table_name, '{columns}' AS key_columns, '{kind}' AS kind,
+               count(*) AS row_count,
+               count(DISTINCT {columns}) AS distinct_keys,
+               count_if({any_null}) AS rows_with_null_key,
+               count(*) = count(DISTINCT {columns}) AND count_if({any_null}) = 0 AS is_key
+        FROM {bronze_schema}.{table_name}
+    """)
+
+
+key_checks = [key_check(t, cols, "primary key") for t, cols in PRIMARY_KEYS.items()]
+key_checks += [key_check(t, cols, "alternative candidate") for t, cols in ALTERNATIVE_KEY_CANDIDATES.items()]
+candidate_keys = key_checks[0]
+for df in key_checks[1:]:
+    candidate_keys = candidate_keys.unionByName(df)
+display(candidate_keys)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Candidate non-key dependencies
+# MAGIC Candidates from design §5.3. `violating_groups` counts values of `X` with more than one
+# MAGIC distinct `A`; 0 means the dependency holds in this snapshot. `A` may be an expression
+# MAGIC (the phone prefix).
+
+# COMMAND ----------
+
+FD_CANDIDATES = [
+    ("part", ["p_brand"], "p_mfgr"),
+    ("lineitem", ["l_shipdate"], "l_linestatus"),
+    ("lineitem", ["l_receiptdate"], "l_returnflag"),
+    ("lineitem", ["l_partkey", "l_quantity"], "l_extendedprice"),
+    ("customer", ["c_nationkey"], "substring(c_phone, 1, 2)"),
+    ("supplier", ["s_nationkey"], "substring(s_phone, 1, 2)"),
+]
+
+
+def fd_check(table_name, determinant, dependent):
+    columns = ", ".join(determinant)
+    return spark.sql(f"""
+        SELECT '{table_name}' AS table_name, '{columns}' AS determinant, '{dependent}' AS dependent,
+               count(*) AS determinant_values,
+               count_if(dependent_values > 1) AS violating_groups,
+               count_if(dependent_values > 1) = 0 AS holds_in_data
+        FROM (
+            SELECT {columns}, count(DISTINCT {dependent}) AS dependent_values
+            FROM {bronze_schema}.{table_name}
+            GROUP BY {columns}
+        )
+    """)
+
+
+fd_results = fd_check(*FD_CANDIDATES[0])
+for candidate in FD_CANDIDATES[1:]:
+    fd_results = fd_results.unionByName(fd_check(*candidate))
+display(fd_results)
+
+# COMMAND ----------
+
+# The specification sets o_shippriority to 0 for every order: a constant column, i.e. a dependency
+# with an empty determinant.
+display(spark.sql(f"""
+    SELECT count(DISTINCT o_shippriority) AS distinct_values, min(o_shippriority) AS min_value,
+           max(o_shippriority) AS max_value
+    FROM {bronze_schema}.orders
+"""))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Documented rules behind the candidates
+# MAGIC Each count compares the data with the generation rule in the TPC-H specification. 0 rows
+# MAGIC means every row follows the rule.
+# MAGIC - `p_brand` is `Brand#MN`, where `M` is the manufacturer number of `p_mfgr` (`Manufacturer#M`).
+# MAGIC - `l_linestatus` is `O` when `l_shipdate` is after the snapshot date, otherwise `F`: the latest
+# MAGIC   `F` ship date must be earlier than the earliest `O` ship date.
+# MAGIC - `l_extendedprice` is `l_quantity * p_retailprice`.
+# MAGIC - The phone country code is `nationkey + 10`.
+
+# COMMAND ----------
+
+documented_rules = spark.sql(f"""
+    SELECT 'p_brand digit M = p_mfgr number' AS rule,
+           count_if(substring(p_brand, 7, 1) <> substring(p_mfgr, 14)) AS rows_breaking_rule
+    FROM {bronze_schema}.part
+    UNION ALL
+    SELECT 'l_extendedprice = l_quantity * p_retailprice',
+           count_if(l.l_extendedprice <> l.l_quantity * p.p_retailprice)
+    FROM {bronze_schema}.lineitem AS l
+    JOIN {bronze_schema}.part AS p ON p.p_partkey = l.l_partkey
+    UNION ALL
+    SELECT 'c_phone country code = c_nationkey + 10',
+           count_if(cast(substring(c_phone, 1, 2) AS int) <> c_nationkey + 10)
+    FROM {bronze_schema}.customer
+    UNION ALL
+    SELECT 's_phone country code = s_nationkey + 10',
+           count_if(cast(substring(s_phone, 1, 2) AS int) <> s_nationkey + 10)
+    FROM {bronze_schema}.supplier
+""")
+display(documented_rules)
+
+# The snapshot-date cutoffs behind l_linestatus (ship date) and l_returnflag (receipt date: N after
+# the cutoff, R or A on or before it).
+snapshot_cutoffs = spark.sql(f"""
+    SELECT max(CASE WHEN l_linestatus = 'F' THEN l_shipdate END) AS latest_f_shipdate,
+           min(CASE WHEN l_linestatus = 'O' THEN l_shipdate END) AS earliest_o_shipdate,
+           max(CASE WHEN l_returnflag IN ('A', 'R') THEN l_receiptdate END) AS latest_a_or_r_receiptdate,
+           min(CASE WHEN l_returnflag = 'N' THEN l_receiptdate END) AS earliest_n_receiptdate
+    FROM {bronze_schema}.lineitem
+""")
+display(snapshot_cutoffs)

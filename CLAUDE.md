@@ -4,10 +4,11 @@
 - **What:** a Bronze → Silver → Gold lakehouse on Databricks `samples.tpch` (8 tables) that answers the **Logistics** profile (§5.2) of `group_assignment_1.pdf`.
 - **Team «начальніки»** — sequential stages with handoffs (**D16** in `docs/plan.md`, agreed 2026-10-07):
   - M1 Nazar, Stage 1: repo, uv, access checks, config (incl. run_id helpers), Bronze, value profiling, allowed lists, own README sections and slides → handoff H1
-  - M2 Yaropolk, Stage 2: Silver, `dq_helpers` and `dq_check_results`, validation, 3NF, ER, own README section and slides → handoff H2
+  - M2 Yaropolk, Stage 2: Silver, `dq_helpers` and `dq_check_results`, validation, 3NF, ER, own README section and slides → handoff H2. **Taken over by Max on 2026-10-07 (D20).**
   - M3 Max, Stage 3: Gold, analysis, charts, monitoring, `run_pipeline` and `pipeline_runs`, integration runs, final README assembly, deck assembly, rehearsal and submission
 - **Scope:** all 8 tables in Bronze and Silver. Gold covers Logistics only. PySpark/SQL notebooks in `.py` source format. No Lakeflow, asset bundles or CI.
-- **Status:** Stage 1 (`00_config`, `01_bronze_ingest`, `profile_source`) built and run in Databricks on 2026-10-07 and handed over in H1 (awaiting Yaropolk's review); Silver, Gold, the runner and the analysis are not built yet.
+- **Status:** Stage 1 built, run, merged into `main` (`79d37e4`) and accepted in H1 on 2026-10-07. Stage 2 (`silver_contract`, `02_silver_stage`, `dq_helpers`, `03_validate`, `04_silver_publish`, FD section of `profile_source`) built and run by Max on 2026-10-07 under `schema_prefix = makc_logistics`; H2 is filled and waits for its merge. Gold, the runner and the analysis are not built yet.
+- **Shared workspace:** `workspace.nachalniki_logistics_*` (the default prefix) belongs to Nazar's runs; Max's Stage 2 runs use `makc_logistics*` prefixes. Do not write another member's prefix.
 
 ## Read before implementing
 1. `group_assignment_1.pdf`: authoritative. Read §3 and §5.2 in full.
@@ -43,8 +44,8 @@ If the documents disagree, the precedence is PDF > requirements.md > design.md >
 | Source access, `DESCRIBE`, CHECK/PK DDL, `percentile_cont` | Databricks | run 2026-10-07 (NAZ-01–03; plan.md evidence log) |
 | `%run` sharing, error stop, caller `run_id` and widgets | Databricks (serverless job runs) | run 2026-10-07 (NAZ-04; plan.md evidence log) |
 | run_id helpers, Bronze ingest, profiling | Databricks (serverless job runs; A5 also interactive) | run 2026-10-07 (NAZ-07–09; plan.md evidence log) |
-| FK DDL | Databricks | not run (YAR-06) |
-| Pipeline run, DQ results, rerun/portability, answers, charts | Databricks | not run (plan P3–P4) |
+| FK DDL, FD tests, Silver stage success and failure demo, DQ results, `dq_helpers` test | Databricks (serverless job runs) | run 2026-10-07 (YAR-03–YAR-08, YAR-12; plan.md evidence log) |
+| Full pipeline run, rerun/portability, answers, charts | Databricks | not run (plan P3–P4) |
 
 Anything in the Databricks rows can only be confirmed by running it in a real workspace. Local tooling cannot verify Spark code against the data.
 

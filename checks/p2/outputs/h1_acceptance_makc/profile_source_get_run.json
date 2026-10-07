@@ -1,0 +1,67 @@
+{
+  "cleanup_duration": 0,
+  "creator_user_name": "matseliukh.pn@ucu.edu.ua",
+  "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+  "end_time": 1791390741939,
+  "execution_duration": 34000,
+  "job_id": 855252677204504,
+  "job_run_id": 451589752293543,
+  "number_in_job": 451589752293543,
+  "run_duration": 38208,
+  "run_id": 451589752293543,
+  "run_name": "makc H1 profile_source",
+  "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/855252677204504/run/451589752293543",
+  "run_type": "SUBMIT_RUN",
+  "setup_duration": 3000,
+  "start_time": 1791390703731,
+  "state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "status": {
+    "state": "TERMINATED",
+    "termination_details": {
+      "code": "SUCCESS",
+      "message": "",
+      "type": "SUCCESS"
+    }
+  },
+  "tasks": [
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 0,
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1791390741462,
+      "execution_duration": 34000,
+      "notebook_task": {
+        "base_parameters": {
+          "schema_prefix": "makc_logistics"
+        },
+        "notebook_path": "/Users/matseliukh.pn@ucu.edu.ua/nachalniki_makc/notebooks/profile_source",
+        "source": "WORKSPACE"
+      },
+      "run_id": 914545090224603,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/855252677204504/run/914545090224603",
+      "setup_duration": 3000,
+      "start_time": 1791390703757,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "task_key": "t"
+    }
+  ]
+}

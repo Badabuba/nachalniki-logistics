@@ -1,0 +1,394 @@
+[
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "%md\n# Silver stage execution (entry notebook)\nDesign §3.1: `%run 00_config` → `run_id = new_run_id()` → `%run 02` → `%run 03` → `%run 04`, each\nin its own cell. Writes `dq_check_results` but not `pipeline_runs`; once `run_pipeline` has\nproduced Gold in a prefix, use a scratch `schema_prefix` here.\n\n",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "dbutils.widgets.text(\"inject_bad_row\", \"none\", \"inject_bad_row (none | receipt_before_ship)\")\ninject_bad_row = dbutils.widgets.get(\"inject_bad_row\").strip()\nassert inject_bad_row in (\"none\", \"receipt_before_ship\"), inject_bad_row",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "%run ../../../notebooks/00_config",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics_s2demo', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "run_id = new_run_id()\nprint(f\"Silver stage execution: run_id = {run_id}, schema_prefix = {schema_prefix}, inject_bad_row = {inject_bad_row}\")",
+  "state": "finished",
+  "output": "Silver stage execution: run_id = fd003f62-fbab-4203-bd2a-69c44598e625, schema_prefix = makc_logistics_s2demo, inject_bad_row = receipt_before_ship\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "%run ../../../notebooks/02_silver_stage",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics_s2demo', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "run_id = fd003f62-fbab-4203-bd2a-69c44598e625\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "staged workspace.makc_logistics_s2demo_staging.stg_region\nstaged workspace.makc_logistics_s2demo_staging.stg_nation\nstaged workspace.makc_logistics_s2demo_staging.stg_supplier\nstaged workspace.makc_logistics_s2demo_staging.stg_customer\nstaged workspace.makc_logistics_s2demo_staging.stg_brand\nstaged workspace.makc_logistics_s2demo_staging.stg_part\nstaged workspace.makc_logistics_s2demo_staging.stg_partsupp\nstaged workspace.makc_logistics_s2demo_staging.stg_orders\nstaged workspace.makc_logistics_s2demo_staging.stg_ship_date_status\nstaged workspace.makc_logistics_s2demo_staging.stg_part_quantity_price\nstaged workspace.makc_logistics_s2demo_staging.stg_lineitem\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "{\"schema\": [\"table_name\", \"columns_match_contract\", \"bronze_rows\", \"staging_rows\", \"row_counts_match\", \"ok\"], \"rows\": [[\"region\", true, 5, 5, true, true], [\"nation\", true, 25, 25, true, true], [\"supplier\", true, 50000, 50000, true, true], [\"customer\", true, 750000, 750000, true, true], [\"brand\", true, null, 25, true, true], [\"part\", true, 1000000, 1000000, true, true], [\"partsupp\", true, 4000000, 4000000, true, true], [\"orders\", true, 7500000, 7500000, true, true], [\"ship_date_status\", true, null, 2526, true, true], [\"part_quantity_price\", true, null, 22657201, true, true], [\"lineitem\", true, 29999795, 29999795, true, true]]}\nOK: 11 staging tables match the Silver contract; source tables keep every Bronze row.\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "if inject_bad_row == \"receipt_before_ship\":\n    assert schema_prefix != \"nachalniki_logistics\", \"the failure demo runs only in a scratch prefix\"\n    bad_line = spark.sql(f\"\"\"\n        SELECT l_orderkey, l_linenumber FROM {staging_schema}.stg_lineitem\n        ORDER BY l_orderkey, l_linenumber LIMIT 1\n",
+  "state": "finished",
+  "output": "injected: line 1|1 now has l_receiptdate = l_shipdate - 1\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "%run ../../../notebooks/03_validate",
+  "state": "error",
+  "output": "{\"schema\": [\"run_id\", \"run_ts\", \"rule_id\", \"layer\", \"table_name\", \"violation_count\", \"sample_keys\", \"severity\", \"passed\"], \"rows\": [[\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:35.285Z\", \"DQ-G1\", \"staging\", \"brand\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:32.175Z\", \"DQ-G1\", \"staging\", \"customer\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:58.401Z\", \"DQ-G1\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:25.484Z\", \"DQ-G1\", \"staging\", \"nation\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:45.944Z\", \"DQ-G1\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:38.396Z\", \"DQ-G1\", \"staging\", \"part\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:53.690Z\", \"DQ-G1\", \"staging\", \"part_quantity_price\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:42.342Z\", \"DQ-G1\", \"staging\", \"partsupp\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:23.155Z\", \"DQ-G1\", \"staging\", \"region\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:48.457Z\", \"DQ-G1\", \"staging\", \"ship_date_status\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:28.198Z\", \"DQ-G1\", \"staging\", \"supplier\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:07.919Z\", \"DQ-G2\", \"staging\", \"customer.customer_nation_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:28.333Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_orders_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:44.574Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_part_quantity_price_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:33.594Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_partsupp_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:37.732Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_ship_date_status_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:00.872Z\", \"DQ-G2\", \"staging\", \"nation.nation_region_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:20.717Z\", \"DQ-G2\", \"staging\", \"orders.orders_customer_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:10.863Z\", \"DQ-G2\", \"staging\", \"part.part_brand_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:24.287Z\", \"DQ-G2\", \"staging\", \"part_quantity_price.part_quantity_price_part_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:14.016Z\", \"DQ-G2\", \"staging\", \"partsupp.partsupp_part_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:17.135Z\", \"DQ-G2\", \"staging\", \"partsupp.partsupp_supplier_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:05.231Z\", \"DQ-G2\", \"staging\", \"supplier.supplier_nation_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:56.642Z\", \"DQ-G3\", \"staging\", \"customer\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:26:06.865Z\", \"DQ-G3\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:51.660Z\", \"DQ-G3\", \"staging\", \"nation\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:26:04.363Z\", \"DQ-G3\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:59.132Z\", \"DQ-G3\", \"staging\", \"part\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:26:01.507Z\", \"DQ-G3\", \"staging\", \"partsupp\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:49.239Z\", \"DQ-G3\", \"staging\", \"region\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:54.202Z\", \"DQ-G3\", \"staging\", \"supplier\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:23:52.241Z\", \"DQ-L1\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:23:55.268Z\", \"DQ-L2\", \"staging\", \"lineitem\", 1, \"[\\\"1|1\\\"]\", \"blocking\", false], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:00.089Z\", \"DQ-L3\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:02.612Z\", \"DQ-L4\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:04.810Z\", \"DQ-L4\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:07.917Z\", \"DQ-L5\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:10.377Z\", \"DQ-L6\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:12.643Z\", \"DQ-L7\", \"staging\", \"ship_date_status\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:16.663Z\", \"DQ-L8\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:20.537Z\", \"DQ-L9\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true]]}",
+  "table": null,
+  "error": "The execution of this command did not finish successfully"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics_s2demo', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "run_id = fd003f62-fbab-4203-bd2a-69c44598e625\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-L1 [staging.lineitem]: passed, violations = 0\nDQ-L2 [staging.lineitem]: FAILED, violations = 1\nDQ-L3 [staging.lineitem]: passed, violations = 0\nDQ-L4 [staging.lineitem]: passed, violations = 0\nDQ-L4 [staging.orders]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-L5 [staging.lineitem]: passed, violations = 0\nDQ-L6 [staging.lineitem]: passed, violations = 0\nDQ-L7 [staging.ship_date_status]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-L8 [staging.lineitem]: passed, violations = 0\nDQ-L9 [staging.orders]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-G1 [staging.region]: passed, violations = 0\nDQ-G1 [staging.nation]: passed, violations = 0\nDQ-G1 [staging.supplier]: passed, violations = 0\nDQ-G1 [staging.customer]: passed, violations = 0\nDQ-G1 [staging.brand]: passed, violations = 0\nDQ-G1 [staging.part]: passed, violations = 0\nDQ-G1 [staging.partsupp]: passed, violations = 0\nDQ-G1 [staging.orders]: passed, violations = 0\nDQ-G1 [staging.ship_date_status]: passed, violations = 0\nDQ-G1 [staging.part_quantity_price]: passed, violations = 0\nDQ-G1 [staging.lineitem]: passed, violations = 0\nDQ-G2 [staging.nation.nation_region_fk]: passed, violations = 0\nDQ-G2 [staging.supplier.supplier_nation_fk]: passed, violations = 0\nDQ-G2 [staging.customer.customer_nation_fk]: passed, violations = 0\nDQ-G2 [staging.part.part_brand_fk]: passed, violations = 0\nDQ-G2 [staging.partsupp.partsupp_part_fk]: passed, violations = 0\nDQ-G2 [staging.partsupp.partsupp_supplier_fk]: passed, violations = 0\nDQ-G2 [staging.orders.orders_customer_fk]: passed, violations = 0\nDQ-G2 [staging.part_quantity_price.part_quantity_price_part_fk]: passed, violations = 0\nDQ-G2 [staging.lineitem.lineitem_orders_fk]: passed, violations = 0\nDQ-G2 [staging.lineitem.lineitem_partsupp_fk]: passed, violations = 0\nDQ-G2 [staging.lineitem.lineitem_ship_date_status_fk]: passed, violations = 0\nDQ-G2 [staging.lineitem.lineitem_part_quantity_price_fk]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-G3 [staging.region]: passed, violations = 0\nDQ-G3 [staging.nation]: passed, violations = 0\nDQ-G3 [staging.supplier]: passed, violations = 0\nDQ-G3 [staging.customer]: passed, violations = 0\nDQ-G3 [staging.part]: passed, violations = 0\nDQ-G3 [staging.partsupp]: passed, violations = 0\nDQ-G3 [staging.orders]: passed, violations = 0\nDQ-G3 [staging.lineitem]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": "{\"schema\": [\"run_id\", \"run_ts\", \"rule_id\", \"layer\", \"table_name\", \"violation_count\", \"sample_keys\", \"severity\", \"passed\"], \"rows\": [[\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:35.285Z\", \"DQ-G1\", \"staging\", \"brand\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:32.175Z\", \"DQ-G1\", \"staging\", \"customer\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:58.401Z\", \"DQ-G1\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:25.484Z\", \"DQ-G1\", \"staging\", \"nation\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:45.944Z\", \"DQ-G1\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:38.396Z\", \"DQ-G1\", \"staging\", \"part\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:53.690Z\", \"DQ-G1\", \"staging\", \"part_quantity_price\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:42.342Z\", \"DQ-G1\", \"staging\", \"partsupp\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:23.155Z\", \"DQ-G1\", \"staging\", \"region\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:48.457Z\", \"DQ-G1\", \"staging\", \"ship_date_status\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:28.198Z\", \"DQ-G1\", \"staging\", \"supplier\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:07.919Z\", \"DQ-G2\", \"staging\", \"customer.customer_nation_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:28.333Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_orders_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:44.574Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_part_quantity_price_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:33.594Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_partsupp_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:37.732Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_ship_date_status_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:00.872Z\", \"DQ-G2\", \"staging\", \"nation.nation_region_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:20.717Z\", \"DQ-G2\", \"staging\", \"orders.orders_customer_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:10.863Z\", \"DQ-G2\", \"staging\", \"part.part_brand_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:24.287Z\", \"DQ-G2\", \"staging\", \"part_quantity_price.part_quantity_price_part_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:14.016Z\", \"DQ-G2\", \"staging\", \"partsupp.partsupp_part_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:17.135Z\", \"DQ-G2\", \"staging\", \"partsupp.partsupp_supplier_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:05.231Z\", \"DQ-G2\", \"staging\", \"supplier.supplier_nation_fk\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:56.642Z\", \"DQ-G3\", \"staging\", \"customer\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:26:06.865Z\", \"DQ-G3\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:51.660Z\", \"DQ-G3\", \"staging\", \"nation\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:26:04.363Z\", \"DQ-G3\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:59.132Z\", \"DQ-G3\", \"staging\", \"part\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:26:01.507Z\", \"DQ-G3\", \"staging\", \"partsupp\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:49.239Z\", \"DQ-G3\", \"staging\", \"region\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:25:54.202Z\", \"DQ-G3\", \"staging\", \"supplier\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:23:52.241Z\", \"DQ-L1\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:23:55.268Z\", \"DQ-L2\", \"staging\", \"lineitem\", 1, \"[\\\"1|1\\\"]\", \"blocking\", false], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:00.089Z\", \"DQ-L3\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:02.612Z\", \"DQ-L4\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:04.810Z\", \"DQ-L4\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:07.917Z\", \"DQ-L5\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:10.377Z\", \"DQ-L6\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:12.643Z\", \"DQ-L7\", \"staging\", \"ship_date_status\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:16.663Z\", \"DQ-L8\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"fd003f62-fbab-4203-bd2a-69c44598e625\", \"2026-10-07T17:24:20.537Z\", \"DQ-L9\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true]]}",
+  "table": null,
+  "error": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mRuntimeError\u001b[0m                              Traceback (most recent call last)\nFile \u001b[0;32m<command-6608713946610298>, line 8\u001b[0m\n\u001b[1;32m      1\u001b[0m VALIDATE_RULE_IDS \u001b[38;5;241m=\u001b[39m [\u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mDQ-L\u001b[39m\u001b[38;5;132;01m{\u001b[39;00mi\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m\"\u001b[39m \u001b[38;5;28;01mfor\u001b[39;00m i \u001b[38;5;129;01min\u001b[39;00m \u001b[38;5;28mrange\u001b[39m(\u001b[38;5;241m1\u001b[39m, \u001b[38;5;241m10\u001b[39m)] \u001b[38;5;241m+\u001b[39m [\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mDQ-G1\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mDQ-G2\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mDQ-G3\u001b[39m\u001b[38;5;124m\"\u001b[39m]\n\u001b[1;32m      2\u001b[0m display(\n\u001b[1;32m      3\u001b[0m     spark\u001b[38;5;241m.\u001b[39mtable(DQ_CHECK_RESULTS)\n\u001b[1;32m      4\u001b[0m     \u001b[38;5;241m.\u001b[39mwhere(F\u001b[38;5;241m.\u001b[39mcol(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mrun_id\u001b[39m\u001b[38;5;124m\"\u001b[39m) \u001b[38;5;241m==\u001b[39m run_id)\n\u001b[1;32m      5\u001b[0m     \u001b[38;5;241m.\u001b[39mwhere(F\u001b[38;5;241m.\u001b[39mcol(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mrule_id\u001b[39m\u001b[38;5;124m\"\u001b[39m)\u001b[38;5;241m.\u001b[39misin(VALIDATE_RULE_IDS))\n\u001b[1;32m      6\u001b[0m     \u001b[38;5;241m.\u001b[39morderBy(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mrule_id\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mtable_name\u001b[39m\u001b[38;5;124m\"\u001b[39m)\n\u001b[1;32m      7\u001b[0m )\n\u001b[0;32m----> 8\u001b[0m raise_if_failed(run_id, VALIDATE_RULE_IDS)\n\nFile \u001b[0;32m<command-6608713946610302>, line 54\u001b[0m, in \u001b[0;36mraise_if_failed\u001b[0;34m(run_id, rule_ids)\u001b[0m\n\u001b[1;32m     52\u001b[0m missing \u001b[38;5;241m=\u001b[39m \u001b[38;5;28msorted\u001b[39m(\u001b[38;5;28mset\u001b[39m(rule_ids) \u001b[38;5;241m-\u001b[39m {r\u001b[38;5;241m.\u001b[39mrule_id \u001b[38;5;28;01mfor\u001b[39;00m r \u001b[38;5;129;01min\u001b[39;00m rows})\n\u001b[1;32m     53\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m failed \u001b[38;5;129;01mor\u001b[39;00m missing:\n\u001b[0;32m---> 54\u001b[0m     \u001b[38;5;28;01mraise\u001b[39;00m \u001b[38;5;167;01mRuntimeError\u001b[39;00m(\n\u001b[1;32m     55\u001b[0m         \u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mData quality check failed for run_id \u001b[39m\u001b[38;5;132;01m{\u001b[39;00mrun_id\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m: \u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m     56\u001b[0m         \u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mfailed rules = \u001b[39m\u001b[38;5;132;01m{\u001b[39;00mfailed\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m, rules without a result = \u001b[39m\u001b[38;5;132;01m{\u001b[39;00mmissing\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m. \u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m     57\u001b[0m         \u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mDetails: SELECT * FROM \u001b[39m\u001b[38;5;132;01m{\u001b[39;00mDQ_CHECK_RESULTS\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m WHERE run_id = \u001b[39m\u001b[38;5;124m'\u001b[39m\u001b[38;5;132;01m{\u001b[39;00mrun_id\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m'\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m     58\u001b[0m     )\n\u001b[1;32m     59\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mAll \u001b[39m\u001b[38;5;132;01m{\u001b[39;00m\u001b[38;5;28mlen\u001b[39m(rule_ids)\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m rules passed for run_id \u001b[39m\u001b[38;5;132;01m{\u001b[39;00mrun_id\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m.\u001b[39m\u001b[38;5;124m\"\u001b[39m)\n\n\u001b[0;31mRuntimeError\u001b[0m: Data quality check failed for run_id fd003f62-fbab-4203-bd2a-69c44598e625: failed rules = ['DQ-L2'], rules without a result = []. Details: SELECT * FROM workspace.makc_logistics_s2demo_audit.dq_check_results WHERE run_id = 'fd003f62-fbab-4203-bd2a-69c44598e625'"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "%run ../../../notebooks/04_silver_publish",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "The execution of this command did not finish successfully"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "eaed8f98-dcdb-48f6-a344-af1fa8de4707",
+  "command": "print(f\"Silver stage execution succeeded: run_id = {run_id}\")",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ }
+]
