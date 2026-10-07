@@ -140,7 +140,7 @@ The full pipeline runs 01–05 in sequence under an append-only audit lifecycle.
 ### Interactive execution (UI)
 
 1. In Databricks, create a Git folder from this repository (or import `notebooks/` into a workspace folder).
-2. Open `notebooks/run_pipeline.py`. Configure widget values if needed (`catalog` defaults to `workspace`, `schema_prefix` to `nachalniki_logistics`, `source` to `samples.tpch`).
+2. Open `notebooks/run_pipeline.py`. Configure widget values if needed (`catalog` defaults to `workspace`, `schema_prefix` to `nachalniki_logistics`, `source` to `samples.tpch`). In a shared workspace, use your own `schema_prefix`.
 3. Run all cells. The runner:
    - Starts a fresh `run_id` via `new_run_id()`.
    - Records `started` in `{prefix}_audit.pipeline_runs`.
@@ -154,7 +154,7 @@ The full pipeline runs 01–05 in sequence under an append-only audit lifecycle.
 
 ### Command-line execution (Databricks CLI)
 
-Run as serverless one-time jobs from your local terminal (tested in MAX-10 and MAX-12):
+Run as serverless one-time jobs from your local terminal (tested in MAX-10 and MAX-12). First import every file of `notebooks/` into one workspace folder, e.g. `/Users/<you>/nachalniki/notebooks/`, with `databricks workspace import` as shown in [Stage 1](#configuration-bronze-and-profiling-stage-1); the `notebook_path` below must point to that folder. In a workspace shared with other users, set your own `schema_prefix` in `base_parameters` so the run does not replace another user's tables.
 
 ```bash
 # 1. Run the full pipeline
@@ -235,13 +235,13 @@ The entry notebook runs `%run 00_config` → `run_id = new_run_id()` → `02_sil
 
 ## Results
 
-The answers below are derived from verified succeeded pipeline run `64829233-7f8c-42e0-9fd9-c08c765f2aef` (executed on 2026-10-07 in catalog `workspace`, prefix `nachalniki_logistics`, job run `828513369024121`; 43/43 DQ checks passed). All metrics were independently confirmed via determinism rerun `f21d3f70-1d14-4bfa-bb60-47a5fc4e8ac0` (EXCEPT ALL = 0 across all 8 Gold tables) and portability run `1bc3ffae-424d-4281-948a-bb0ea9df243a` (prefix `nachalniki_logistics_porttest`).
+The numbers below are read from the Gold tables of succeeded pipeline run `25979743-a4a7-4ab8-a4b2-c37af6d03805` (2026-10-07, catalog `workspace`, prefix `makc_logistics`, job run `317490104173577`; every DQ rule passed), as displayed by `06_analysis` (job run `954628711835688`). The same code produced the default-prefix run `64829233-7f8c-42e0-9fd9-c08c765f2aef`; the determinism rerun `f21d3f70-1d14-4bfa-bb60-47a5fc4e8ac0` and the portability run `1bc3ffae-424d-4281-948a-bb0ea9df243a` showed identical Gold across reruns and prefixes (`EXCEPT ALL` = 0 in all 8 tables).
 
 ### Q1 — Transit speed and predictability by ship mode
 
-- **Fastest ship mode:** `AIR` and `REG AIR` tie with the lowest median transit time of **15.00 days** (`REG AIR` mean is 15.50 days vs `AIR` mean 15.50 days). All other modes (`FOB`, `MAIL`, `RAIL`, `SHIP`, `TRUCK`) have a median of 16.00 days.
-- **Most predictable ship mode:** `SHIP` is the most predictable, having the narrowest transit spread with p90 − p50 = **11.00 days** (p50 = 16.00 d, p90 = 27.00 d, IQR = 15.00 d, stddev = 8.66 d). All other modes exhibit a wider p90 − p50 spread of 12.00 to 13.00 days.
-- **Why speed and predictability differ:** Speed measures the *central tendency* (location) of the transit-day distribution (lowest median/mean), whereas predictability measures the *dispersion* (spread/tail risk) of delivery durations (lowest p90 − p50, IQR, stddev). An air shipment arrives faster on average but exhibits greater variability than ocean freight in this dataset.
+- **Fastest ship mode:** `AIR` and `REG AIR` tie with the lowest median transit time of **15.00 days**. Their means are both 15.50 days (15.495 vs 15.499), a difference too small to name a winner. All other modes (`FOB`, `MAIL`, `RAIL`, `SHIP`, `TRUCK`) have a median of 16.00 days.
+- **Most predictable ship mode:** `SHIP`, with the narrowest slow tail: p90 − p50 = **11.00 days** (p50 = 16.00 d, p90 = 27.00 d, IQR = 15.00 d, stddev = 8.66 d). The other modes have a p90 − p50 spread of 12.00 to 13.00 days.
+- **Why speed and predictability differ:** Speed is about the *location* of the transit-day distribution (median, mean); predictability is about its *spread* (p90 − p50, IQR, stddev). The two can rank modes differently: `AIR` has the lowest median (15 days) but the widest p90 − p50 spread (13 days), while `SHIP` has a higher median (16 days) and the narrowest spread (11 days). All means are 15.50 days, so the differences between modes are small.
 
 | Ship mode | Line items | p50 (days) | p90 (days) | Spread p90 − p50 | IQR | Mean (days) | Stddev (days) |
 |---|---|---|---|---|---|---|---|
@@ -257,60 +257,64 @@ The answers below are derived from verified succeeded pipeline run `64829233-7f8
 
 - **Individual line on-time share:** **36.77%** (11,031,691 on-time lines out of 29,999,795 lines).
 - **Fully on-time order share:** **8.30%** (622,660 fully on-time orders out of 7,500,000 orders).
-- **Gap:** **28.47%**.
-- **Why the two differ:** An order is classified as fully on-time if and only if *every single line item* in the order is received on or before its committed date (`is_fully_on_time = (late_line_count == 0)`). In TPC-H, orders contain between 1 and 7 lines (median 4.0, mean 4.00). Because each line independently risks missing its commit date, the probability that all lines succeed decreases sharply as order size increases:
+- **Gap:** **28.47 percentage points**.
+- **Why the two differ:** An order is fully on time only if *every* line item is received on or before its commit date (`is_fully_on_time = (late_line_count == 0)`). Orders contain between 1 and 7 lines (median 4.0, mean 4.00). The line on-time share is about 36.8% in every order size, but the order on-time share falls sharply as orders get bigger:
 
 | Lines in order | Orders | Fully on-time orders | Order on-time share | Line on-time share |
 |---|---|---|---|---|
-| **1** | 1,072,504 | 393,874 | **36.72%** | 36.72% |
-| **2** | 1,070,397 | 144,870 | **13.53%** | 36.78% |
-| **3** | 1,072,746 | 53,831 | **5.02%** | 36.77% |
-| **4** | 1,070,379 | 19,474 | **1.82%** | 36.79% |
-| **5** | 1,073,348 | 7,207 | **0.67%** | 36.76% |
-| **6** | 1,069,961 | 2,609 | **0.24%** | 36.77% |
-| **7** | 1,070,665 | 795 | **0.07%** | 36.76% |
+| **1** | 1,071,498 | 393,504 | **36.72%** | 36.72% |
+| **2** | 1,072,178 | 145,111 | **13.53%** | 36.77% |
+| **3** | 1,070,076 | 53,697 | **5.02%** | 36.81% |
+| **4** | 1,071,495 | 19,494 | **1.82%** | 36.77% |
+| **5** | 1,072,080 | 7,198 | **0.67%** | 36.77% |
+| **6** | 1,071,378 | 2,613 | **0.24%** | 36.78% |
+| **7** | 1,071,295 | 1,043 | **0.10%** | 36.76% |
 
 ### Q3 — Late delivery rate by ship mode
 
-- **Highest delay rate mode:** `AIR` with **63.29%** delay rate (2,712,448 late lines out of 4,285,543 lines).
-- **Distribution across all modes:** Delay rates across all 7 shipping modes are tightly clustered within a 0.10% band (63.19% to 63.29%):
+- **Highest delay rate mode:** `AIR` with **63.29%** (2,712,448 late lines out of 4,285,543 lines).
+- **Distribution across all modes:** all 7 modes lie within 0.10 percentage points (63.19% to 63.29%), so the "worst" mode is only marginally worse:
 
 | Ship mode | Line count | Late lines | Delay rate |
 |---|---|---|---|
 | **AIR** | 4,285,543 | 2,712,448 | **63.29%** |
-| **RAIL** | 4,284,870 | 2,710,349 | **63.25%** |
-| **REG AIR** | 4,285,596 | 2,709,642 | **63.23%** |
-| **SHIP** | 4,285,381 | 2,709,036 | **63.22%** |
-| **TRUCK** | 4,288,377 | 2,710,879 | **63.21%** |
-| **MAIL** | 4,282,860 | 2,706,819 | **63.20%** |
-| **FOB** | 4,287,168 | 2,708,930 | **63.19%** |
+| **RAIL** | 4,284,870 | 2,710,348 | **63.25%** |
+| **REG AIR** | 4,285,596 | 2,709,635 | **63.23%** |
+| **SHIP** | 4,285,381 | 2,709,034 | **63.22%** |
+| **TRUCK** | 4,288,377 | 2,710,869 | **63.21%** |
+| **MAIL** | 4,282,860 | 2,706,820 | **63.20%** |
+| **FOB** | 4,287,168 | 2,708,950 | **63.19%** |
 
 ### Q4 — Fulfilment speed: urgent vs non-urgent priority
 
-- **Conclusion:** Urgent-priority orders (`1-URGENT`) are **not fulfilled faster** than non-urgent orders. By the primary order-grain fulfilment metric (`order_date` to `last_receipt_date`), urgent and non-urgent orders tie on both median and p90 duration, and their mean durations are essentially identical:
-  - **Median completion days:** **116.00 days** for urgent vs **116.00 days** for non-urgent.
+- **Conclusion:** Urgent-priority orders (`1-URGENT`) are **not fulfilled faster** than non-urgent orders. By the primary order-grain measure (order date to the receipt of the last line), urgent and non-urgent orders tie on median and p90, and their means differ by less than 0.02 days:
+  - **Median completion days:** **116.00 days** for urgent (n = 1,501,100) vs **116.00 days** for non-urgent (n = 5,998,900).
   - **p90 completion days:** **138.00 days** for urgent vs **138.00 days** for non-urgent.
   - **Mean completion days:** **108.40 days** for urgent vs **108.39 days** for non-urgent.
 
-Supporting line-grain metrics confirm identical behaviour across priorities in the synthetic benchmark:
-- **Transit days (ship to receipt):** Urgent median 15.00 d (p90 27.00 d, mean 15.50 d) vs non-urgent median 16.00 d (p90 27.00 d, mean 15.50 d).
-- **Order-to-ship days:** Urgent median 61.00 d (p90 109.00 d, mean 61.01 d) vs non-urgent median 61.00 d (p90 109.00 d, mean 61.00 d).
+Supporting line-grain metrics show the same picture:
+- **Transit days (ship to receipt):** urgent median 15.00 d (p90 27.00 d, mean 15.50 d) vs non-urgent median 16.00 d (p90 27.00 d, mean 15.50 d).
+- **Order-to-ship days:** urgent median 61.00 d (p90 109.00 d, mean 61.01 d) vs non-urgent median 61.00 d (p90 109.00 d, mean 61.00 d).
 
 | Priority | Urgent? | Order count | Complete p50 | Complete p90 | Complete mean | Line count | Transit p50 | Transit p90 |
 |---|---|---|---|---|---|---|---|---|
 | **1-URGENT** | Yes | 1,501,100 | **116.00 d** | **138.00 d** | **108.40 d** | 6,004,707 | 15.00 d | 27.00 d |
-| **2-HIGH** | No | 1,498,908 | 116.00 d | 138.00 d | 108.38 d | 5,995,953 | 16.00 d | 27.00 d |
-| **3-MEDIUM** | No | 1,500,757 | 116.00 d | 138.00 d | 108.41 d | 6,003,506 | 16.00 d | 27.00 d |
-| **4-NOT SPECIFIED** | No | 1,499,655 | 116.00 d | 138.00 d | 108.37 d | 5,999,017 | 16.00 d | 27.00 d |
-| **5-LOW** | No | 1,499,580 | 116.00 d | 138.00 d | 108.39 d | 5,996,612 | 16.00 d | 27.00 d |
+| **2-HIGH** | No | 1,499,192 | 116.00 d | 138.00 d | 108.41 d | 6,000,786 | 16.00 d | 28.00 d |
+| **3-MEDIUM** | No | 1,498,710 | 116.00 d | 138.00 d | 108.41 d | 5,991,279 | 16.00 d | 28.00 d |
+| **4-NOT SPECIFIED** | No | 1,501,281 | 116.00 d | 138.00 d | 108.38 d | 6,004,909 | 15.00 d | 27.00 d |
+| **5-LOW** | No | 1,499,717 | 116.00 d | 138.00 d | 108.35 d | 5,998,114 | 15.00 d | 28.00 d |
 
 ### Monitoring — Monthly delay rate over time
 
-- **Time series stability:** Monitored over 82 commit months (from 1992-01 to 1998-10 in `agg_delay_rate_monthly`). Across 79 interior months, the delay rate is remarkably consistent, averaging **63.23%** (bounded tightly between 62.97% and 63.42%) on steady volumes of ~350,000–389,000 lines per month.
+- **Series:** 82 commit months in `agg_delay_rate_monthly`, from 1992-01 to 1998-10. Over all 29,999,795 lines the delay rate is 63.23%.
+- **Stable period:** from 1992-04 to 1998-08 (77 months) the monthly delay rate stays between **62.97%** (1997-01) and **63.45%** (1992-06), with a mean of 63.23% and 348,744 to 389,002 lines per month.
 - **Boundary and edge months:**
-  - **1992-01** (first month): 101,741 lines (delay rate 63.29%), flagged as `is_boundary_month = true` ("potentially incomplete") due to source order generation window truncation.
-  - **1998-09** (edge month): 284,559 lines (delay rate 57.86%), visibly lower line count.
-  - **1998-10** (last month): 101,741 lines (delay rate 47.08%), flagged as `is_boundary_month = true` ("potentially incomplete") as orders end before full receipt windows expire.
+  - **1992-01** (first month, `is_boundary_month = true`, "potentially incomplete"): 213 lines, delay rate 86.38%.
+  - **1992-02** and **1992-03** (edge months with lower counts): 95,167 lines at 80.11% and 291,339 lines at 68.72%. Orders start on 1992-01-01 and commit dates fall 30–90 days after the order date, so the first commit months hold only part of the lines due then.
+  - **1998-09** (edge month): 284,559 lines, delay rate 57.86%.
+  - **1998-10** (last month, `is_boundary_month = true`, "potentially incomplete"): 101,741 lines, delay rate 47.08%.
+- The edge months contain only lines with particular commit lags (short lags at the start, long lags at the end), so their rates should not be read as a change in delivery performance.
+
 
 ## Presentation
 
