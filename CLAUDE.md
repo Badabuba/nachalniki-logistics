@@ -40,7 +40,8 @@ If the documents disagree, the precedence is PDF > requirements.md > design.md >
 |---|---|---|
 | `uv lock` / `uv sync` | local | verified 2026-10-07 |
 | Markdown, contract consistency, code review | local | manual |
-| Source access, `DESCRIBE`, profiling, constraints, `%run` | Databricks | not run (plan P0) |
+| Source access, `DESCRIBE`, CHECK/PK DDL, `percentile_cont` | Databricks | run 2026-10-07 (NAZ-01–03; plan.md evidence log) |
+| Profiling, FK DDL, `%run` | Databricks | not run (plan P0–P2) |
 | Pipeline run, DQ results, rerun/portability, answers, charts | Databricks | not run (plan P3–P4) |
 
 Anything in the Databricks rows can only be confirmed by running it in a real workspace. Local tooling cannot verify Spark code against the data.
@@ -50,6 +51,16 @@ Anything in the Databricks rows can only be confirmed by running it in a real wo
 - Do not mark a plan or requirement item `done` without evidence (output, screenshot or link, with a date) in the plan.md evidence log.
 - Do not document a command as working unless it exists and has been run successfully. Mark everything else "planned".
 - Unknown or unverified details stay tagged `[VERIFY]` or `[PROFILE]` until resolved.
+
+## Code and writing style
+- Keep it simple enough for each member to explain their own part: descriptive function-based names, small functions, no unnecessary abstractions, comments only where they explain a decision or non-obvious behaviour.
+- README text is concise and factual: clear setup steps and actual results. No promotional wording, repeated disclaimers, excess headings or boilerplate, and no unnecessary files.
+- Never invent personal experiences, authorship, results or challenges.
+
+## Working documents vs the final submission
+- `CLAUDE.md` and `docs/*.md` are working documents. Use and keep them during implementation.
+- Keep task IDs, decision IDs and plan links mainly in the working documents, not in pipeline code or final user-facing text.
+- The final submission must be self-contained. MAX-18 (final delivery owner, after everyone finishes) consolidates what is needed into the README, notebooks and deck, then prunes the working documents and fixes links, without dropping required evidence, attribution or config files.
 
 ## Collaboration
 - Branch per task: `feat/<area>-<short>`. Open a PR into `main`, get ≥1 review, then squash-merge. Keep PRs small.

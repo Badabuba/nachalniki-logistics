@@ -1,0 +1,17 @@
+step,status,detail
+1 name is unused,ok,workspace.nachalniki_access_check_20261007_122756_c6bf
+2 create schema,ok,CREATE SCHEMA workspace.nachalniki_access_check_20261007_122756_c6bf
+3 create table,ok,"t (a INT NOT NULL, b INT) USING DELTA"
+4 add CHECK b_chk,ok,delta.constraints.b_chk = b >= a
+"5a invalid insert (2,1) rejected by b_chk",ok,"sqlstate=23001, condition=DELTA_VIOLATE_CONSTRAINT_WITH_VALUES, message=(com.databricks.sql.transaction.tahoe.schema.DeltaInvariantViolationException) [DELTA_VIOLATE_CONSTRAINT_WITH_VALUES] CHECK constraint b_chk (b >= a) violated by row with values:"
+5b nothing written by the rejected insert,ok,count(*) = 0
+"6 valid insert (1,2) accepted",ok,count(*) = 1
+7a declare PRIMARY KEY t_pk (a),ok,ALTER TABLE ... ADD CONSTRAINT t_pk PRIMARY KEY (a)
+7b t_pk shown by DESCRIBE TABLE EXTENDED,ok,t_pk | PRIMARY KEY (`a`) | 
+"7c duplicate key (1,3) accepted: PK is informational",ok,count(*) = 2
+8a percentile_cont(0.5) on t,ok,p50 = 1.0 (expected 1.0)
+8b percentile_cont interpolation on 1..4,ok,"p50 = 2.5 (expected 2.5), p90 = 3.7 (expected 3.7), tolerance 1e-09"
+cleanup drop table,ok,nachalniki_access_check_20261007_122756_c6bf.t
+cleanup drop schema,ok,nachalniki_access_check_20261007_122756_c6bf
+cleanup schema is gone,ok,SHOW SCHEMAS LIKE returned 0 rows
+overall,ok,"PASSED: catalog=workspace, schema=nachalniki_access_check_20261007_122756_c6bf, failures=0, cleanup failures=0"

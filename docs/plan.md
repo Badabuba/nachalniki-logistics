@@ -69,7 +69,7 @@ These cannot be given to one person; they are kept small and do not block anyone
 
 ## Start here: what each person can do now
 
-Nothing has run in Databricks yet. These tasks have no unmet dependencies today:
+Only the P0 source discovery (NAZ-01, NAZ-02) has run in Databricks. These tasks had no unmet dependencies when this table was written:
 
 | Person | Can start now | Waits for |
 |---|---|---|
@@ -113,7 +113,7 @@ Acceptance checks (run by Yaropolk):
 - **A1** `%run ./00_config` with the documented widgets resolves every name in design §2.
 - **A2** Bronze has the 8 tables; each has the source columns plus the 2 metadata columns; each Bronze count equals the receiver's own source count, compared at runtime.
 - **A3** Design §5.5 value-profiling rows are filled with query, date and result; the constants match the documented domain and the cited source.
-- **A4** A grep finds no catalog, schema or source literal outside `00_config`, and no hard-coded row count.
+- **A4** A grep of `notebooks/` finds no catalog, schema or source literal outside `00_config`, and no hard-coded row count. The P0 diagnostic notebooks in `checks/p0/` are excluded: they are not part of the pipeline and take their catalog and source from their own widgets.
 - **A5** Two consecutive executions of a test entry notebook (`%run ./00_config`, `run_id = new_run_id()`, `%run` of a child that prints `require_run_id()`) give two different run_ids, and the child prints its caller's id; a child run with no run_id defined fails.
 - **A6** Every remaining assumption is listed in the note.
 
@@ -169,18 +169,18 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 
 ### Nazar
 
-- [ ] **NAZ-01 · P0 · Log in and list catalogs.** Run `SHOW CATALOGS;` and `SELECT current_catalog();`. Do not assume `workspace` exists.
+- [x] **NAZ-01 · P0 · Log in and list catalogs.** Run `SHOW CATALOGS;` and `SELECT current_catalog();`. Do not assume `workspace` exists.
   - Files: `docs/plan.md` (evidence log)
   - Depends on: nothing. **Start now.**
   - Done when: both outputs are in the evidence log, and a candidate writable catalog is named for NAZ-03.
 
-- [ ] **NAZ-02 · P0 · Source inventory.** `SHOW TABLES IN samples.tpch;` (expect 8 tables), `SELECT count(*)` for each table, and `DESCRIBE samples.tpch.<table>` for all 8. Record the counts for reference only: code never hard-codes them.
+- [x] **NAZ-02 · P0 · Source inventory.** `SHOW TABLES IN samples.tpch;` (expect 8 tables), `SELECT count(*)` for each table, and `DESCRIBE samples.tpch.<table>` for all 8. Record the counts for reference only: code never hard-codes them.
   - Files: `docs/plan.md` (evidence log); `docs/design.md` §5.5 (`DESCRIBE` row) and §5.1/§5.2 (fix types if they differ)
   - Depends on: NAZ-01
   - Done when: the 8 tables, counts and `DESCRIBE` outputs are in the evidence log with a date, and design §5.1/§5.2 types match `DESCRIBE`.
   - Optional aid, not part of "done": read `/dbfs/databricks-datasets/tpch/README.md`. If DBFS FUSE is blocked, try `dbutils.fs.head("dbfs:/databricks-datasets/tpch/README.md")`. If both fail, use the TPC-H specification and note that in the evidence log.
 
-- [ ] **NAZ-03 · P0 · Safe write check and catalog decision.** In the candidate catalog `<cat>`:
+- [x] **NAZ-03 · P0 · Safe write check and catalog decision.** In the candidate catalog `<cat>`:
   1. Pick a unique name, e.g. `nachalniki_access_check_<yyyymmdd_hhmmss>_<4 random chars>`.
   2. Run `SHOW SCHEMAS IN <cat> LIKE '<name>'` and expect no rows. If a row comes back, choose another name. Never reuse an existing schema.
   3. `CREATE SCHEMA <cat>.<name>`, **without** `IF NOT EXISTS`, so the step fails instead of adopting an existing schema.
@@ -417,6 +417,11 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Depends on: NAZ-16, MAX-15, MAX-16
   - Done when: the logged-out check and the submission confirmation are in the evidence log, dated before the due date.
 
+- [ ] **MAX-18 · P5 · Final documentation cleanup.** *New, proposed by Nazar on 2026-10-07; needs Max's agreement.* After every member has finished, make the submission self-contained. First move the definitions, assumptions, validation explanation, run instructions and results that the final reader needs into the README, the notebooks or the deck. Then review which working documents (`CLAUDE.md`, `docs/plan.md`, `docs/design.md`, `docs/requirements.md`, `docs/handoffs.md`) and diagnostics (`checks/`) to keep, remove only what is no longer needed, and fix every remaining link. Do not remove required evidence, attribution, `pyproject.toml`/`uv.lock` or configuration.
+  - Files: `README.md`, the notebooks, the working documents
+  - Depends on: MAX-15, MAX-16, and all other tasks ticked
+  - Done when: no notebook or final README text depends on task or decision IDs or on a removed document, all links resolve, and the PR is approved by one other member.
+
 ## Optional follow-ups (not acceptance gates; unassigned)
 
 - SQL alert or dashboard tile for a delay-rate increase (R-L-A1).
@@ -437,7 +442,11 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 | Date | Task | Evidence | By |
 |---|---|---|---|
 | 2026-10-07 | NAZ-06 | `uv lock` and `uv sync` succeeded locally (Windows, uv 0.12.21, CPython 3.13.5): "Resolved 1 package", `.venv` created; `uv.lock` generated (no dependencies) | Claude Code session for Nazar |
-| – | – | Nothing has been executed in Databricks yet | – |
+| 2026-10-07 | NAZ-01 | `checks/p0/01_source_discovery.py` run by Nazar in Databricks (compute type not recorded; `current_version().dbr_version` = `19.9.x-aarch64-photon-scala2.13`, `spark.version` = 4.2.0). `SHOW CATALOGS` → `samples`, `system`, `workspace`. `current_catalog()` = `workspace`, `current_schema()` = `default`. Candidate write catalog for NAZ-03: `workspace` (visible and current; **write access not yet proven**). Raw outputs: [01_show_catalogs.csv](../checks/p0/outputs/source_discovery/01_show_catalogs.csv), [02_current_catalog_schema.csv](../checks/p0/outputs/source_discovery/02_current_catalog_schema.csv), [03_current_version.csv](../checks/p0/outputs/source_discovery/03_current_version.csv), [00_printed_output.txt](../checks/p0/outputs/source_discovery/00_printed_output.txt) | Nazar |
+| 2026-10-07 | NAZ-02 | Same run. `SHOW TABLES IN samples.tpch` → exactly the 8 documented tables (missing: none, unexpected: none). Row counts (reference only, never hard-coded): customer 750000, lineitem 29999795, nation 25, orders 7500000, part 1000000, partsupp 4000000, region 5, supplier 50000. `DESCRIBE`: 61 columns over 8 tables; all keys `bigint` except `l_linenumber` `int`; money and quantity columns `decimal(18,2)`; date columns `date`; other columns `string` or `int`; no partition or extra rows. Recorded in design §5.1/§5.5. Raw outputs: [04_show_tables.csv](../checks/p0/outputs/source_discovery/04_show_tables.csv), [05_row_counts.csv](../checks/p0/outputs/source_discovery/05_row_counts.csv), [06_describe_tables.csv](../checks/p0/outputs/source_discovery/06_describe_tables.csv). The optional TPC-H README read was not run | Nazar |
+| 2026-10-07 | NAZ-03 run 1 (blocked, superseded by run 2) | `checks/p0/02_workspace_capability_checks.py` with `write_catalog = workspace`. Step 1 ok: `workspace.nachalniki_access_check_20261007_121343_8e48` did not exist. Step 2 `CREATE SCHEMA` failed: `PERMISSION_DENIED: User does not have CREATE SCHEMA on Catalog 'workspace'` (`UNAUTHORIZED_ACCESS`, SQLSTATE 42501). Nothing was created, so cleanup had nothing to drop (cleanup failures = 0). Steps 3–8 (table, CHECK, PK, `percentile_cont`) did not run. **Blocker:** Nazar's user lacks `CREATE SCHEMA` on `workspace`, the only non-system, non-sample catalog visible. Raw outputs: [run1_20261007_121343_denied_results.csv](../checks/p0/outputs/workspace_capability_checks/run1_20261007_121343_denied_results.csv), [run1_20261007_121343_denied_error.txt](../checks/p0/outputs/workspace_capability_checks/run1_20261007_121343_denied_error.txt) | Nazar |
+| 2026-10-07 | NAZ-03 run 2 | Rerun of the same notebook after Nazar reported being given admin rights in the workspace (the grant itself was not done by these checks). `write_catalog = workspace`, scratch schema `workspace.nachalniki_access_check_20261007_122756_c6bf`. All 16 result rows `ok`, overall **PASSED**, failures 0, cleanup failures 0: (1) name unused; (2) `CREATE SCHEMA` without `IF NOT EXISTS` ok; (3) `CREATE TABLE t (a INT NOT NULL, b INT) USING DELTA` ok; (4) `ADD CONSTRAINT b_chk CHECK (b >= a)` ok, `delta.constraints.b_chk = b >= a`; (5) insert `(2,1)` rejected with SQLSTATE 23001, `DELTA_VIOLATE_CONSTRAINT_WITH_VALUES`, "CHECK constraint b_chk (b >= a) violated", then `count(*) = 0`; (6) insert `(1,2)` accepted, `count(*) = 1`; (7) `ADD CONSTRAINT t_pk PRIMARY KEY (a)` ok, shown by `DESCRIBE TABLE EXTENDED` as `t_pk PRIMARY KEY (a)`, duplicate `(1,3)` accepted (`count(*) = 2`), so the PK is informational; (8) `percentile_cont(0.5)` on `t` = 1.0; on 1..4 p50 = 2.5, p90 = 3.7 (tolerance 1e-9); cleanup dropped `t` and the schema, and `SHOW SCHEMAS LIKE` returned 0 rows. FK DDL was not part of this check. Raw output: [run2_20261007_122756_passed_results.csv](../checks/p0/outputs/workspace_capability_checks/run2_20261007_122756_passed_results.csv) | Nazar |
+| 2026-10-07 | CLI access (setup for later tasks) | Databricks CLI v1.19.0 installed locally (winget); OAuth login to profile `nachalniki` valid. The user is in the `admins` group; catalog `workspace` is owned by the workspace-admins group. Catalogs over the API: `samples`, `system`, `workspace`; one SQL warehouse (Serverless Starter Warehouse, 2X-Small). `workspace` already contains a schema owned by another user, so this workspace is shared (relevant to D17). No `nachalniki_access_check_*` schemas remain. Read-only test: `checks/p0/01_source_discovery.py` imported to `/Users/<nazar>/nachalniki_p0_checks/` and run as a one-time serverless job (`jobs submit`, no cluster): `SUCCESS` in 59 s. `jobs export-run` returned every cell output, and all of them match the NAZ-01/NAZ-02 files above (catalogs, current catalog, versions, 8 tables, counts, 61 columns) | Claude Code session for Nazar |
 
 ## Decision log
 
@@ -450,7 +459,7 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 | D5 | 2026-10-07 | Notebook charts satisfy the visualisation and monitoring requirements; dashboard, Job and alert are optional | Max (MAX-02) | proposed |
 | D6 | 2026-10-07 | Silver keeps TPC-H column names; Gold uses business names | Max (MAX-02) | proposed |
 | D7 | 2026-10-07 | Lifecycle: Bronze → staging → validate (append DQ) → publish Silver → Gold; failed run leaves outputs flagged as stale via `pipeline_runs`. Driver moved from Nazar (NAZ-05) to Max by D16 | Max (MAX-02) | proposed |
-| D8 | – | Catalog to use | Nazar (NAZ-03) | open (P0) |
+| D8 | 2026-10-07 | Catalog default `workspace`: the only non-system, non-sample catalog (NAZ-01); `CREATE SCHEMA` and the capability checks passed there after admin rights were granted (NAZ-03 run 2; run 1 was denied). Each member sets their own writable catalog through the `catalog` widget if their workspace differs (D17) | Nazar (NAZ-03) | decided (Nazar) |
 | D9 | – | Config and schema names (design §2) | Nazar (NAZ-05) | open (P1) |
 | D10 | – | Silver frozen columns and Gold contracts | Max (MAX-02) | open (P1) |
 | D11 | – | Metric definitions (design §7) | Max (MAX-02) | open (P1) |

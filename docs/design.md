@@ -29,7 +29,7 @@ Everything is driven by `notebooks/00_config.py` (planned), which is loaded with
 
 | Parameter (widget) | Default | Notes |
 |---|---|---|
-| `catalog` | `workspace` | **[VERIFY]**: P0 must confirm that this catalog exists and is writable. Otherwise use the catalog P0 finds. |
+| `catalog` | `workspace` | Exists and is the current catalog in Nazar's workspace (NAZ-01, 2026-10-07; `SHOW CATALOGS` → `samples`, `system`, `workspace`). Write access verified: schema and table creation passed (NAZ-03 run 2, 2026-10-07, D8). The first attempt was denied until the user had `CREATE SCHEMA` on the catalog. |
 | `schema_prefix` | `nachalniki_logistics` | A different prefix gives a fully independent copy (portability and rerun tests) |
 | `source` | `samples.tpch` | `<catalog>.<schema>` of the source |
 
@@ -115,7 +115,7 @@ This interface is agreed before Stage 1 is built, so that each stage runs on its
 
 ### 5.1 Tables and contracts
 
-Column names are kept exactly as in TPC-H, so there is nothing to map and everyone can use the TPC-H docs. Types follow the source: keys are integer types, money is `DECIMAL`, dates are `DATE`. **[VERIFY]** with `DESCRIBE` in P0 and record the result here. Bronze metadata columns are not carried into Silver.
+Column names are kept exactly as in TPC-H, so there is nothing to map and everyone can use the TPC-H docs. Types follow the source. Verified with `DESCRIBE` (NAZ-02, 2026-10-07, see §5.5): every key column is `bigint` except `l_linenumber` (`int`); money and quantity columns (`*_acctbal`, `l_quantity`, `l_extendedprice`, `l_discount`, `l_tax`, `o_totalprice`, `p_retailprice`, `ps_supplycost`) are `decimal(18,2)`; `o_orderdate`, `l_shipdate`, `l_commitdate`, `l_receiptdate` are `date`; `o_shippriority`, `p_size`, `ps_availqty` are `int`; all other columns are `string`. Bronze metadata columns are not carried into Silver.
 
 | Table | Row grain | Primary key | References (FK) | Important columns |
 |---|---|---|---|---|
@@ -137,7 +137,7 @@ Constraints added at publish:
 - `CHECK (l_receiptdate >= l_shipdate)` on `lineitem`
 - PK/FK declared as informational
 
-Databricks docs say PK/FK constraints on Unity Catalog Delta tables are *informational only and not enforced*, while `NOT NULL` and `CHECK` are enforced. **Declaring an FK does not prove referential integrity.** That is proved by the anti-join rules in §6. **[VERIFY]** that constraint DDL works on our workspace and compute.
+Databricks docs say PK/FK constraints on Unity Catalog Delta tables are *informational only and not enforced*, while `NOT NULL` and `CHECK` are enforced. **Declaring an FK does not prove referential integrity.** That is proved by the anti-join rules in §6. Verified on our compute (NAZ-03, 2026-10-07): `ADD CONSTRAINT … CHECK` is enforced (a violating insert fails with SQLSTATE 23001 and writes nothing), and `ADD CONSTRAINT … PRIMARY KEY` on a `NOT NULL` column is accepted but not enforced (a duplicate key was inserted). FK DDL has not been run yet **[VERIFY]** (YAR-06).
 
 ### 5.2 Draft ER diagram  — **[VERIFY] against `DESCRIBE` output before taking the screenshot**
 
@@ -197,7 +197,7 @@ erDiagram
     }
 ```
 
-`ORDERS ||--|{ LINEITEM` ("each order has at least one line") is the Logistics rule. It is shown as a target, and DQ-L9 proves it. The types are placeholders. The screenshot for the presentation will come from this diagram (rendered) or from the Catalog Explorer ER view if that is available. **[VERIFY]**
+`ORDERS ||--|{ LINEITEM` ("each order has at least one line") is the Logistics rule. It is shown as a target, and DQ-L9 proves it. The column types shown match `DESCRIBE` of `samples.tpch` (NAZ-02, 2026-10-07); only a subset of columns is drawn. The relationships still need checking against the published Silver. The screenshot for the presentation will come from this diagram (rendered) or from the Catalog Explorer ER view if that is available. **[VERIFY]**
 
 ### 5.3 3NF analysis — to be completed with profiling evidence
 
@@ -242,7 +242,7 @@ Any decomposition changes the Silver contract and the ER diagram, so it needs a 
 
 | Check | Query / notebook | Date | Result |
 |---|---|---|---|
-| `DESCRIBE` of 8 tables | `profile_source` | – | not run |
+| `DESCRIBE` of 8 tables | `checks/p0/01_source_discovery.py` (NAZ-02) | 2026-10-07 | 61 columns; types as listed in §5.1. Raw output: [`06_describe_tables.csv`](../checks/p0/outputs/source_discovery/06_describe_tables.csv) |
 | distinct `l_shipmode` with counts | `profile_source` | – | not run |
 | distinct `l_returnflag` with counts | `profile_source` | – | not run |
 | distinct `l_linestatus` with counts | `profile_source` | – | not run |
@@ -371,13 +371,13 @@ Notebook visuals in `06_analysis` (mandatory set):
 
 ## 10. Open items requiring verification
 
-- [VERIFY] Catalog availability and write access. Whether `workspace` exists on our account.
-- [VERIFY] Column types in `samples.tpch` (`DESCRIBE`).
+- Resolved: catalog `workspace` exists (NAZ-01) and allows schema creation for a user with `CREATE SCHEMA` on it (NAZ-03 run 2, 2026-10-07; D8).
+- Resolved: column types in `samples.tpch` (`DESCRIBE`, NAZ-02, 2026-10-07; §5.1, §5.5).
 - [VERIFY] `%run` chaining and error propagation on serverless notebooks.
 - [VERIFY] A variable assigned in the caller (`run_id`) is visible inside a `%run` child, and widget values set in the caller are the ones the child reads (§3.1).
 - [VERIFY] Whether several members can share one workspace (Free Edition), and the grants needed to read another member's schemas (plan.md D17).
-- [VERIFY] `ALTER TABLE … ADD CONSTRAINT … CHECK` and PK/FK DDL on our compute.
-- [VERIFY] `percentile_cont … WITHIN GROUP` availability on our compute.
+- Resolved: `ADD CONSTRAINT … CHECK` (enforced) and `PRIMARY KEY` (informational) on our compute (NAZ-03, 2026-10-07; §5.1). [VERIFY] FK DDL (YAR-06).
+- Resolved: `percentile_cont … WITHIN GROUP` works and interpolates exactly (1..4 → p50 2.5, p90 3.7) (NAZ-03, 2026-10-07).
 - [PROFILE] Allowed values, the urgent priority literal, date ranges, lines per order, and the FD candidates (§5.5).
 - [VERIFY] An ER-diagram rendering source (Mermaid render vs Catalog Explorer).
 - Optional: whether the dataset README at `/dbfs/databricks-datasets/tpch/README.md` is readable. This is a helpful aid but not a blocker.

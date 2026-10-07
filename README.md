@@ -2,7 +2,7 @@
 
 Team **«начальніки»**: Nazar, Yaropolk, Max. UCU Big Data, Group Assignment 1.
 
-> **Status: planning.** The pipeline is **not implemented yet** and nothing has been run in Databricks. No results exist yet. Track progress in [docs/plan.md](docs/plan.md).
+> **Status: planning.** The pipeline is **not implemented yet**. Only the source-discovery and workspace capability checks in `checks/p0/` have run in Databricks. No pipeline results exist yet. Track progress in [docs/plan.md](docs/plan.md).
 
 ## Purpose
 
@@ -47,7 +47,7 @@ samples.tpch (8 tables)
    │  06_analysis           Q1–Q4 + monthly delay-rate charts (refuses to run on a failed run)
 ```
 
-Defaults: `catalog = workspace` (to be verified), `prefix = nachalniki_logistics`, `source = samples.tpch`. All three are notebook parameters, so another workspace or schema prefix can run the project unchanged. Details are in [design.md §2–§3](docs/design.md).
+Defaults: `catalog = workspace`, `prefix = nachalniki_logistics`, `source = samples.tpch`. All three are notebook parameters, so another workspace or schema prefix can run the project unchanged. Details are in [design.md §2–§3](docs/design.md).
 
 ## Repository layout
 
@@ -58,6 +58,7 @@ group_assignment_1.pdf   assignment (source of truth)
 README.md  CLAUDE.md
 pyproject.toml  uv.lock  .gitignore
 docs/requirements.md  docs/design.md  docs/plan.md  docs/handoffs.md
+checks/p0/               P0 diagnostic notebooks (not part of the pipeline) and their raw outputs in checks/p0/outputs/
 ```
 
 Planned (not created yet):
