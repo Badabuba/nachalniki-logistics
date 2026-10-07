@@ -13,3 +13,7 @@ __pycache__/
 Thumbs.db
 .idea/
 .vscode/
+
+# Node / generated artifacts
+node_modules/
+.claude/

@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # End-to-end failure check (MAX-14)
+# MAGIC # End-to-end failure check
 # MAGIC
 # MAGIC Runs in a scratch prefix with an existing succeeded run:
 # MAGIC 1. Injects a bad row (receipt date before ship date) into staging during execution.

@@ -1,6 +1,0 @@
-source = samples.tpch
-spark.version = 4.2.0
-observed (8): ['customer', 'lineitem', 'nation', 'orders', 'part', 'partsupp', 'region', 'supplier']
-missing vs documented: []
-unexpected vs documented: []
-OK: samples.tpch has exactly the 8 documented TPC-H tables.

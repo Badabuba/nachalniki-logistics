@@ -2,7 +2,7 @@
 # MAGIC %md
 # MAGIC # 03_validate
 # MAGIC
-# MAGIC Runs every blocking rule of design §6 on the staging tables (DQ-G3 also reads the source and
+# MAGIC Runs every blocking validation rule on the staging tables (DQ-G3 also reads the source and
 # MAGIC Bronze), records one result row per rule and table in `{prefix}_audit.dq_check_results` with up
 # MAGIC to 10 sample keys, and ends with `raise_if_failed` for this run. If any rule fails, the run
 # MAGIC stops here and `04_silver_publish` does not execute.

@@ -364,7 +364,7 @@ display(spark.createDataFrame(
 
 bad_contracts = [table_name for table_name, _, ok in contract_results if not ok]
 if bad_contracts:
-    raise AssertionError(f"Gold columns do not match design §9 for: {bad_contracts}")
+    raise AssertionError(f"Gold columns do not match the Gold contract for: {bad_contracts}")
 
 silver_line_count = spark.table(f"{silver_schema}.lineitem").count()
 gold_line_count = spark.table(f"{gold_schema}.fct_lineitem_delivery").count()
@@ -386,4 +386,4 @@ display(
     .orderBy("rule_id")
 )
 raise_if_failed(run_id, GOLD_RULE_IDS)
-print(f"OK: {len(GOLD_COLUMNS)} Gold tables match design §9 for run_id {run_id}.")
+print(f"OK: {len(GOLD_COLUMNS)} Gold tables match the Gold contract for run_id {run_id}.")

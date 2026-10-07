@@ -1,5 +1,0 @@
-Error raised by the last cell of checks/p0/02_workspace_capability_checks.py (write_catalog = workspace),
-as pasted by Nazar on 2026-10-07. The JVM stack trace is omitted; its start is in the results CSV.
-
-[UNAUTHORIZED_ACCESS] Unauthorized access:
-PERMISSION_DENIED: User does not have CREATE SCHEMA on Catalog 'workspace'. SQLSTATE: 42501

@@ -1,7 +1,7 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # dq_helpers test (test notebook, not pipeline code)
-# MAGIC Checks `dq_helpers` in a scratch `schema_prefix` (YAR-12):
+# MAGIC Checks `dq_helpers` in a scratch `schema_prefix`:
 # MAGIC (a) `dq_check_results` keeps earlier rows across runs, (b) a failing row of the active run
 # MAGIC raises, (c) a failing row of an earlier run does not affect the active run, and a rule with
 # MAGIC no row raises. Run it twice as a job: the second run must still see the first run's rows.
