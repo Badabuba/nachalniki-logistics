@@ -1,0 +1,82 @@
+[
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "%md\n# 01_bronze_ingest\n\nCopies every source table as-is into `{prefix}_bronze`, adding only two metadata columns:\n`_ingested_at` (one timestamp per execution) and `_source_table` (full source table name).\nEach table is fully replaced on every run. Bronze does not use `run_id` or audit tables.",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "%run ./00_config",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "from datetime import datetime, timezone\n\nMETADATA_COLUMNS = [\"_ingested_at\", \"_source_table\"]",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "def ingest_table(table_name, ingested_at):\n    spark.sql(f\"\"\"\n        CREATE OR REPLACE TABLE {bronze_schema}.{table_name} AS\n        SELECT *,\n               TIMESTAMP'{ingested_at}' AS _ingested_at,\n               '{source}.{table_name}' AS _source_table\n        FROM {source}.{table_name}\n    \"\"\")",
+  "state": "finished",
+  "output": "ingested samples.tpch.region -> workspace.makc_logistics_bronze.region\ningested samples.tpch.nation -> workspace.makc_logistics_bronze.nation\ningested samples.tpch.supplier -> workspace.makc_logistics_bronze.supplier\ningested samples.tpch.customer -> workspace.makc_logistics_bronze.customer\ningested samples.tpch.part -> workspace.makc_logistics_bronze.part\ningested samples.tpch.partsupp -> workspace.makc_logistics_bronze.partsupp\ningested samples.tpch.orders -> workspace.makc_logistics_bronze.orders\ningested samples.tpch.lineitem -> workspace.makc_logistics_bronze.lineitem\n_ingested_at = 2026-10-07 16:28:41.562184 (UTC)\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "%md\n## Check: Bronze matches the source\n\nFor each table, the Bronze columns (without the metadata columns) must have the same names,\norder and data types as the source, the metadata columns must be present, and the row counts\nmust be equal. Counts are compared between layers, never against fixed num",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "1bf17acf-a0fe-4b11-a39e-7cbcdb9e567a",
+  "command": "def compare_bronze_with_source(table_name):\n    source_df = spark.table(f\"{source}.{table_name}\")\n    bronze_df = spark.table(f\"{bronze_schema}.{table_name}\")\n    source_columns = source_df.dtypes\n    bronze_columns = [c for c in bronze_df.dtypes if c[0] not in METADATA_COLUMNS]\n    bronze_metadata ",
+  "state": "finished",
+  "output": "{\"schema\": [\"table_name\", \"source_columns\", \"bronze_columns\", \"names_and_types_match\", \"metadata_columns_present\", \"source_rows\", \"bronze_rows\", \"row_counts_match\", \"ok\"], \"rows\": [[\"region\", 3, 3, true, true, 5, 5, true, true], [\"nation\", 4, 4, true, true, 25, 25, true, true], [\"supplier\", 7, 7, true, true, 50000, 50000, true, true], [\"customer\", 8, 8, true, true, 750000, 750000, true, true], [\"part\", 9, 9, true, true, 1000000, 1000000, true, true], [\"partsupp\", 5, 5, true, true, 4000000, 4000000, true, true], [\"orders\", 9, 9, true, true, 7500000, 7500000, true, true], [\"lineitem\", 16, 16, true, true, 29999795, 29999795, true, true]]}\nOK: 8 Bronze tables match samples.tpch (column names, types, row counts).\n",
+  "table": null,
+  "error": null
+ }
+]

@@ -1,0 +1,154 @@
+[
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "%md\n# dq_helpers test (test notebook, not pipeline code)\nChecks `dq_helpers` in a scratch `schema_prefix` (YAR-12):\n(a) `dq_check_results` keeps earlier rows across runs, (b) a failing row of the active run\nraises, (c) a failing row of an earlier run does not affect the active run, and a rule with\nn",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "%run ../../../notebooks/00_config",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics_dqtest', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "# Only a scratch prefix: this test writes test rows into {prefix}_audit.\nassert schema_prefix.endswith(\"_dqtest\"), f\"use a scratch prefix ending in _dqtest, got {schema_prefix!r}\"",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "%run ../../../notebooks/dq_helpers",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics_dqtest', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "def expect_raise(rule_ids, active_run_id):\n    try:\n        raise_if_failed(active_run_id, rule_ids)\n    except RuntimeError as e:\n        print(f\"OK, raised as expected: {e}\")\n        return\n    raise AssertionError(f\"raise_if_failed({rule_ids}) did not raise\")\n\n\nrows_before = spark.table(DQ_CHECK_",
+  "state": "finished",
+  "output": "rows before this test run: 0, earlier run_ids: []\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "# Execution A: TEST-1 fails, TEST-2 passes.\nrun_id = new_run_id()\nrun_a = require_run_id()\nrecord_dq_result(run_a, \"TEST-1\", \"staging\", \"lineitem\", 3, [\"1|1\", \"1|2\", \"2|1\"])\nrecord_dq_result(run_a, \"TEST-2\", \"staging\", \"orders\", 0, [])\n\nexpect_raise([\"TEST-1\"], run_a)            # (b) failing row of",
+  "state": "finished",
+  "output": "TEST-1 [staging.lineitem]: FAILED, violations = 3\nTEST-2 [staging.orders]: passed, violations = 0\nOK, raised as expected: Data quality check failed for run_id 5c070211-74fd-451c-8dba-83ab19022e30: failed rules = ['TEST-1'], rules without a result = []. Details: SELECT * FROM workspace.makc_logistics_dqtest_audit.dq_check_results WHERE run_id = '5c070211-74fd-451c-8dba-83ab19022e30'\nOK, raised as expected: Data quality check failed for run_id 5c070211-74fd-451c-8dba-83ab19022e30: failed rules = ['TEST-1'], rules without a result = []. Details: SELECT * FROM workspace.makc_logistics_dqtest_audit.dq_check_results WHERE run_id = '5c070211-74fd-451c-8dba-83ab19022e30'\nAll 1 rules passed for run_id 5c070211-74fd-451c-8dba-83ab19022e30.\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "# Execution B: both rules pass. The failed TEST-1 row of execution A must not matter.\nrun_id = new_run_id()\nrun_b = require_run_id()\nassert run_b != run_a\nrecord_dq_result(run_b, \"TEST-1\", \"staging\", \"lineitem\", 0, [])\nrecord_dq_result(run_b, \"TEST-2\", \"staging\", \"orders\", 0, [])\n\nraise_if_failed(ru",
+  "state": "finished",
+  "output": "TEST-1 [staging.lineitem]: passed, violations = 0\nTEST-2 [staging.orders]: passed, violations = 0\nAll 2 rules passed for run_id 1335fe54-7d0f-46d9-a6f3-72507d4d7ab0.\nOK, raised as expected: Data quality check failed for run_id 1335fe54-7d0f-46d9-a6f3-72507d4d7ab0: failed rules = [], rules without a result = ['TEST-3']. Details: SELECT * FROM workspace.makc_logistics_dqtest_audit.dq_check_results WHERE run_id = '1335fe54-7d0f-46d9-a6f3-72507d4d7ab0'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "8a619bd5-1b10-46c1-97e4-74da15646030",
+  "command": "# (a) earlier rows are kept: every run_id seen before this test run is still present.\nrows_after = spark.table(DQ_CHECK_RESULTS).count()\nrun_ids_after = {r.run_id for r in spark.table(DQ_CHECK_RESULTS).select(\"run_id\").distinct().collect()}\nassert rows_after == rows_before + 4, (rows_before, rows_af",
+  "state": "finished",
+  "output": "{\"schema\": [\"run_id\", \"run_ts\", \"rule_id\", \"layer\", \"table_name\", \"violation_count\", \"sample_keys\", \"severity\", \"passed\"], \"rows\": [[\"5c070211-74fd-451c-8dba-83ab19022e30\", \"2026-10-07T16:30:13.446Z\", \"TEST-1\", \"staging\", \"lineitem\", 3, \"[\\\"1|1\\\", \\\"1|2\\\", \\\"2|1\\\"]\", \"blocking\", false], [\"5c070211-74fd-451c-8dba-83ab19022e30\", \"2026-10-07T16:30:16.104Z\", \"TEST-2\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"1335fe54-7d0f-46d9-a6f3-72507d4d7ab0\", \"2026-10-07T16:30:20.252Z\", \"TEST-1\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"1335fe54-7d0f-46d9-a6f3-72507d4d7ab0\", \"2026-10-07T16:30:21.945Z\", \"TEST-2\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true]]}\ndq_helpers test OK: run A = 5c070211-74fd-451c-8dba-83ab19022e30, run B = 1335fe54-7d0f-46d9-a6f3-72507d4d7ab0; rows 0 -> 4; earlier run_ids kept: 0\n",
+  "table": null,
+  "error": null
+ }
+]
