@@ -1,0 +1,90 @@
+[
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "%md\n# Silver snapshot and comparison (failure demo, not pipeline code)\n`action = snapshot` copies every Silver table into `{prefix}_snapshot`.\n`action = compare` checks that Silver still equals that snapshot (`EXCEPT ALL` in both\ndirections, 0 rows expected) and shows the DQ results of the latest ru",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "dbutils.widgets.text(\"action\", \"compare\", \"action (snapshot | compare)\")\naction = dbutils.widgets.get(\"action\").strip()\nassert action in (\"snapshot\", \"compare\"), action",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "%run ../../../notebooks/00_config",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics_s2demo', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "%run ../../../notebooks/silver_contract",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "assert schema_prefix != \"nachalniki_logistics\", \"snapshots are taken only in a scratch prefix\"\nsnapshot_schema = f\"{catalog}.{schema_prefix}_snapshot\"\n\nif action == \"snapshot\":\n    spark.sql(f\"CREATE SCHEMA IF NOT EXISTS {snapshot_schema}\")\n    for t in SILVER_TABLES:\n        spark.sql(f\"CREATE OR R",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "807b8006-d445-4566-9e52-3c5eff076284",
+  "command": "if action == \"compare\":\n    rows = []\n    for t in SILVER_TABLES:\n        silver_minus_snapshot = spark.sql(\n            f\"SELECT * FROM {silver_schema}.{t} EXCEPT ALL SELECT * FROM {snapshot_schema}.{t}\").count()\n        snapshot_minus_silver = spark.sql(\n            f\"SELECT * FROM {snapshot_schem",
+  "state": "finished",
+  "output": "{\"schema\": [\"table_name\", \"silver_except_snapshot\", \"snapshot_except_silver\", \"unchanged\"], \"rows\": [[\"region\", 0, 0, true], [\"nation\", 0, 0, true], [\"supplier\", 0, 0, true], [\"customer\", 0, 0, true], [\"brand\", 0, 0, true], [\"part\", 0, 0, true], [\"partsupp\", 0, 0, true], [\"orders\", 0, 0, true], [\"ship_date_status\", 0, 0, true], [\"part_quantity_price\", 0, 0, true], [\"lineitem\", 0, 0, true]]}\nlatest run_id in dq_check_results: fd003f62-fbab-4203-bd2a-69c44598e625\n\n{\"schema\": [\"rule_id\", \"table_name\", \"violation_count\", \"sample_keys\", \"passed\"], \"rows\": [[\"DQ-L2\", \"lineitem\", 1, \"[\\\"1|1\\\"]\", false], [\"DQ-G1\", \"brand\", 0, \"[]\", true], [\"DQ-G1\", \"customer\", 0, \"[]\", true], [\"DQ-G1\", \"lineitem\", 0, \"[]\", true], [\"DQ-G1\", \"nation\", 0, \"[]\", true], [\"DQ-G1\", \"orders\", 0, \"[]\", true], [\"DQ-G1\", \"part\", 0, \"[]\", true], [\"DQ-G1\", \"part_quantity_price\", 0, \"[]\", true], [\"DQ-G1\", \"partsupp\", 0, \"[]\", true], [\"DQ-G1\", \"region\", 0, \"[]\", true], [\"DQ-G1\", \"ship_date_status\", 0, \"[]\", true], [\"DQ-G1\", \"supplier\", 0, \"[]\", true], [\"DQ-G2\", \"customer.customer_nation_fk\", 0, \"[]\", true], [\"DQ-G2\", \"lineitem.lineitem_orders_fk\", 0, \"[]\", true], [\"DQ-G2\", \"lineitem.lineitem_part_quantity_price_fk\", 0, \"[]\", true], [\"DQ-G2\", \"lineitem.lineitem_partsupp_fk\", 0, \"[]\", true], [\"DQ-G2\", \"lineitem.lineitem_ship_date_status_fk\", 0, \"[]\", true], [\"DQ-G2\", \"nation.nation_region_fk\", 0, \"[]\", true], [\"DQ-G2\", \"orders.orders_customer_fk\", 0, \"[]\", true], [\"DQ-G2\", \"part.part_brand_fk\", 0, \"[]\", true], [\"DQ-G2\", \"part_quantity_price.part_quantity_price_part_fk\", 0, \"[]\", true], [\"DQ-G2\", \"partsupp.partsupp_part_fk\", 0, \"[]\", true], [\"DQ-G2\", \"partsupp.partsupp_supplier_fk\", 0, \"[]\", true], [\"DQ-G2\", \"supplier.supplier_nation_fk\", 0, \"[]\", true], [\"DQ-G3\", \"customer\", 0, \"[]\", true], [\"DQ-G3\", \"lineitem\", 0, \"[]\", true], [\"DQ-G3\", \"nation\", 0, \"[]\", true], [\"DQ-G3\", \"orders\", 0, \"[]\", true], [\"DQ-G3\", \"part\", 0, \"[]\", true], [\"DQ-G3\", \"partsupp\", 0, \"[]\", true], [\"DQ-G3\", \"region\", 0, \"[]\", true], [\"DQ-G3\", \"supplier\", 0, \"[]\", true], [\"DQ-L1\", \"lineitem\", 0, \"[]\", true], [\"DQ-L3\", \"lineitem\", 0, \"[]\", true], [\"DQ-L4\", \"lineitem\", 0, \"[]\", true], [\"DQ-L4\", \"orders\", 0, \"[]\", true], [\"DQ-L5\", \"lineitem\", 0, \"[]\", true], [\"DQ-L6\", \"lineitem\", 0, \"[]\", true], [\"DQ-L7\", \"ship_date_status\", 0, \"[]\", true], [\"DQ-L8\", \"lineitem\", 0, \"[]\", true], [\"DQ-L9\", \"orders\", 0, \"[]\", true]]}\nOK: Silver is unchanged against the snapshot\n",
+  "table": null,
+  "error": null
+ }
+]

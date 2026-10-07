@@ -1,0 +1,83 @@
+{
+  "manifest": {
+    "chunks": [
+      {
+        "chunk_index": 0,
+        "row_count": 2,
+        "row_offset": 0
+      }
+    ],
+    "format": "JSON_ARRAY",
+    "schema": {
+      "column_count": 6,
+      "columns": [
+        {
+          "name": "run_id",
+          "position": 0,
+          "type_name": "STRING",
+          "type_text": "STRING"
+        },
+        {
+          "name": "result_rows",
+          "position": 1,
+          "type_name": "LONG",
+          "type_text": "BIGINT"
+        },
+        {
+          "name": "rule_ids",
+          "position": 2,
+          "type_name": "LONG",
+          "type_text": "BIGINT"
+        },
+        {
+          "name": "passed_rows",
+          "position": 3,
+          "type_name": "LONG",
+          "type_text": "BIGINT"
+        },
+        {
+          "name": "first_ts",
+          "position": 4,
+          "type_name": "TIMESTAMP",
+          "type_text": "TIMESTAMP"
+        },
+        {
+          "name": "last_ts",
+          "position": 5,
+          "type_name": "TIMESTAMP",
+          "type_text": "TIMESTAMP"
+        }
+      ]
+    },
+    "total_chunk_count": 1,
+    "total_row_count": 2,
+    "truncated": false
+  },
+  "result": {
+    "chunk_index": 0,
+    "data_array": [
+      [
+        "8ff6eb14-4b70-4860-b739-98a1e3bbfe7c",
+        "41",
+        "12",
+        "41",
+        "2026-10-07T17:03:45.466Z",
+        "2026-10-07T17:06:21.075Z"
+      ],
+      [
+        "159dd764-f326-4abf-ade9-279d5d540f7e",
+        "41",
+        "12",
+        "41",
+        "2026-10-07T17:11:27.945Z",
+        "2026-10-07T17:14:05.717Z"
+      ]
+    ],
+    "row_count": 2,
+    "row_offset": 0
+  },
+  "statement_id": "01f1c274-1bc1-1f5a-80ca-c0e8dfeeff9c",
+  "status": {
+    "state": "SUCCEEDED"
+  }
+}

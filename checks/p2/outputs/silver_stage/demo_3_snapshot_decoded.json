@@ -1,0 +1,90 @@
+[
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "%md\n# Silver snapshot and comparison (failure demo, not pipeline code)\n`action = snapshot` copies every Silver table into `{prefix}_snapshot`.\n`action = compare` checks that Silver still equals that snapshot (`EXCEPT ALL` in both\ndirections, 0 rows expected) and shows the DQ results of the latest ru",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "dbutils.widgets.text(\"action\", \"compare\", \"action (snapshot | compare)\")\naction = dbutils.widgets.get(\"action\").strip()\nassert action in (\"snapshot\", \"compare\"), action",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "%run ../../../notebooks/00_config",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics_s2demo', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "%run ../../../notebooks/silver_contract",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "assert schema_prefix != \"nachalniki_logistics\", \"snapshots are taken only in a scratch prefix\"\nsnapshot_schema = f\"{catalog}.{schema_prefix}_snapshot\"\n\nif action == \"snapshot\":\n    spark.sql(f\"CREATE SCHEMA IF NOT EXISTS {snapshot_schema}\")\n    for t in SILVER_TABLES:\n        spark.sql(f\"CREATE OR R",
+  "state": "finished",
+  "output": "snapshot workspace.makc_logistics_s2demo_silver.region -> workspace.makc_logistics_s2demo_snapshot.region\nsnapshot workspace.makc_logistics_s2demo_silver.nation -> workspace.makc_logistics_s2demo_snapshot.nation\nsnapshot workspace.makc_logistics_s2demo_silver.supplier -> workspace.makc_logistics_s2demo_snapshot.supplier\nsnapshot workspace.makc_logistics_s2demo_silver.customer -> workspace.makc_logistics_s2demo_snapshot.customer\nsnapshot workspace.makc_logistics_s2demo_silver.brand -> workspace.makc_logistics_s2demo_snapshot.brand\nsnapshot workspace.makc_logistics_s2demo_silver.part -> workspace.makc_logistics_s2demo_snapshot.part\nsnapshot workspace.makc_logistics_s2demo_silver.partsupp -> workspace.makc_logistics_s2demo_snapshot.partsupp\nsnapshot workspace.makc_logistics_s2demo_silver.orders -> workspace.makc_logistics_s2demo_snapshot.orders\nsnapshot workspace.makc_logistics_s2demo_silver.ship_date_status -> workspace.makc_logistics_s2demo_snapshot.ship_date_status\nsnapshot workspace.makc_logistics_s2demo_silver.part_quantity_price -> workspace.makc_logistics_s2demo_snapshot.part_quantity_price\nsnapshot workspace.makc_logistics_s2demo_silver.lineitem -> workspace.makc_logistics_s2demo_snapshot.lineitem\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "ccb3c589-6953-40f2-9fc3-e249836c9490",
+  "command": "if action == \"compare\":\n    rows = []\n    for t in SILVER_TABLES:\n        silver_minus_snapshot = spark.sql(\n            f\"SELECT * FROM {silver_schema}.{t} EXCEPT ALL SELECT * FROM {snapshot_schema}.{t}\").count()\n        snapshot_minus_silver = spark.sql(\n            f\"SELECT * FROM {snapshot_schem",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ }
+]
