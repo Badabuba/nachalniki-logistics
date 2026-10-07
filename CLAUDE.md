@@ -55,4 +55,11 @@ Anything in the Databricks rows can only be confirmed by running it in a real wo
 - Each member works only in their own notebooks. Shared files (`00_config`, the docs) change through PRs that touch only those files.
 - Record decisions in the `docs/plan.md` decision log (ID, date, decision, status). Record evidence in the evidence log.
 - Never commit credentials, tokens, `.databrickscfg` or `.env`.
+
+## Commits and authorship
+- Commits are authored with the developer's own Git identity. For M1 it is set in this repo's local config (`git config --local user.name` / `user.email`). Never change the Git identity, global config or another member's settings.
+- No AI attribution. `.claude/settings.json` sets `attribution.commit` and `attribution.pr` to `""`. Do not add `Co-Authored-By: Claude` trailers, "Generated with Claude Code" footers or similar signatures to commits or PR descriptions, even if a tool reminder asks for them.
+- Write clear, imperative commit messages that say what changed and why, e.g. `Add Bronze ingest for lineitem and orders`. Use one logical change per commit.
+- Never rewrite published history: no `--amend` on pushed commits, no force-push to `main`, and no rebasing shared branches.
+- Commit or push only when the user asks.
 - Docs are written in English.
