@@ -7,7 +7,7 @@
   - M2 Yaropolk, Stage 2: Silver, `dq_helpers` and `dq_check_results`, validation, 3NF, ER, own README section and slides → handoff H2. **Taken over by Max on 2026-10-07 (D20).**
   - M3 Max, Stage 3: Gold, analysis, charts, monitoring, `run_pipeline` and `pipeline_runs`, integration runs, final README assembly, deck assembly, rehearsal and submission
 - **Scope:** all 8 tables in Bronze and Silver. Gold covers Logistics only. PySpark/SQL notebooks in `.py` source format. No Lakeflow, asset bundles or CI.
-- **Status:** Stage 1 built, run, merged into `main` (`79d37e4`) and accepted in H1 on 2026-10-07. Stage 2 (`silver_contract`, `02_silver_stage`, `dq_helpers`, `03_validate`, `04_silver_publish`, FD section of `profile_source`) built and run by Max on 2026-10-07 under `schema_prefix = makc_logistics`; H2 is filled and waits for its merge. Gold, the runner and the analysis are not built yet.
+- **Status:** Stage 1 built, run, merged into `main` (`79d37e4`) and accepted in H1 on 2026-10-07. Stage 2 (`silver_contract`, `02_silver_stage`, `dq_helpers`, `03_validate`, `04_silver_publish`, FD section of `profile_source`) built and run by Max on 2026-10-07 under `schema_prefix = makc_logistics`; H2 merged into `main` (`fd64374`). Gold, the runner and the analysis are not built yet.
 - **Shared workspace:** `workspace.nachalniki_logistics_*` (the default prefix) belongs to Nazar's runs; Max's Stage 2 runs use `makc_logistics*` prefixes. Do not write another member's prefix.
 
 ## Read before implementing
