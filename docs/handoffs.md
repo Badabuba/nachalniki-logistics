@@ -11,9 +11,9 @@ Rules:
 
 ## H1 — Nazar → Yaropolk (NAZ-21)
 
-Status: **implementation merged into `main` on 2026-10-07 ([PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1), squash commit `79d37e4`); receiver validation outstanding.** H1 is accepted only when Yaropolk records it.
+Status: **accepted (2026-10-07).** Implementation merged into `main` on 2026-10-07 ([PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1), squash commit `79d37e4`); receiver validation done by Max for Yaropolk (D20), see the acceptance line below.
 
-**Yaropolk, start here:** work from `main`. (1) Review the allowed-list constants in `notebooks/00_config.py` against design §5.5/§6 (NAZ-10). (2) Run A1–A6 ([plan.md H1](plan.md#h1--nazar--yaropolk-naz-21)) with your own `catalog` if you use a separate workspace; for A5 use `checks/p2/run_id_helpers/a5_interactive` (Run all twice in one session) and `a5_child` alone. (3) Record "H1 accepted" or a defect list in the [evidence log](plan.md#evidence-log), including your review of the constants (D19). Then continue with YAR-03, YAR-04 and YAR-12.
+**Receiver steps** (done by Max for Yaropolk on 2026-10-07, D20): work from `main`. (1) Review the allowed-list constants in `notebooks/00_config.py` against design §5.5/§6 (NAZ-10). (2) Run A1–A6 ([plan.md H1](plan.md#h1--nazar--yaropolk-naz-21)) with your own `catalog` if you use a separate workspace; for A5 use `checks/p2/run_id_helpers/a5_interactive` (Run all twice in one session) and `a5_child` alone. (3) Record "H1 accepted" or a defect list in the [evidence log](plan.md#evidence-log), including your review of the constants (D19). Then continue with YAR-03, YAR-04 and YAR-12.
 
 | Field | Value |
 |---|---|
@@ -35,27 +35,27 @@ Status: **implementation merged into `main` on 2026-10-07 ([PR #1](https://githu
 
 Implementer self-check (Nazar, 2026-10-07, from existing evidence; **not** the receiver's acceptance): A1 passed, A2 passed, A3 passed, A4 passed (grep repeated locally), A5 passed (serverless job runs and an interactive session), A6 listed above. Details: plan.md evidence row "H1 implementer self-check".
 
-Acceptance (A1–A6, run by Yaropolk): **not run**
+Acceptance (A1–A6): **H1 accepted on 2026-10-07 by Max**, who took over the receiver role (D20), in the shared workspace with `schema_prefix = makc_logistics`. A1–A4 and A6 passed; A5 passed on serverless job runs (the interactive `a5_interactive` step was not repeated by Max; Nazar's interactive run stands). The allowed lists were reviewed and approved (NAZ-10). Details: plan.md evidence rows "H1 acceptance (A1–A6)" and "NAZ-10 review".
 
 ---
 
 ## H2 — Yaropolk → Max (YAR-13)
 
-Status: **not started**
+Status: **filled (2026-10-07); waiting for the merge into `main`.** Stage 2 was built and run by Max after he took over Yaropolk's tasks (D20), so the sender and the receiver are the same person.
 
 | Field | Value |
 |---|---|
-| Commit SHA on `main` | – |
-| Workspace path (D17) and values used | – |
-| Final Silver contract (design §5.1, any §5.4 decomposition and its decision-log entry) | – |
-| Silver stage execution sequence (design §3.1) | – |
-| Final `dq_helpers` signatures | – |
-| Rule IDs written by `03_validate` | – |
-| Success run: `run_id` and evidence-log row | – |
-| Failure demo (YAR-08): evidence-log row | – |
-| Constraint evidence (YAR-06), ER image (YAR-07), 3NF results (YAR-03) | – |
-| Remaining assumptions | – |
-| README validation section (YAR-10) | – |
-| Slide material location (YAR-11) | – |
+| Commit SHA on `main` | Not merged yet. Stage 2 is committed on branch `yaropolk-part/silver` (based on `docs/h1-merge-sha`, `694a4a0`); the `main` SHA is written here by whoever merges it |
+| Workspace path (D17) and values used | Shared workspace `dbc-1766f78b-980d`. `catalog = workspace`, `schema_prefix = makc_logistics`, `source = samples.tpch`. Tables: `workspace.makc_logistics_{bronze,staging,silver,audit}` (Bronze `_ingested_at = 2026-10-07 16:28:41.562184` UTC). Nazar's `nachalniki_logistics_bronze` was not used or changed. After H2 the default prefix is written only by `run_pipeline` (MAX-10) |
+| Final Silver contract (design §5.1, any §5.4 decomposition and its decision-log entry) | 11 tables, defined in `notebooks/silver_contract.py` and design §5.1: the 8 source tables plus `brand`, `ship_date_status`, `part_quantity_price` from the 3NF decomposition (D21). `part` has no `p_mfgr`; `lineitem` has no `l_linestatus`, `l_extendedprice`. Frozen for Gold: `lineitem` `l_orderkey, l_linenumber, l_partkey, l_suppkey, l_shipdate, l_commitdate, l_receiptdate, l_shipmode, l_returnflag`; `orders` `o_orderkey, o_orderdate, o_orderpriority` (D10 Silver part) |
+| Silver stage execution sequence (design §3.1) | `checks/p2/silver_stage/silver_stage_entry`: `%run 00_config` → `run_id = new_run_id()` → `%run 02_silver_stage` → `%run 03_validate` → `%run 04_silver_publish`, one cell each; widgets `catalog`, `schema_prefix`, `source`, and `inject_bad_row` (`none`; `receipt_before_ship` only for the failure demo). Run as a serverless one-time job (README "Validation approach"). `run_pipeline` should `%run` `01`, `02`, `03`, `04`, `05` in the same order |
+| Final `dq_helpers` signatures | `ensure_dq_check_results()` (runs when `dq_helpers` is loaded); `record_dq_result(run_id, rule_id, layer, table_name, violation_count, sample_keys)` with `layer` in `source`/`bronze`/`staging`/`gold` and `sample_keys` a list (first 10 kept, stored as a JSON array string); `raise_if_failed(run_id, rule_ids)` raises `RuntimeError` if any row of that run and those rules failed or a rule has no row. Also exposed: `DQ_CHECK_RESULTS` (full table name), `MAX_SAMPLE_KEYS = 10`. `dq_helpers` runs `%run ./00_config` itself |
+| Rule IDs written by `03_validate` | `DQ-L1`–`DQ-L9`, `DQ-G1`, `DQ-G2`, `DQ-G3`: 41 rows per run (one per rule and table; DQ-G2 `table_name` is `<child>.<constraint>`) |
+| Success run: `run_id` and evidence-log row | `159dd764-f326-4abf-ade9-279d5d540f7e` (job run `394918021530920`), all 41 rows passed; evidence row "YAR-04, YAR-05, YAR-06 success runs" |
+| Failure demo (YAR-08): evidence-log row | Evidence row YAR-08 (DQ-L2 failed on line `1|1`, publish skipped, Silver unchanged; scratch schemas dropped) |
+| Constraint evidence (YAR-06), ER image (YAR-07), 3NF results (YAR-03) | YAR-06: 11 PKs, 12 FKs, NOT NULL, `CHECK (l_receiptdate >= l_shipdate)` (evidence row "YAR-04, YAR-05, YAR-06 success runs"). ER: [silver_er.png](silver_er.png), source [silver_er.mmd](silver_er.mmd), design §5.2. 3NF: design §5.3 and §5.5, evidence row YAR-03 |
+| Remaining assumptions | (1) D10 (Silver part), D14, D20 and D21 were decided by Max alone; Nazar and Yaropolk were not asked. (2) The H2 acceptance B1–B5 was run by its own sender (D20). (3) The 3NF analysis covers the candidate dependencies listed in design §5.3, not every possible dependency. (4) The phone country code and the constant `o_shippriority` are kept as recorded deviations (D21). (5) All Stage 2 runs were serverless one-time jobs from an imported workspace folder, not from a Git folder, and none was interactive. (6) The failure demo's job was retried once by the job service, so it ran two failing executions (both recorded) |
+| README validation section (YAR-10) | README "Validation approach (Stage 2: Silver and data quality)" |
+| Slide material location (YAR-11) | `docs/slides/stage2.md` (2 slides with speaker notes); images `docs/silver_er.png` and `docs/slides/img/silver_failure_demo_20261007.png` |
 
-Acceptance (B1–B5, run by Max): **not run**
+Acceptance (B1–B5): **run by Max on 2026-10-07, all passed**, but not independent, because Max is also the sender (D20). Details: plan.md evidence row "H2 B1–B5".

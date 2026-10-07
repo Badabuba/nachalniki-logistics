@@ -1,6 +1,6 @@
 # Design — Logistics lakehouse on `samples.tpch`
 
-Status: **partly agreed** (see [plan.md](plan.md), gate P1): §2 config (D9), §3.1 run_id and DQ interface (D15) and §6 allowed-list procedure (D13) agreed on 2026-10-07; the other contracts (D5–D7, D10–D12, D14) are still proposed.
+Status: **partly agreed** (see [plan.md](plan.md), gate P1): §2 config (D9), §3.1 run_id and DQ interface (D15) and §6 allowed-list procedure (D13) agreed on 2026-10-07; §5 Silver contract, 3NF method and decomposition decided by Max as Stage 2 owner on 2026-10-07 (D10 Silver part, D14, D21; see D20); the other contracts (D5–D7, the Gold part of D10, D11, D12) are still proposed.
 Requirements are in [requirements.md](requirements.md). The PDF `group_assignment_1.pdf` is authoritative.
 
 Tags used below:
@@ -128,95 +128,152 @@ This interface is agreed before Stage 1 is built, so that each stage runs on its
 
 Column names are kept exactly as in TPC-H, so there is nothing to map and everyone can use the TPC-H docs. Types follow the source. Verified with `DESCRIBE` (NAZ-02, 2026-10-07, see §5.5): every key column is `bigint` except `l_linenumber` (`int`); money and quantity columns (`*_acctbal`, `l_quantity`, `l_extendedprice`, `l_discount`, `l_tax`, `o_totalprice`, `p_retailprice`, `ps_supplycost`) are `decimal(18,2)`; `o_orderdate`, `l_shipdate`, `l_commitdate`, `l_receiptdate` are `date`; `o_shippriority`, `p_size`, `ps_availqty` are `int`; all other columns are `string`. Bronze metadata columns are not carried into Silver.
 
+Silver has **11 tables**: the 8 source tables plus 3 tables from the 3NF decomposition of §5.3–5.4 (D21). The column lists, keys and constraints are defined once in `notebooks/silver_contract.py`, which `02`–`04` load.
+
 | Table | Row grain | Primary key | References (FK) | Important columns |
 |---|---|---|---|---|
 | `region` | one region | `r_regionkey` | – | `r_name` |
 | `nation` | one nation | `n_nationkey` | `n_regionkey → region` | `n_name` |
 | `supplier` | one supplier | `s_suppkey` | `s_nationkey → nation` | `s_name` |
 | `customer` | one customer | `c_custkey` | `c_nationkey → nation` | `c_mktsegment` |
-| `part` | one part | `p_partkey` | – | `p_brand`, `p_mfgr`, `p_retailprice` |
+| `brand` | one brand | `p_brand` | – | `p_mfgr` (decomposed from `part`) |
+| `part` | one part | `p_partkey` | `p_brand → brand` | `p_brand`, `p_retailprice` (no `p_mfgr`) |
 | `partsupp` | one (part, supplier) offer | `(ps_partkey, ps_suppkey)` | `ps_partkey → part`, `ps_suppkey → supplier` | `ps_supplycost` |
 | `orders` | one order | `o_orderkey` | `o_custkey → customer` | `o_orderdate`, `o_orderpriority` |
-| `lineitem` | one order line | `(l_orderkey, l_linenumber)` | `l_orderkey → orders`; `(l_partkey, l_suppkey) → partsupp` | `l_shipdate`, `l_commitdate`, `l_receiptdate`, `l_shipmode`, `l_returnflag`, `l_linestatus` |
+| `ship_date_status` | one ship date | `l_shipdate` | – | `l_linestatus` (decomposed from `lineitem`) |
+| `part_quantity_price` | one (part, quantity) | `(l_partkey, l_quantity)` | `l_partkey → part` | `l_extendedprice` (decomposed from `lineitem`) |
+| `lineitem` | one order line | `(l_orderkey, l_linenumber)` | `l_orderkey → orders`; `(l_partkey, l_suppkey) → partsupp`; `l_shipdate → ship_date_status`; `(l_partkey, l_quantity) → part_quantity_price` | `l_shipdate`, `l_commitdate`, `l_receiptdate`, `l_shipmode`, `l_returnflag` (no `l_linestatus`, `l_extendedprice`) |
 
-Logistics Gold reads **only** `orders` and `lineitem`. These two contracts are frozen at gate P1:
-- `lineitem`: `l_orderkey, l_linenumber, l_partkey, l_suppkey, l_shipdate, l_commitdate, l_receiptdate, l_shipmode, l_returnflag, l_linestatus`
+Logistics Gold reads **only** `orders` and `lineitem`. These two contracts are frozen (D10, decided 2026-10-07; `l_linestatus` removed from `lineitem` by D21, Gold never used it):
+- `lineitem`: `l_orderkey, l_linenumber, l_partkey, l_suppkey, l_shipdate, l_commitdate, l_receiptdate, l_shipmode, l_returnflag`
 - `orders`: `o_orderkey, o_orderdate, o_orderpriority`
 
 Constraints added at publish:
-- `NOT NULL` on all PK columns and on `o_orderdate, l_shipdate, l_commitdate, l_receiptdate, l_shipmode, l_returnflag, l_linestatus`
-- `CHECK (l_receiptdate >= l_shipdate)` on `lineitem`
-- PK/FK declared as informational
+- `NOT NULL` on all PK columns and on `o_orderdate, l_shipdate, l_commitdate, l_receiptdate, l_shipmode, l_returnflag` and `ship_date_status.l_linestatus`
+- `CHECK (l_receiptdate >= l_shipdate)` on `lineitem` (constraint `lineitem_receipt_after_ship`)
+- PK on every table and the 12 FKs above, declared as informational
 
-Databricks docs say PK/FK constraints on Unity Catalog Delta tables are *informational only and not enforced*, while `NOT NULL` and `CHECK` are enforced. **Declaring an FK does not prove referential integrity.** That is proved by the anti-join rules in §6. Verified on our compute (NAZ-03, 2026-10-07): `ADD CONSTRAINT … CHECK` is enforced (a violating insert fails with SQLSTATE 23001 and writes nothing), and `ADD CONSTRAINT … PRIMARY KEY` on a `NOT NULL` column is accepted but not enforced (a duplicate key was inserted). FK DDL has not been run yet **[VERIFY]** (YAR-06).
+Databricks docs say PK/FK constraints on Unity Catalog Delta tables are *informational only and not enforced*, while `NOT NULL` and `CHECK` are enforced. **Declaring an FK does not prove referential integrity.** That is proved by the anti-join rules in §6. Verified on our compute (NAZ-03, 2026-10-07): `ADD CONSTRAINT … CHECK` is enforced (a violating insert fails with SQLSTATE 23001 and writes nothing), and `ADD CONSTRAINT … PRIMARY KEY` on a `NOT NULL` column is accepted but not enforced (a duplicate key was inserted). FK DDL, including the two-column FKs, ran in `04_silver_publish` on 2026-10-07 (YAR-06; plan.md evidence log).
 
-### 5.2 Draft ER diagram  — **[VERIFY] against `DESCRIBE` output before taking the screenshot**
+`04_silver_publish` drops the FKs of the previous publication before replacing the tables, then re-adds every constraint, so a rerun starts from the same state.
+
+### 5.2 ER diagram of the published Silver
+
+Rendered from [silver_er.mmd](silver_er.mmd) with mermaid-cli 11.4.2 to [silver_er.png](silver_er.png). Checked against `information_schema.columns` of the published `makc_logistics_silver` on 2026-10-07: the same 11 tables and 65 columns with the same types (YAR-07; plan.md evidence log). Mermaid types cannot carry parameters, so `decimal` stands for `decimal(18,2)`.
 
 ```mermaid
 erDiagram
-    REGION   ||--o{ NATION   : "r_regionkey = n_regionkey"
-    NATION   ||--o{ SUPPLIER : "n_nationkey = s_nationkey"
-    NATION   ||--o{ CUSTOMER : "n_nationkey = c_nationkey"
-    CUSTOMER ||--o{ ORDERS   : "c_custkey = o_custkey"
-    PART     ||--o{ PARTSUPP : "p_partkey = ps_partkey"
-    SUPPLIER ||--o{ PARTSUPP : "s_suppkey = ps_suppkey"
-    ORDERS   ||--|{ LINEITEM : "o_orderkey = l_orderkey"
-    PARTSUPP ||--o{ LINEITEM : "(ps_partkey, ps_suppkey) = (l_partkey, l_suppkey)"
+    REGION   ||--o{ NATION   : "n_regionkey"
+    NATION   ||--o{ SUPPLIER : "s_nationkey"
+    NATION   ||--o{ CUSTOMER : "c_nationkey"
+    BRAND    ||--o{ PART     : "p_brand"
+    PART     ||--o{ PARTSUPP : "ps_partkey"
+    SUPPLIER ||--o{ PARTSUPP : "ps_suppkey"
+    CUSTOMER ||--o{ ORDERS   : "o_custkey"
+    PART     ||--o{ PART_QUANTITY_PRICE : "l_partkey"
+    ORDERS   ||--|{ LINEITEM : "l_orderkey"
+    PARTSUPP ||--o{ LINEITEM : "(l_partkey, l_suppkey)"
+    SHIP_DATE_STATUS    ||--|{ LINEITEM : "l_shipdate"
+    PART_QUANTITY_PRICE ||--|{ LINEITEM : "(l_partkey, l_quantity)"
 
     REGION {
         bigint r_regionkey PK
         string r_name
+        string r_comment
     }
     NATION {
         bigint n_nationkey PK
-        bigint n_regionkey FK
         string n_name
+        bigint n_regionkey FK
+        string n_comment
     }
     SUPPLIER {
         bigint s_suppkey PK
+        string s_name
+        string s_address
         bigint s_nationkey FK
+        string s_phone
+        decimal s_acctbal
+        string s_comment
     }
     CUSTOMER {
         bigint c_custkey PK
+        string c_name
+        string c_address
         bigint c_nationkey FK
+        string c_phone
+        decimal c_acctbal
+        string c_mktsegment
+        string c_comment
+    }
+    BRAND {
+        string p_brand PK
+        string p_mfgr
     }
     PART {
         bigint p_partkey PK
-        string p_brand
+        string p_name
+        string p_brand FK
+        string p_type
+        int p_size
+        string p_container
+        decimal p_retailprice
+        string p_comment
     }
     PARTSUPP {
         bigint ps_partkey PK, FK
         bigint ps_suppkey PK, FK
+        int ps_availqty
+        decimal ps_supplycost
+        string ps_comment
     }
     ORDERS {
         bigint o_orderkey PK
         bigint o_custkey FK
+        string o_orderstatus
+        decimal o_totalprice
         date o_orderdate
         string o_orderpriority
+        string o_clerk
+        int o_shippriority
+        string o_comment
+    }
+    SHIP_DATE_STATUS {
+        date l_shipdate PK
+        string l_linestatus
+    }
+    PART_QUANTITY_PRICE {
+        bigint l_partkey PK, FK
+        decimal l_quantity PK
+        decimal l_extendedprice
     }
     LINEITEM {
         bigint l_orderkey PK, FK
-        int l_linenumber PK
         bigint l_partkey FK
         bigint l_suppkey FK
-        date l_shipdate
+        int l_linenumber PK
+        decimal l_quantity FK
+        decimal l_discount
+        decimal l_tax
+        string l_returnflag
+        date l_shipdate FK
         date l_commitdate
         date l_receiptdate
+        string l_shipinstruct
         string l_shipmode
-        string l_returnflag
-        string l_linestatus
+        string l_comment
     }
 ```
 
-`ORDERS ||--|{ LINEITEM` ("each order has at least one line") is the Logistics rule. It is shown as a target, and DQ-L9 proves it. The column types shown match `DESCRIBE` of `samples.tpch` (NAZ-02, 2026-10-07); only a subset of columns is drawn. The relationships still need checking against the published Silver. The screenshot for the presentation will come from this diagram (rendered) or from the Catalog Explorer ER view if that is available. **[VERIFY]**
+`ORDERS ||--|{ LINEITEM` ("each order has at least one line") is the Logistics rule, proved by DQ-L9. `SHIP_DATE_STATUS` and `PART_QUANTITY_PRICE` are drawn as "at least one line" because they are built from the distinct values of the line items.
 
-### 5.3 3NF analysis — to be completed with profiling evidence
+### 5.3 3NF analysis — method decided (D14), results below
 
 Copying a well-designed source does **not** prove 3NF. The argument has to cover the dependencies themselves.
 
 **Definition used.** A relation is in 3NF if it is in 1NF, and for every non-trivial functional dependency `X → A` that holds, either `X` is a superkey or `A` is prime (part of some candidate key).
 
-**Method (owner: M2 Yaropolk):**
+**Method (Stage 2 owner; D14):**
 1. **1NF.** Each column holds one value of one type, and there are no repeating groups or arrays. Free-text columns (`*_comment`, `p_name`, `p_type`) are treated as atomic strings. We do not parse them, and Logistics does not use them.
 2. **Candidate keys.** Confirm each declared PK is unique and non-null (DQ-G1). Also list other unique columns (e.g., `n_name`, `r_name`, `c_name`, `s_name` may be unique) [PROFILE]. Alternative candidate keys do **not** break 3NF. They only make more attributes prime.
 3. **Candidate non-key dependencies.** Derive candidates from column *meaning* and the dataset documentation, and test each one on the data:
@@ -236,8 +293,26 @@ Candidates to test (hypotheses only, none claimed):
 | `lineitem` | `l_receiptdate → l_returnflag` | return flag may depend on whether the item was received |
 | `lineitem` | `(l_partkey, l_quantity) → l_extendedprice` | extended price may be quantity × part price |
 | `customer`, `supplier` | `*_nationkey → prefix of *_phone` | phone prefix may encode the country (would be a 1NF/atomicity question about the phone column) |
+| `orders` | `∅ → o_shippriority` | the specification sets the column to a constant |
 
 Results go in the table in §5.5, with the query and date.
+
+**Results and classification (YAR-03, 2026-10-07).** Queries in the "Functional dependencies" section of `notebooks/profile_source.py`, run on Bronze `makc_logistics_bronze` (run `146579331307204`; raw output in `checks/p2/outputs/fd_analysis/`). Documentation: TPC-H Standard Specification rev. 3.0.1, clause 4.2.3 (generation rules) and clause 4.2.2.9 (phone numbers); the snapshot date is `CURRENTDATE = 1995-06-17` (clause 4.2.2.12).
+
+| Relation | Candidate | Data (violating determinant values) | Documented rule | Classification and action |
+|---|---|---|---|---|
+| all 8 | declared PKs | unique, no NULL (8/8) | – | candidate keys confirmed |
+| `region`, `nation`, `supplier`, `customer` | `r_name`, `n_name`, `s_name`, `c_name` unique | unique, no NULL | `S_NAME`, `C_NAME` = "Supplier#"/"Customer#" + key; nation and region names are fixed lists | alternative candidate keys; they make the name prime and do not break 3NF |
+| `part` | `p_name` unique | 999962 distinct of 1000000 | random words | not a key |
+| `part` | `p_brand → p_mfgr` | holds (0 of 25) | `P_BRAND = "Brand#" M N`, `M` from `P_MFGR`; 0 rows break it | **violation** → `brand(p_brand, p_mfgr)` |
+| `lineitem` | `l_shipdate → l_linestatus` | holds (0 of 2526) | `"O"` if `L_SHIPDATE > CURRENTDATE`, else `"F"`; observed cutoff: last `F` 1995-06-17, first `O` 1995-06-18 | **violation** → `ship_date_status(l_shipdate, l_linestatus)` |
+| `lineitem` | `l_receiptdate → l_returnflag` | refuted (1261 of 2555 dates have both `R` and `A`) | `R` or `A` at random when `L_RECEIPTDATE <= CURRENTDATE`, else `N` | not a dependency, no action |
+| `lineitem` | `(l_partkey, l_quantity) → l_extendedprice` | holds (0 of 22657201) | `L_EXTENDEDPRICE = L_QUANTITY * P_RETAILPRICE`; 0 rows break it | **violation** → `part_quantity_price(l_partkey, l_quantity, l_extendedprice)` |
+| `customer`, `supplier` | `*_nationkey → substring(*_phone, 1, 2)` | holds (0 of 25 each) | country code = nation index + 10 (4.2.2.9); 0 rows break it | the dependency is on a *part* of one attribute, not between attributes. The phone is one term in the specification and Logistics never reads it, so it is kept as an atomic string (1NF step 1). `c_nationkey → c_phone` does not hold. No decomposition; recorded as an observation |
+| `orders` | `∅ → o_shippriority` | holds: 1 distinct value (0) | `O_SHIPPRIORITY` set to 0 | a constant column. The textbook fix is a one-row relation, which adds no information; kept in `orders` as a documented deviation (D21) |
+| `orders` | `o_orderstatus`, `o_totalprice` | – | computed from the order's line items | dependency on rows of another relation, not an FD among attributes of `orders` (step 5); no action |
+
+The three violations are fixed by the §5.4 decomposition (D21). After it, every remaining non-trivial FD tested has a key as its determinant, so the 11 Silver tables are in 3NF for the dependencies examined. The decomposed tables are built with `SELECT DISTINCT` from staging; if the data ever broke one of the rules, the decomposed table would get a duplicate key and DQ-G1 would block the run, so no row can be lost silently.
 
 ### 5.4 Compliant fix if a real violation is found
 
@@ -248,6 +323,8 @@ Examples (applied only if §5.3 confirms the FD):
 - `l_shipdate → l_linestatus`: add `ship_date_status(l_shipdate PK, l_linestatus)`, and `lineitem` keeps `l_shipdate`. Logistics still validates `l_linestatus` (DQ-L7 runs on staging and on the new table), and Gold can join it back if needed.
 
 Any decomposition changes the Silver contract and the ER diagram, so it needs a decision-log entry and a re-check of the §5.1 frozen columns.
+
+**Applied (D21, 2026-10-07):** `brand` and `ship_date_status` as above, plus `(l_partkey, l_quantity) → l_extendedprice`: add `part_quantity_price(l_partkey, l_quantity PK, l_extendedprice)` (`l_partkey` FK → `part`), and `lineitem` keeps `(l_partkey, l_quantity)` as an FK. DQ-L7 runs on `stg_ship_date_status`. The frozen `lineitem` contract lost `l_linestatus`, which no Gold table uses.
 
 ### 5.5 Profiling results
 
@@ -260,7 +337,7 @@ Any decomposition changes the Silver contract and the ER diagram, so it needs a 
 | distinct `o_orderpriority` with counts | `notebooks/profile_source.py`, run 2026-10-07 on Bronze (plan.md evidence log, NAZ-09): `GROUP BY o_orderpriority` with `length()` | 2026-10-07 | 5 values, no NULL, no extra whitespace: 1-URGENT 1501100, 2-HIGH 1499192, 3-MEDIUM 1498710, 4-NOT SPECIFIED 1501281, 5-LOW 1499717 (sum = orders rows, 7500000). The urgent literal is `1-URGENT` |
 | min/max of `o_orderdate`, `l_shipdate`, `l_commitdate`, `l_receiptdate` | `notebooks/profile_source.py`, run 2026-10-07 on Bronze (plan.md evidence log, NAZ-09): `min`, `max`, `count_if(IS NULL)` per column | 2026-10-07 | `o_orderdate` 1992-01-01 – 1998-08-02; `l_shipdate` 1992-01-02 – 1998-12-01; `l_commitdate` 1992-01-31 – 1998-10-31; `l_receiptdate` 1992-01-03 – 1998-12-31; 0 NULLs in each |
 | lines per order: min / median / mean / max | `notebooks/profile_source.py`, run 2026-10-07 on Bronze (plan.md evidence log, NAZ-09): every Bronze order `LEFT JOIN` its line count, missing count → 0; `percentile_cont(0.5)` for the median | 2026-10-07 | 7500000 orders, 0 without lines; min 1, median 4.0, mean 3.999972666666667, max 7 |
-| FD candidates (§5.3) | `profile_source` | – | not run |
+| candidate keys and FD candidates (§5.3) | `notebooks/profile_source.py`, section "Functional dependencies", on `makc_logistics_bronze` (run `146579331307204`): key uniqueness and NULLs; `GROUP BY X` with `count(DISTINCT A) > 1`; rows breaking each documented rule | 2026-10-07 | PKs 8/8 unique; `r_name`, `n_name`, `s_name`, `c_name` unique, `p_name` not (999962 / 1000000). Hold: `p_brand → p_mfgr`, `l_shipdate → l_linestatus`, `(l_partkey, l_quantity) → l_extendedprice`, `*_nationkey → phone prefix`, constant `o_shippriority`. Refuted: `l_receiptdate → l_returnflag` (1261 of 2555 dates). Classification in §5.3 |
 
 ## 6. Validation rules
 
@@ -274,14 +351,16 @@ All rules are **blocking**. They are evaluated in `03_validate` on staging (the 
 | DQ-L4 | any of `o_orderdate, l_shipdate, l_commitdate, l_receiptdate` is NULL | needed for V1 to be evaluable |
 | DQ-L5 | `l_shipmode` NULL or not in `ALLOWED_SHIP_MODES` | V2 |
 | DQ-L6 | `l_returnflag` NULL or not in `ALLOWED_RETURN_FLAGS` | V2 |
-| DQ-L7 | `l_linestatus` NULL or not in `ALLOWED_LINE_STATUSES` | V2 |
+| DQ-L7 | `l_linestatus` NULL or not in `ALLOWED_LINE_STATUSES` (checked on `stg_ship_date_status`, which holds every staged `(l_shipdate, l_linestatus)` pair after D21) | V2 |
 | DQ-L8 | `lineitem` rows with no matching `orders.o_orderkey` (left anti join) | V3 |
 | DQ-L9 | `orders` rows with no matching `lineitem.l_orderkey` (left anti join) | V3 |
-| DQ-G1 | duplicate or NULL PK, for each of the 8 tables | 3NF / enforced quality |
-| DQ-G2 | unresolved FKs from §5.1, including the two-column `(l_partkey, l_suppkey) → partsupp` (anti join on both columns) | 3NF / enforced quality |
+| DQ-G1 | duplicate or NULL PK, for each of the 11 Silver tables (for a decomposed table, a duplicate key means its documented rule is broken) | 3NF / enforced quality |
+| DQ-G2 | unresolved FKs from §5.1 (all 12), including the two-column `(l_partkey, l_suppkey) → partsupp` and `(l_partkey, l_quantity) → part_quantity_price` (anti join on all key columns) | 3NF / enforced quality |
 | DQ-G3 | row count differs between source, Bronze and staging for each table | no silent loss |
 | DQ-GOLD1 | `count(fct_lineitem_delivery) ≠ count(silver.lineitem)` | no double-counting or loss |
 | DQ-GOLD2 | `count(fct_order_fulfillment) ≠ count(silver.orders)` | orders without lines are not hidden |
+
+`03_validate` writes one `dq_check_results` row per rule and checked table (DQ-L4 for `lineitem` and `orders`, DQ-G1 for each of the 11 tables, DQ-G2 for each FK with `table_name = <child>.<constraint>`, DQ-G3 for each of the 8 source tables), so one run writes 41 rows for the 12 rule IDs. `sample_keys` is a JSON array of up to 10 violating keys, composite keys joined with `|` (for DQ-G3: the three row counts). `raise_if_failed` fails a rule ID if any of its rows failed.
 
 There are **no rules on lateness.** `l_receiptdate > l_commitdate` is a late delivery: a valid business outcome that stays in every layer and is the subject of Q2, Q3 and monitoring. Shipping after the commit date is also not invalid.
 
@@ -391,8 +470,8 @@ Notebook visuals in `06_analysis` (mandatory set):
 - Resolved: `%run` chaining and error propagation, on serverless job runs from a Git folder (NAZ-04, 2026-10-07; §3). Interactive sessions were not tested.
 - Resolved: a variable assigned in the caller (`run_id`) is visible inside a `%run` child and survives the child's nested `%run` of config, and the child reads the caller's widget values (NAZ-04, 2026-10-07; §3.1).
 - [VERIFY] Whether several members can share one workspace (Free Edition), and the grants needed to read another member's schemas (plan.md D17).
-- Resolved: `ADD CONSTRAINT … CHECK` (enforced) and `PRIMARY KEY` (informational) on our compute (NAZ-03, 2026-10-07; §5.1). [VERIFY] FK DDL (YAR-06).
+- Resolved: `ADD CONSTRAINT … CHECK` (enforced) and `PRIMARY KEY` (informational) on our compute (NAZ-03, 2026-10-07; §5.1). Resolved: FK DDL, including two-column FKs (YAR-06, 2026-10-07).
 - Resolved: `percentile_cont … WITHIN GROUP` works and interpolates exactly (1..4 → p50 2.5, p90 3.7) (NAZ-03, 2026-10-07).
-- Resolved: allowed values, the urgent priority literal, date ranges and lines per order (NAZ-09, NAZ-10, 2026-10-07; §5.5, §6). [PROFILE] The FD candidates (§5.5, YAR-03).
-- [VERIFY] An ER-diagram rendering source (Mermaid render vs Catalog Explorer).
+- Resolved: allowed values, the urgent priority literal, date ranges and lines per order (NAZ-09, NAZ-10, 2026-10-07; §5.5, §6). Resolved: the FD candidates (YAR-03, 2026-10-07; §5.3, §5.5).
+- Resolved: the ER diagram is a Mermaid render, checked against `information_schema.columns` of the published Silver (YAR-07, 2026-10-07; §5.2).
 - Optional: whether the dataset README at `/dbfs/databricks-datasets/tpch/README.md` is readable. This is a helpful aid but not a blocker.
