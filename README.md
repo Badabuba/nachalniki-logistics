@@ -2,7 +2,7 @@
 
 Team **«начальніки»**: Nazar, Yaropolk, Max. UCU Big Data, Group Assignment 1.
 
-> **Status: The Bronze → Silver → Gold pipeline and its runner are implemented and have run in Databricks.** The analysis notebook and final answers are still in progress. Track evidence and remaining work in [docs/plan.md](docs/plan.md).
+> **Status: The Bronze → Silver → Gold pipeline, runner and Q1–Q4 analysis are implemented and have run in Databricks.** Monthly monitoring and the final README results are still in progress. Track evidence and remaining work in [docs/plan.md](docs/plan.md).
 
 ## Purpose
 
@@ -67,6 +67,7 @@ notebooks/dq_helpers.py          creates and appends dq_check_results; run-scope
 notebooks/03_validate.py         all blocking rules on staging; raises on any failure
 notebooks/04_silver_publish.py   staging -> Silver plus constraints, only after validation passed
 notebooks/05_gold_build.py       Silver -> eight Logistics Gold tables plus Gold DQ checks
+notebooks/06_analysis.py         guarded Q1-Q4 tables, answers and charts
 notebooks/run_pipeline.py        complete Bronze -> Silver -> Gold run plus lifecycle audit
 docs/silver_er.mmd  docs/silver_er.png   ER diagram of the published Silver
 checks/p0/               P0 diagnostic notebooks (not part of the pipeline) and their raw outputs
