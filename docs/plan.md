@@ -268,7 +268,7 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Files: `docs/handoffs.md` (H1)
   - Depends on: NAZ-01–NAZ-10, NAZ-15, NAZ-17
   - Done when: the H1 note is merged after Yaropolk's review, and the A1–A6 result is in the evidence log (defects found later follow the defect path).
-  - Status 2026-10-07: H1 note filled (handoffs.md), Stage 1 pushed and the PR opened; the implementer's self-check of A1–A6 is in the evidence log. Still pending: Yaropolk's review and Yaropolk's own A1–A6 run, the interactive A5 run (NAZ-07), and the merge (the `main` SHA is added then).
+  - Status 2026-10-07: H1 note filled (handoffs.md), Stage 1 pushed and [PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1) opened; the implementer's self-check of A1–A6 is in the evidence log. Still pending: Yaropolk's review and Yaropolk's own A1–A6 run, the interactive A5 run (NAZ-07), and the merge (the `main` SHA is added then).
 
 ### Yaropolk
 

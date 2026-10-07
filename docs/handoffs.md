@@ -11,7 +11,7 @@ Rules:
 
 ## H1 — Nazar → Yaropolk (NAZ-21)
 
-Status: **ready for Yaropolk's review (2026-10-07).** Stage 1 is pushed on `docs/initial-plan` with an open PR into `main`. H1 is accepted only when Yaropolk records it.
+Status: **ready for Yaropolk's review (2026-10-07).** Stage 1 is pushed on `docs/initial-plan` with an open PR into `main`: [#1](https://github.com/Badabuba/nachalniki-logistics/pull/1). H1 is accepted only when Yaropolk records it.
 
 | Field | Value |
 |---|---|
