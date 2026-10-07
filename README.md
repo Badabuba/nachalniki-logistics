@@ -2,7 +2,7 @@
 
 Team **«начальніки»**: Nazar, Yaropolk, Max. UCU Big Data, Group Assignment 1.
 
-> **Status: planning.** The pipeline is **not implemented yet**. Only the source-discovery and workspace capability checks in `checks/p0/` have run in Databricks. No pipeline results exist yet. Track progress in [docs/plan.md](docs/plan.md).
+> **Status: planning.** The pipeline is **not implemented yet**. Only the P0 checks (source discovery, workspace capabilities, `%run` behaviour; outputs in `checks/p0/outputs/`) have run in Databricks. No pipeline results exist yet. Track progress in [docs/plan.md](docs/plan.md).
 
 ## Purpose
 

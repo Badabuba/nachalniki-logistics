@@ -63,7 +63,7 @@ run_pipeline
  7. append pipeline_runs(run_id, 'succeeded', ...)
 ```
 
-- `run_pipeline` executes the steps with `%run` in one notebook context, so `run_id` and the config are shared. It starts a fresh `run_id` on every execution (§3.1). Any exception stops all later cells, so no `succeeded` row is written. **[VERIFY]** that `%run` behaves like this on serverless.
+- `run_pipeline` executes the steps with `%run` in one notebook context, so `run_id` and the config are shared. It starts a fresh `run_id` on every execution (§3.1). Any exception stops all later cells, so no `succeeded` row is written. Shown on serverless job runs (NAZ-04, 2026-10-07): variables defined by a `%run` child are visible to the caller, and an exception raised inside a `%run` child skips the child's remaining cells and every later caller cell, so the run ends `FAILED`. Interactive serverless sessions were not tested.
 - **Invalid rows are never silently dropped.** Staging keeps every source row. If a blocking rule fails, the whole run fails, and the violation count plus up to 10 sample keys are saved in `dq_check_results`.
 - The enforced constraints are added in step 5, after validation has passed. They are defence in depth. If one rejects data at this point, the validation has a bug, and the run fails.
 - **After a failed run**, the Silver/Gold tables from the last successful run still exist, but they are *not current*. `06_analysis` therefore starts by reading `pipeline_runs`. If the most recent `run_id` has no `succeeded` row, it stops with a message showing the failed run, so stale outputs cannot be presented as current. The failed candidate stays in staging for debugging. (Partial failure: if step 6 fails, Silver is new but Gold is not. The run is still not `succeeded`, so the same guard applies.)
@@ -85,7 +85,7 @@ This interface is agreed before Stage 1 is built, so that each stage runs on its
   - **Silver stage execution** (Stage 2 development and its demo, before `run_pipeline` exists), each line in its own cell: `%run ./00_config` → `run_id = new_run_id()` → `%run ./02_silver_stage` → `%run ./03_validate` → `%run ./04_silver_publish`. An exception in `03_validate` stops the cells after it, so `04` does not execute. Stage executions write `dq_check_results` but not `pipeline_runs`.
 - Re-running a single cell of an entry notebook is not a new execution. Run the entry notebook from the top.
 - Stage 1 does not use `run_id`: `01_bronze_ingest` and `profile_source` need only `00_config`, and Bronze never reads or writes audit tables.
-- **[VERIFY]** (NAZ-04) that a variable assigned in the caller is visible inside a `%run` child, and that widget values set in the caller are the ones the child reads.
+- Shown on serverless job runs (NAZ-04, 2026-10-07): a `run_id` assigned in the caller is visible inside a `%run` child and is unchanged after that child itself runs `%run` of a config stand-in that does not assign it. Widget values (defaults or job parameters) that the caller sees are the values a `%run` child reads. Widget values typed in the notebook UI were not tested.
 
 **`dq_check_results` (owner Yaropolk, `notebooks/dq_helpers.py`).** The only code that creates or appends to the table:
 - `ensure_dq_check_results()`: `CREATE SCHEMA IF NOT EXISTS {prefix}_audit` and `CREATE TABLE IF NOT EXISTS` with the columns above. Never replaces the table.
@@ -373,8 +373,8 @@ Notebook visuals in `06_analysis` (mandatory set):
 
 - Resolved: catalog `workspace` exists (NAZ-01) and allows schema creation for a user with `CREATE SCHEMA` on it (NAZ-03 run 2, 2026-10-07; D8).
 - Resolved: column types in `samples.tpch` (`DESCRIBE`, NAZ-02, 2026-10-07; §5.1, §5.5).
-- [VERIFY] `%run` chaining and error propagation on serverless notebooks.
-- [VERIFY] A variable assigned in the caller (`run_id`) is visible inside a `%run` child, and widget values set in the caller are the ones the child reads (§3.1).
+- Resolved: `%run` chaining and error propagation, on serverless job runs from a Git folder (NAZ-04, 2026-10-07; §3). Interactive sessions were not tested.
+- Resolved: a variable assigned in the caller (`run_id`) is visible inside a `%run` child and survives the child's nested `%run` of config, and the child reads the caller's widget values (NAZ-04, 2026-10-07; §3.1).
 - [VERIFY] Whether several members can share one workspace (Free Edition), and the grants needed to read another member's schemas (plan.md D17).
 - Resolved: `ADD CONSTRAINT … CHECK` (enforced) and `PRIMARY KEY` (informational) on our compute (NAZ-03, 2026-10-07; §5.1). [VERIFY] FK DDL (YAR-06).
 - Resolved: `percentile_cont … WITHIN GROUP` works and interpolates exactly (1..4 → p50 2.5, p90 3.7) (NAZ-03, 2026-10-07).

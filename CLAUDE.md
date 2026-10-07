@@ -41,7 +41,8 @@ If the documents disagree, the precedence is PDF > requirements.md > design.md >
 | `uv lock` / `uv sync` | local | verified 2026-10-07 |
 | Markdown, contract consistency, code review | local | manual |
 | Source access, `DESCRIBE`, CHECK/PK DDL, `percentile_cont` | Databricks | run 2026-10-07 (NAZ-01–03; plan.md evidence log) |
-| Profiling, FK DDL, `%run` | Databricks | not run (plan P0–P2) |
+| `%run` sharing, error stop, caller `run_id` and widgets | Databricks (serverless job runs) | run 2026-10-07 (NAZ-04; plan.md evidence log) |
+| Profiling, FK DDL | Databricks | not run (plan P0–P2) |
 | Pipeline run, DQ results, rerun/portability, answers, charts | Databricks | not run (plan P3–P4) |
 
 Anything in the Databricks rows can only be confirmed by running it in a real workspace. Local tooling cannot verify Spark code against the data.
