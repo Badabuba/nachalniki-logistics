@@ -1,0 +1,101 @@
+erDiagram
+    REGION   ||--o{ NATION   : "n_regionkey"
+    NATION   ||--o{ SUPPLIER : "s_nationkey"
+    NATION   ||--o{ CUSTOMER : "c_nationkey"
+    BRAND    ||--o{ PART     : "p_brand"
+    PART     ||--o{ PARTSUPP : "ps_partkey"
+    SUPPLIER ||--o{ PARTSUPP : "ps_suppkey"
+    CUSTOMER ||--o{ ORDERS   : "o_custkey"
+    PART     ||--o{ PART_QUANTITY_PRICE : "l_partkey"
+    ORDERS   ||--|{ LINEITEM : "l_orderkey"
+    PARTSUPP ||--o{ LINEITEM : "(l_partkey, l_suppkey)"
+    SHIP_DATE_STATUS    ||--|{ LINEITEM : "l_shipdate"
+    PART_QUANTITY_PRICE ||--|{ LINEITEM : "(l_partkey, l_quantity)"
+
+    REGION {
+        bigint r_regionkey PK
+        string r_name
+        string r_comment
+    }
+    NATION {
+        bigint n_nationkey PK
+        string n_name
+        bigint n_regionkey FK
+        string n_comment
+    }
+    SUPPLIER {
+        bigint s_suppkey PK
+        string s_name
+        string s_address
+        bigint s_nationkey FK
+        string s_phone
+        decimal s_acctbal
+        string s_comment
+    }
+    CUSTOMER {
+        bigint c_custkey PK
+        string c_name
+        string c_address
+        bigint c_nationkey FK
+        string c_phone
+        decimal c_acctbal
+        string c_mktsegment
+        string c_comment
+    }
+    BRAND {
+        string p_brand PK
+        string p_mfgr
+    }
+    PART {
+        bigint p_partkey PK
+        string p_name
+        string p_brand FK
+        string p_type
+        int p_size
+        string p_container
+        decimal p_retailprice
+        string p_comment
+    }
+    PARTSUPP {
+        bigint ps_partkey PK, FK
+        bigint ps_suppkey PK, FK
+        int ps_availqty
+        decimal ps_supplycost
+        string ps_comment
+    }
+    ORDERS {
+        bigint o_orderkey PK
+        bigint o_custkey FK
+        string o_orderstatus
+        decimal o_totalprice
+        date o_orderdate
+        string o_orderpriority
+        string o_clerk
+        int o_shippriority
+        string o_comment
+    }
+    SHIP_DATE_STATUS {
+        date l_shipdate PK
+        string l_linestatus
+    }
+    PART_QUANTITY_PRICE {
+        bigint l_partkey PK, FK
+        decimal l_quantity PK
+        decimal l_extendedprice
+    }
+    LINEITEM {
+        bigint l_orderkey PK, FK
+        bigint l_partkey FK
+        bigint l_suppkey FK
+        int l_linenumber PK
+        decimal l_quantity FK
+        decimal l_discount
+        decimal l_tax
+        string l_returnflag
+        date l_shipdate FK
+        date l_commitdate
+        date l_receiptdate
+        string l_shipinstruct
+        string l_shipmode
+        string l_comment
+    }
