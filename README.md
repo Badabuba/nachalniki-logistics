@@ -63,6 +63,7 @@ notebooks/01_bronze_ingest.py    source -> Bronze, with a source/Bronze comparis
 notebooks/profile_source.py      value profiling on Bronze (FD checks are added in Stage 2)
 checks/p0/               P0 diagnostic notebooks (not part of the pipeline) and their raw outputs
 checks/p2/               run_id helper test notebooks and the raw outputs of the Stage 1 runs
+presentation/            Ukrainian draft deck (.pptx) and the script that generates it
 ```
 
 Planned (not created yet):
@@ -153,4 +154,4 @@ The rules, the method for building allowed lists by profiling, and the failure b
 
 ## Presentation
 
-> **Placeholder:** link to the slides will be added here (MAX-15 and MAX-16 in [docs/plan.md](docs/plan.md)).
+Draft deck (Ukrainian): [presentation/nachalniki_logistics.pptx](presentation/nachalniki_logistics.pptx). Stage 1 is filled; the Silver, Gold, demo and results slides are placeholders waiting for those stages. How to rebuild it: [presentation/README.md](presentation/README.md).

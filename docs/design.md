@@ -328,7 +328,7 @@ All dates are `DATE`, and all day differences are `datediff(end, start)` in inte
 - *Most predictable* = smallest spread. The primary measure is `p90 − p50` (how far the slow tail sits beyond a typical shipment, directly from the two required numbers). The supporting measures are IQR (`p75 − p25`) and standard deviation.
 - Speed is about *location* and predictability is about *spread*. A mode can have a low median and a long tail, or a higher but tight distribution, so the two rankings can differ. If the differences are small, present them with line counts and do not over-interpret them.
 
-**Q2: order vs line on-time gap.** An order is fully on time only if *every* line is on time, so the order share is at most the line share. The answer uses **actual** numbers:
+**Q2: order vs line on-time gap.** An order is fully on time only if *every* line is on time. The two shares still have no fixed order: the line share counts every line once, while the order share counts every order once regardless of its size. If late lines are concentrated in a few large orders, the order share can be higher than the line share; if they are spread over many orders, it is lower. The comparison is therefore taken from the measured results, not assumed. The answer uses **actual** numbers:
 - the observed distribution of lines per order (min, median, mean, max from `fct_order_fulfillment`)
 - the line and order on-time shares from `agg_on_time_summary`
 - the order on-time share for each `line_count` bucket from `agg_on_time_by_line_count`, which shows how the share falls as orders get bigger

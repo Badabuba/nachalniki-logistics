@@ -13,3 +13,6 @@ __pycache__/
 Thumbs.db
 .idea/
 .vscode/
+
+# Presentation build (npm install --no-save in presentation/)
+node_modules/
