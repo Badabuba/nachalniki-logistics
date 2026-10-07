@@ -63,12 +63,42 @@ run_pipeline
  7. append pipeline_runs(run_id, 'succeeded', ...)
 ```
 
-- `run_pipeline` executes the steps with `%run` in one notebook context, so `run_id` and the config are shared. Any exception stops all later cells, so no `succeeded` row is written. **[VERIFY]** that `%run` behaves like this on serverless.
+- `run_pipeline` executes the steps with `%run` in one notebook context, so `run_id` and the config are shared. It starts a fresh `run_id` on every execution (§3.1). Any exception stops all later cells, so no `succeeded` row is written. **[VERIFY]** that `%run` behaves like this on serverless.
 - **Invalid rows are never silently dropped.** Staging keeps every source row. If a blocking rule fails, the whole run fails, and the violation count plus up to 10 sample keys are saved in `dq_check_results`.
 - The enforced constraints are added in step 5, after validation has passed. They are defence in depth. If one rejects data at this point, the validation has a bug, and the run fails.
 - **After a failed run**, the Silver/Gold tables from the last successful run still exist, but they are *not current*. `06_analysis` therefore starts by reading `pipeline_runs`. If the most recent `run_id` has no `succeeded` row, it stops with a message showing the failed run, so stale outputs cannot be presented as current. The failed candidate stays in staging for debugging. (Partial failure: if step 6 fails, Silver is new but Gold is not. The run is still not `succeeded`, so the same guard applies.)
 - `pipeline_runs` columns: `run_id` (string uuid), `event` (`started`/`succeeded`), `event_ts`, `catalog`, `schema_prefix`, `source`.
 - `dq_check_results` columns: `run_id`, `run_ts`, `rule_id`, `layer` (`source`/`bronze`/`staging`/`gold`), `table_name`, `violation_count` (bigint), `sample_keys` (string, ≤10), `severity` (`blocking`), `passed` (boolean).
+
+### 3.1 run_id, DQ interface and ownership — **proposed (D15, D16)**
+
+This interface is agreed before Stage 1 is built, so that each stage runs on its own and later integration does not require rewriting earlier stages. Owners follow the stage split in [plan.md](plan.md#shared-interfaces-and-owners).
+
+**run_id (helpers in `00_config`, owner Nazar).**
+- `00_config` defines two helpers and **never assigns `run_id` itself**:
+  - `new_run_id()` returns a fresh `str(uuid.uuid4())`.
+  - `require_run_id()` returns the `run_id` defined by the calling execution, and raises if none is defined.
+- An **execution** is one top-to-bottom run of an entry notebook. Every execution explicitly starts a fresh id with `run_id = new_run_id()` in its own cell, right after `%run ./00_config` and before any step, **even if the notebook session already holds a `run_id`** from an earlier execution. "Keep it if it already exists" is not used, because that would reuse an earlier execution's id on a rerun in the same session.
+- **Child notebooks** (`02`–`05`, `dq_helpers`) only read the id with `require_run_id()` and never assign it, so every step of one execution shares the id its entry point started. A step opened on its own, without an entry point, fails fast instead of inventing an id.
+- Entry points:
+  - **Full pipeline**: `run_pipeline` (owner Max).
+  - **Silver stage execution** (Stage 2 development and its demo, before `run_pipeline` exists), each line in its own cell: `%run ./00_config` → `run_id = new_run_id()` → `%run ./02_silver_stage` → `%run ./03_validate` → `%run ./04_silver_publish`. An exception in `03_validate` stops the cells after it, so `04` does not execute. Stage executions write `dq_check_results` but not `pipeline_runs`.
+- Re-running a single cell of an entry notebook is not a new execution. Run the entry notebook from the top.
+- Stage 1 does not use `run_id`: `01_bronze_ingest` and `profile_source` need only `00_config`, and Bronze never reads or writes audit tables.
+- **[VERIFY]** (NAZ-04) that a variable assigned in the caller is visible inside a `%run` child, and that widget values set in the caller are the ones the child reads.
+
+**`dq_check_results` (owner Yaropolk, `notebooks/dq_helpers.py`).** The only code that creates or appends to the table:
+- `ensure_dq_check_results()`: `CREATE SCHEMA IF NOT EXISTS {prefix}_audit` and `CREATE TABLE IF NOT EXISTS` with the columns above. Never replaces the table.
+- `record_dq_result(run_id, rule_id, layer, table_name, violation_count, sample_keys)`: appends one row with `run_ts`, `severity = 'blocking'` and `passed = (violation_count = 0)`.
+- `raise_if_failed(run_id, rule_ids)`: reads **only** rows with that `run_id` **and** a `rule_id` in `rule_ids`. It raises if any of those rows has `passed = false`, or if any rule in `rule_ids` has no row for that `run_id` (a missing result is a failure). Rows from other runs, including earlier failed runs, never affect the result.
+- `03_validate` ends with `raise_if_failed(run_id, <DQ-L1…L9, DQ-G1…G3>)`. `05_gold_build` ends with `raise_if_failed(run_id, ["DQ-GOLD1", "DQ-GOLD2"])`.
+- Exact signatures are finalised by Yaropolk and frozen in handoff H2. After H2, changing them is a contract change.
+
+**`pipeline_runs` (owner Max, `notebooks/run_pipeline.py`).** Only `run_pipeline` creates it (`CREATE TABLE IF NOT EXISTS`, never replaced) and appends `started`/`succeeded` rows for the `run_id` of that execution. `06_analysis` reads it for the stale-output guard. Because stage executions do not write `pipeline_runs`, they use a scratch `schema_prefix` once `run_pipeline` has produced Gold in a prefix; otherwise a Silver changed outside `run_pipeline` would not be visible to the guard.
+
+**Schemas.** Each writer creates the schema it writes with `CREATE SCHEMA IF NOT EXISTS`: `01` → `_bronze`, `02` → `_staging`, `04` → `_silver`, `05` → `_gold`, `dq_helpers` and `run_pipeline` → `_audit`.
+
+**Standalone prerequisites.** `01`: `00_config` only. `02`–`04`: Bronze, `dq_helpers`, a Silver stage execution. `05`: Silver, `dq_helpers`, an entry point that set `run_id`. `06`: Gold and `pipeline_runs`.
 
 ### Rerun and determinism
 - Each layer is fully replaced (`CREATE OR REPLACE TABLE … AS SELECT`). Rerunning on unchanged source data must reproduce **identical business rows and metrics** in Silver and Gold.
@@ -344,6 +374,8 @@ Notebook visuals in `06_analysis` (mandatory set):
 - [VERIFY] Catalog availability and write access. Whether `workspace` exists on our account.
 - [VERIFY] Column types in `samples.tpch` (`DESCRIBE`).
 - [VERIFY] `%run` chaining and error propagation on serverless notebooks.
+- [VERIFY] A variable assigned in the caller (`run_id`) is visible inside a `%run` child, and widget values set in the caller are the ones the child reads (§3.1).
+- [VERIFY] Whether several members can share one workspace (Free Edition), and the grants needed to read another member's schemas (plan.md D17).
 - [VERIFY] `ALTER TABLE … ADD CONSTRAINT … CHECK` and PK/FK DDL on our compute.
 - [VERIFY] `percentile_cont … WITHIN GROUP` availability on our compute.
 - [PROFILE] Allowed values, the urgent priority literal, date ranges, lines per order, and the FD candidates (§5.5).

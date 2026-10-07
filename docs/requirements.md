@@ -2,7 +2,7 @@
 
 Source: `group_assignment_1.pdf` in the repo root (9 pages). Page numbers below are the printed page numbers, which match the PDF page indices. If this file and the PDF disagree, the PDF wins.
 
-Owners: **M1** = Nazar, **M2** = Yaropolk, **M3** = Max (provisional mapping, see [plan.md](plan.md)).
+Owners: **M1** = Nazar, **M2** = Yaropolk, **M3** = Max (provisional mapping, see [plan.md](plan.md)). Ownership follows the sequential stages of plan.md (M1 foundation and Bronze → M2 Silver and data quality → M3 Gold, integration and delivery), which are **proposed (D16)** until all three members agree.
 Status values: `not started` / `in progress` / `done (evidence: …)`. Only mark `done` with a link to the evidence.
 
 ## 1. Context from the PDF (not requirements by themselves)
@@ -20,31 +20,31 @@ Status values: `not started` / `in progress` / `done (evidence: …)`. Only mark
 
 | ID | PDF | Requirement (explicit) | Planned deliverable | Owner | Evidence of completion | Status |
 |---|---|---|---|---|---|---|
-| R-S1 | §1 p.1 | Build the data processing pipeline that populates the layers | `run_pipeline` + notebooks `01`–`05` ([design §3](design.md#3-pipeline-lifecycle-one-run)) | M1 (integration) | Screenshot or log of a full successful run, plus a `pipeline_runs` row with `succeeded` | not started |
+| R-S1 | §1 p.1 | Build the data processing pipeline that populates the layers | `run_pipeline` + notebooks `01`–`05` ([design §3](design.md#3-pipeline-lifecycle-one-run)) | M3 (integration; each stage owner delivers their notebooks) | Screenshot or log of a full successful run, plus a `pipeline_runs` row with `succeeded` | not started |
 | R-S2 | §3.1 p.2 | Bronze: store data as is, no changes; metadata only if needed | `01_bronze_ingest`, 8 tables plus `_ingested_at` and `_source_table` | M1 | DQ-G3 passes (source = bronze counts); column list compared with the source | not started |
 | R-S3 | §3.1 p.2 | Silver must be in 3NF | `02_silver_stage`, `04_silver_publish`; written 3NF analysis ([design §5.3](design.md#53-3nf-analysis--to-be-completed-with-profiling-evidence)) | M2 | Filled FD/candidate-key table with query outputs; any fix from §5.4 applied | not started |
 | R-S4 | §3.1 p.2 | Silver must have enforced data quality | `03_validate` (blocking rules, Silver published only after a pass) plus enforced NOT NULL/CHECK | M2 | `dq_check_results` rows for a run, all `passed`; demo of a failing check blocking publish | not started |
 | R-S5 | §3.1 p.2 | Gold designed to answer the chosen profile's questions | `05_gold_build` ([design §9](design.md#9-gold-tables-prefix_gold--contracts)) | M3 | Every Q1–Q4 answer queries only Gold tables | not started |
-| R-S6 | §3.2 p.2 | Public repo with a working solution | GitHub repo `nachalniki-logistics`, visibility public | M1 | Repo URL opens in a logged-out browser; README run instructions reproduced by a second member | not started |
-| R-S7 | §3.2 p.2 | Use uv | `pyproject.toml` and `uv.lock` | M1 | `uv lock`/`uv sync` succeed (local check) | in progress (`uv lock`/`uv sync` pass locally, see plan.md evidence log; not yet committed) |
+| R-S6 | §3.2 p.2 | Public repo with a working solution | GitHub repo `nachalniki-logistics`, visibility public | M1 (repo; visibility recorded at H1), M3 (final check at submission) | Repo URL opens in a logged-out browser; README run instructions reproduced by a second member (M2, YAR-14) | not started |
+| R-S7 | §3.2 p.2 | Use uv | `pyproject.toml` and `uv.lock` | M1 | `uv lock`/`uv sync` succeed (local check) | in progress (`uv lock`/`uv sync` pass locally, see plan.md evidence log; committed on `docs/initial-plan`, not yet merged into `main`) |
 | R-S8 | §3.2 p.2 | Code in Python or SQL | PySpark/SQL notebooks in `.py` source format | all | Notebooks in `notebooks/` | not started |
-| R-S9 | §3.2 p.2 | Presentation in the repo, or a link to it in the README | README "Presentation" section | M1 | Working link or file in the repo | not started |
-| R-S10 | §3.2 p.2 | A meaningful README | `README.md` | M1 (+ M2, M3 sections) | README has setup, run, validation and answers sections, reviewed by all three | in progress (initial version) |
-| R-S11 | §3.2 p.2 ("ideally") | Scripts easily portable to another workspace; think about naming | `00_config` widgets `catalog`, `schema_prefix`, `source`; no hard-coded names | M1 | Run with a second `schema_prefix` matches the first Gold via `EXCEPT ALL` (0 rows) | not started |
-| R-S12 | §3.2 p.2 ("ideally") | Assume the team only has access to pre-production data | Configurable source; no hard-coded counts or values; cross-layer reconciliation instead of fixed numbers | M1 | Code review: grep for literals of catalog, schema or row counts | not started |
+| R-S9 | §3.2 p.2 | Presentation in the repo, or a link to it in the README | README "Presentation" section | M3 | Working link or file in the repo | not started |
+| R-S10 | §3.2 p.2 | A meaningful README | `README.md` | M3 (assembly); M1, M2, M3 each write and approve their own sections | README has setup, run, validation and answers sections; each section approved by its author, the assembled README reviewed by at least one other member | in progress (initial version) |
+| R-S11 | §3.2 p.2 ("ideally") | Scripts easily portable to another workspace; think about naming | `00_config` widgets `catalog`, `schema_prefix`, `source`; no hard-coded names | M1 (config), M3 (portability run) | Run with a second `schema_prefix` matches the first Gold via `EXCEPT ALL` (0 rows) | not started |
+| R-S12 | §3.2 p.2 ("ideally") | Assume the team only has access to pre-production data | Configurable source; no hard-coded counts or values; cross-layer reconciliation instead of fixed numbers | each owner for their notebooks; M3 final check | Code review: grep for literals of catalog, schema or row counts | not started |
 | R-S13 | §4 p.3 | Use the TPC-H data in `samples.tpch` | `source = samples.tpch` default | M1 | P0 access-check output | not started |
 | R-S14 | §5 p.4 | Questions answered using the Gold layer; validation may use all layers | Analysis reads `{prefix}_gold` only; DQ uses source/bronze/staging/gold | M3 / M2 | Code review of `06_analysis` | not started |
-| R-S15 | §2 p.2 | Submit the presentation before the due date and present it in class (needed for max points) | Final deck plus a rehearsed talk | all | Submission confirmation; date given by the course (**not in the PDF**) | not started |
+| R-S15 | §2 p.2 | Submit the presentation before the due date and present it in class (needed for max points) | Final deck plus a rehearsed talk | all present; M3 submits | Submission confirmation; date given by the course (**not in the PDF**) | not started |
 
 ### 2.2 Presentation requirements (§3.4 p.3, mandatory)
 
 | ID | Requirement | Deliverable | Owner | Evidence | Status |
 |---|---|---|---|---|---|
-| R-P1 | 5–7 minutes to explain the solution | Deck plus a timed rehearsal | all (M1 assembles) | Rehearsal time recorded in plan.md | not started |
-| R-P2 | Team member responsibilities | Slide "Who did what" | M1 | Slide | not started |
+| R-P1 | 5–7 minutes to explain the solution | Deck plus a timed rehearsal | all (M3 assembles and runs the rehearsal) | Rehearsal time recorded in plan.md | not started |
+| R-P2 | Team member responsibilities | Slide "Who did what" | M3 | Slide | not started |
 | R-P3 | Link to the repo | Slide plus README | M1 | Slide | not started |
-| R-P4 | The challenges faced | Slide, drawn from the plan.md decision log | all | Slide | not started |
-| R-P5 | A short demo, including how the team decided to perform validation | Live or recorded run of `run_pipeline` + `dq_check_results` + a failing-check demo | M2 (validation part), M1 (run) | Demo script in plan.md; rehearsal | not started |
+| R-P4 | The challenges faced | Slide, drawn from the plan.md decision log | all (each supplies ≥1; M3 assembles) | Slide | not started |
+| R-P5 | A short demo, including how the team decided to perform validation | Live or recorded run of `run_pipeline` + `dq_check_results` + a failing-check demo | M2 (validation part), M3 (run) | Demo script in plan.md; rehearsal | not started |
 | R-P6 | Screenshot of the ER diagram of the Silver tables | Rendered ER of `{prefix}_silver` | M2 | Image in the deck (and in the repo `docs/`) | not started |
 | R-P7 | Answers to the business questions, with code and a visualisation (notebook and/or Databricks dashboard) | `06_analysis` notebook charts | M3 | Screenshots of the charts with numbers, query code shown | not started |
 

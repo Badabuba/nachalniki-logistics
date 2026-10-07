@@ -1,131 +1,167 @@
 # Implementation plan
 
-Living document. Requirements: [requirements.md](requirements.md). Design and contracts: [design.md](design.md).
+Living document. Requirements: [requirements.md](requirements.md). Design and contracts: [design.md](design.md). Handoff notes: [handoffs.md](handoffs.md).
+
+> **Task distribution: proposed (D16), pending agreement of Nazar, Yaropolk and Max.** It replaces the earlier split in which Nazar also owned integration, the final README, the deck and submission. Until all three names are on D16, treat the ownership below as a proposal.
 
 **How to use this plan**
 - Every task has one ID (`NAZ-nn`, `YAR-nn`, `MAX-nn`) and one primary owner: the person whose section it is in. Others review and help, but the owner makes sure it gets done.
-- **Checkboxes exist only in [Tasks by person](#tasks-by-person).** The phase sections and the "start now" table only reference task IDs, so there is one checklist and no conflicting copies.
+- **Checkboxes exist only in [Tasks by person](#tasks-by-person).** The other sections only reference task IDs, so there is one checklist and no conflicting copies.
 - Tick a box **only with evidence**: add a row to the [evidence log](#evidence-log) (output, screenshot path or link, plus the date), then tick the box in the same PR.
-- `D<n>` means an entry in the [decision log](#decision-log).
+- **Transferred tasks keep their ID as a stub without a checkbox** in the original owner's section, in the form `NAZ-11 — transferred → MAX-09, YAR-12 (D16)`. IDs are never reused. Depend on the new ID, never on the stub.
+- `D<n>` means an entry in the [decision log](#decision-log). `H1`/`H2` are the handoffs (see [Handoffs](#handoffs)).
 
-## Team and ownership
+## Team and stages (proposed, D16)
 
-| Name | Alias in requirements.md | Area |
+The work runs as three sequential stages. Each stage ends with a handoff; the next owner starts their implementation after it.
+
+| Stage | Owner (alias) | Scope | Ends with |
+|---|---|---|---|
+| 1. Foundation and Bronze | Nazar (M1) | Repo and uv; Databricks access and capability checks; source inventory; value profiling (categorical values, date ranges, lines per order); `00_config` (incl. the run_id helpers of D15); `01_bronze_ingest` for all 8 tables; allowed-list constants; README setup and Stage 1 sections; own slide material | H1 → Yaropolk |
+| 2. Silver and data quality | Yaropolk (M2) | FD analysis and 3NF justification; `02_silver_stage`; `dq_helpers` and `dq_check_results`; `03_validate`; `04_silver_publish` and constraints; ER diagram; stage-level success and failure demo; README validation section; own slide material | H2 → Max |
+| 3. Gold, analysis, integration and delivery | Max (M3) | `05_gold_build`; `06_analysis` (guard, Q1–Q4, charts, monitoring); `run_pipeline` and `pipeline_runs`; full, end-to-end failure, rerun and portability runs; README run and results sections; **final README assembly, deck assembly, demo script, rehearsal and submission** | submission |
+
+Workload note: Max carries the integration work, so each earlier owner hands over tested code, their own README section and ready-to-assemble slide material. Max assembles but does not write the other members' content. Everyone presents their own contribution. **Optional items are not assigned** (see [Optional follow-ups](#optional-follow-ups-not-acceptance-gates-unassigned)).
+
+### Shared interfaces and owners
+
+Every shared artifact has exactly one owner. Others change it only through a PR the owner reviews (or, after the owner's stage has ended, through the contract-change rule in [Workflow](#workflow)).
+
+| Artifact | Owner | Notes |
 |---|---|---|
-| Nazar | M1 | Repo, uv and config; Databricks access checks; source value profiling (categorical values, date ranges, lines per order); Bronze; `run_pipeline` and `pipeline_runs`; integration, rerun and portability runs; README setup/run sections; presentation assembly and submission |
-| Yaropolk | M2 | Silver staging and publish; FD profiling and the 3NF analysis; `03_validate` and `dq_check_results`; constraints; ER diagram; README validation section; the validation part of the demo |
-| Max | M3 | Gold tables; Q1–Q4 analysis and notebook charts; delay-rate monitoring; README results section; business-answer slides |
+| `notebooks/00_config.py`: widgets, derived names, `new_run_id()`, `require_run_id()`, allowed-list constants | Nazar | Later stage owners may **add** constants via PR. Renaming, removing or changing the meaning of an existing name is a contract change. |
+| `{prefix}_bronze.*` and `01_bronze_ingest` | Nazar | Bronze never reads or writes `run_id` or audit tables |
+| `profile_source`: value-profiling section | Nazar | |
+| `profile_source`: FD section | Yaropolk | Separate section, separate PR |
+| `notebooks/dq_helpers.py` and `{prefix}_audit.dq_check_results` | Yaropolk | The only code that creates or appends to `dq_check_results`; Max's `05_gold_build` calls it |
+| `{prefix}_staging.*`, `{prefix}_silver.*` and notebooks `02`–`04` | Yaropolk | |
+| `notebooks/run_pipeline.py` and `{prefix}_audit.pipeline_runs` | Max | The only code that writes `pipeline_runs` |
+| `{prefix}_gold.*`, `05_gold_build`, `06_analysis` | Max | |
+| README sections | the author of each section | Max assembles the final README |
+| Deck, demo script, rehearsal, submission | Max | Each member supplies their own slides |
 
-Balance rationale: Bronze is small, so Nazar also owns profiling, orchestration, the run-state plumbing and the cross-cutting docs. Yaropolk owns the most rules. Max owns the most queries and charts. Each person writes the README section and slides for their own area. **Optional items are not assigned** (see [Optional follow-ups](#optional-follow-ups-not-acceptance-gates-unassigned)).
+Each notebook that writes a schema creates it with `CREATE SCHEMA IF NOT EXISTS` (design §3.1). The run_id and DQ interface is D15, specified in design §3.1.
+
+### Unavoidable shared responsibilities
+
+These cannot be given to one person; they are kept small and do not block anyone's stage from finishing:
+- **P1 decisions** need all three names (the decision driver collects them).
+- **Presenting in class**: each member presents their own part and attends the rehearsal that Max organises (R-S15, R-P1).
+- **Defects**: each owner fixes defects found later in their own deliverables. This is the defect path, not planned work, and is not part of anyone's completion checklist.
+- **Contract changes** after a handoff involve the contributors whose deliverables produce or consume that contract (see [Workflow](#workflow)).
+- **Second-member README reproduction** (R-S6): the author of the run instructions cannot verify them alone, so Yaropolk does it (YAR-14).
+
+## Workspace model and handoff paths (D17, open)
+
+**Sharing Git code does not share tables.** A handoff therefore always delivers *code that rebuilds the tables* plus *evidence of what they contained*, never only a table name. Whether the team uses one shared workspace or one workspace each is not decided yet (D17). Whether Databricks Free Edition allows several users in one workspace is **[VERIFY]**.
+
+- **Separate workspaces** (e.g. one Free Edition account each). The receiver runs the earlier stages from `main` in their own workspace, setting the `catalog` widget to their own writable catalog. Bronze is a cheap, deterministic copy, so this costs minutes. The handoff note's evidence shows what the sender observed; the receiver's acceptance checks compare against their own source at runtime, never against copied numbers.
+- **Shared workspace.** The receiver may read the previous stage's tables directly (grants **[VERIFY]**). The handoff note names the commit SHA and the `_ingested_at` value the tables came from. Scratch and demo work uses its own `schema_prefix`. After H2, only `run_pipeline` (MAX-10 onward) writes the default prefix.
 
 ## Workflow
 
 - Branch per task from `main`: `feat/<area>-<short>`, e.g. `feat/bronze-ingest`, `feat/silver-validate`, `feat/gold-q1`. Put the task ID in the PR title, e.g. `NAZ-08: Add Bronze ingest`.
 - Open a PR into `main`. At least one other member reviews it, then squash-merge. Keep PRs small, at one notebook or doc section each.
-- A PR that changes a **frozen contract** (design §5.1 frozen columns, §7 metrics, §9 Gold columns, config parameters) must update `design.md` in the same PR, add a decision-log entry, and be approved by **both** other members.
+- **Suggested reviewers.** Stage 1 PRs: Yaropolk (the consumer). Stage 2 PRs: Max. Stage 3 PRs: Yaropolk. Any member may review any PR, but **Nazar is not a required reviewer after H1**.
+- A PR that changes a **frozen contract** (design §3.1 run_id/DQ interface, §5.1 frozen columns, §7 metrics, §9 Gold columns, config parameters) must update `design.md` in the same PR, add a decision-log entry, and be approved by **every contributor whose deliverables produce or consume that contract** (for example, Nazar only if a `00_config` name or the Bronze contract changes).
 - Notebooks are edited in a Databricks Git folder (or locally) and committed as `.py` source-format files.
 - Never store tokens or credentials in the repo.
 
 ## Start here: what each person can do now
 
-Nothing has run in Databricks yet, so almost everything waits on Nazar's P0 access checks. These tasks have no unmet dependencies today:
+Nothing has run in Databricks yet. These tasks have no unmet dependencies today:
 
 | Person | Can start now | Waits for |
 |---|---|---|
-| Nazar | NAZ-01 (log in, catalogs), NAZ-05 for D4 only, NAZ-06 (uv PR), NAZ-16 (get the due date) | NAZ-02/03/04 wait for NAZ-01. Everything in P2 waits for D9 (needs NAZ-03). |
-| Yaropolk | YAR-01 (log in), YAR-02 (drive D13 and D14) | YAR-03 and YAR-04 wait for Bronze (NAZ-08). YAR-04 also needs D10. |
-| Max | MAX-01 (log in), MAX-02 for D5, D11 and D12 | D6 and D10 wait for the `DESCRIBE` output (NAZ-02). MAX-03 waits for config (NAZ-07) and D10/D11. |
+| Nazar | NAZ-01, NAZ-05 for D4, D13, D15 and D16, NAZ-06, NAZ-16 | NAZ-02/03/04 wait for NAZ-01. NAZ-07 waits for D9 (needs NAZ-03) and D15. |
+| Yaropolk | YAR-01, YAR-02 (D14); review the D13 and D15 proposals | YAR-03 and YAR-04 wait for H1 (NAZ-21). YAR-04 also needs D10. |
+| Max | MAX-01, MAX-02 for D5, D11 and D12 | D6 and D10 wait for `DESCRIBE` (NAZ-02); D7 waits for the `%run` evidence (NAZ-04). MAX-03 waits for H2 (YAR-13). |
 
-Critical path: NAZ-01 → NAZ-03 (D8 catalog) → NAZ-05 (D9 config) → NAZ-07 (`00_config`) → NAZ-08 (Bronze) → YAR-04 → YAR-05 → YAR-06 → NAZ-12 (full run) → MAX-07 (answers) → P5.
+Critical path: NAZ-01 → NAZ-03 (D8) → NAZ-05 (D9, D13, D15) → NAZ-07 → NAZ-08 → NAZ-09 → NAZ-10 → NAZ-21 (H1) → YAR-04 → YAR-12 → YAR-05 → YAR-06 → YAR-13 (H2) → MAX-03 → MAX-09 → MAX-10 → MAX-07 → MAX-15, MAX-16 → MAX-17.
 
 ## Phases
 
-Phases group the tasks in time. The checkboxes are in [Tasks by person](#tasks-by-person).
+Phase tags on each task are time labels only: **P0** access and source checks, **P1** contract sign-off, **P2** build, **P3** integration and real execution, **P4** analysis and monitoring, **P5** README, presentation and submission. The checkboxes are in [Tasks by person](#tasks-by-person).
 
-### P0 — Access and source checks (blocks all Databricks work)
+| Stage | Tasks |
+|---|---|
+| 1 (Nazar) | P0: NAZ-01–04. P1: NAZ-05. P2: NAZ-06–10. P5: NAZ-15, NAZ-16, NAZ-17. Handoff: NAZ-21 (H1) |
+| 2 (Yaropolk) | P0: YAR-01. P1: YAR-02. P2: YAR-03–07, YAR-12. P3: YAR-08. P5: YAR-10, YAR-11. Handoff: YAR-13 (H2). After H2: YAR-09 (P4), YAR-14 (P3) |
+| 3 (Max) | P0: MAX-01. P1: MAX-02. P2: MAX-03, MAX-04, MAX-09. P3: MAX-10–14. P4: MAX-06, MAX-07. P5: MAX-08, MAX-15–17 |
 
-| ID | Owner | Task |
-|---|---|---|
-| NAZ-01 | Nazar | Log in; list catalogs |
-| YAR-01 | Yaropolk | Log in; read `samples.tpch` |
-| MAX-01 | Max | Log in; read `samples.tpch` |
-| NAZ-02 | Nazar | Source inventory: tables, counts, `DESCRIBE` |
-| NAZ-03 | Nazar | Safe write check; decide the catalog (D8) |
-| NAZ-04 | Nazar | Git folder and `%run` behaviour |
+P1 acceptance: D4–D7, D9–D16 marked "agreed" with all three names and a date; D17 decided, or both handoff paths documented in each handoff note.
 
-Acceptance: all six tasks ticked with evidence, and D8 is decided.
+## Handoffs
 
-### P1 — Contract sign-off (each decision blocks the tasks that list it)
+The handoff notes themselves are written in [handoffs.md](handoffs.md). A handoff is complete when its note is merged after review by the receiver. If an acceptance check fails, the receiver lists the defects in the evidence log and the sender fixes them.
 
-| ID | Owner | Decisions driven |
-|---|---|---|
-| NAZ-05 | Nazar | D4 member mapping, D7 lifecycle (design §3), D9 config and schema names (design §2) |
-| YAR-02 | Yaropolk | D13 allowed-list procedure (design §6), D14 3NF method (design §5.3, §5.4) |
-| MAX-02 | Max | D5 notebook charts as the visualisation, D6 naming, D10 Silver frozen columns and Gold contracts (design §5.1, §9), D11 metric definitions (design §7), D12 monitoring grain (design §8) |
+### H1 — Nazar → Yaropolk (NAZ-21)
 
-The owner drives the discussion and records the result. Every decision needs all three names. Decisions that do not depend on P0 output can be agreed before P0 finishes (see each task's dependencies).
+Deliverables:
+1. `00_config`, `01_bronze_ingest` and the value-profiling section of `profile_source`, merged into `main`, with the commit SHA.
+2. The `catalog`, `schema_prefix` and `source` values used, and which workspace path of D17 applies.
+3. The 8 Bronze tables with their column lists (source columns + `_ingested_at`, `_source_table`).
+4. Links to the evidence-log rows: P0 checks (NAZ-01–04), source inventory and `DESCRIBE` (NAZ-02), Bronze run (NAZ-08), profiling (NAZ-09).
+5. The allowed-list constants as written in `00_config`, the documentation they were compared with, and any mismatch logged under D13.
+6. The observed `o_orderpriority` values, including the confirmed urgent literal.
+7. The exact commands that run Stage 1 (widgets, notebooks, order).
+8. The run_id helpers (`new_run_id()`, `require_run_id()`) and how they were tested.
+9. Resolved and remaining `[VERIFY]`/`[PROFILE]` items owned by Stage 1; every remaining item is listed as an assumption.
+10. The README sections (NAZ-15), the slide-material location (NAZ-17), and the current repo visibility.
 
-Acceptance: D4–D7 and D9–D14 marked "agreed" with all three names and a date.
+Acceptance checks (run by Yaropolk):
+- **A1** `%run ./00_config` with the documented widgets resolves every name in design §2.
+- **A2** Bronze has the 8 tables; each has the source columns plus the 2 metadata columns; each Bronze count equals the receiver's own source count, compared at runtime.
+- **A3** Design §5.5 value-profiling rows are filled with query, date and result; the constants match the documented domain and the cited source.
+- **A4** A grep finds no catalog, schema or source literal outside `00_config`, and no hard-coded row count.
+- **A5** Two consecutive executions of a test entry notebook (`%run ./00_config`, `run_id = new_run_id()`, `%run` of a child that prints `require_run_id()`) give two different run_ids, and the child prints its caller's id; a child run with no run_id defined fails.
+- **A6** Every remaining assumption is listed in the note.
 
-### P2 — Parallel build (after the P1 decisions each task depends on)
+Result: an evidence-log row "H1 accepted" (or a defect list) by Yaropolk.
 
-| ID | Owner | Task |
-|---|---|---|
-| NAZ-06 | Nazar | uv files reviewed and merged |
-| NAZ-07 | Nazar | `00_config` |
-| NAZ-08 | Nazar | `01_bronze_ingest` |
-| NAZ-09 | Nazar | `profile_source`: value profiling |
-| NAZ-10 | Nazar | Allowed-list constants in `00_config` |
-| NAZ-11 | Nazar | `run_pipeline` and audit tables |
-| YAR-03 | Yaropolk | FD and candidate-key tests (3NF evidence) |
-| YAR-04 | Yaropolk | `02_silver_stage` |
-| YAR-05 | Yaropolk | `03_validate` |
-| YAR-06 | Yaropolk | `04_silver_publish` |
-| YAR-07 | Yaropolk | ER diagram |
-| MAX-03 | Max | `05_gold_build` |
-| MAX-04 | Max | `06_analysis`: guard, Q1–Q4, charts 1–4 |
+### H2 — Yaropolk → Max (YAR-13)
 
-Max can develop Gold against a temporary Silver in a scratch prefix, built from `samples.tpch` with the frozen columns, because the contract is fixed in D10. Max switches to the real Silver in P3.
+Deliverables:
+1. `02_silver_stage`, `dq_helpers`, `03_validate`, `04_silver_publish` and the FD section of `profile_source`, merged, with the commit SHA.
+2. The final Silver contract (design §5.1, including any §5.4 decomposition and its decision-log entry).
+3. The Silver stage execution sequence (design §3.1) and the values used.
+4. The final `dq_helpers` signatures and the list of rule IDs `03_validate` writes.
+5. Evidence for the success run (all rules `passed` for the cited `run_id`) and the failure demo (YAR-08).
+6. Constraint evidence (YAR-06), the ER image (YAR-07), the 3NF results (YAR-03).
+7. Remaining assumptions, the README validation section (YAR-10) and the slide-material location (YAR-11).
 
-Acceptance: all P2 tasks ticked.
+Acceptance checks (run by Max):
+- **B1** Silver `orders` and `lineitem` contain the frozen columns of design §5.1 with the agreed types.
+- **B2** Running the Silver stage sequence (design §3.1) succeeds, and every `dq_check_results` row for that run's `run_id` has `passed = true`.
+- **B3** From a scratch notebook, `record_dq_result(...)` and `raise_if_failed(run_id, rule_ids)` work as documented: a failing test row for the active run raises, and rows from other runs are ignored.
+- **B4** `DESCRIBE TABLE EXTENDED` or `SHOW TBLPROPERTIES` shows the constraints of design §5.1.
+- **B5** Every remaining assumption is listed in the note.
 
-### P3 — Integration and real execution (Nazar leads, all verify)
+Result: an evidence-log row "H2 accepted" (or a defect list) by Max.
 
-| ID | Owner | Task |
-|---|---|---|
-| NAZ-12 | Nazar | Full run with the default prefix |
-| NAZ-13 | Nazar | Rerun determinism check |
-| NAZ-14 | Nazar | Portability run |
-| NAZ-15 | Nazar | README setup and run sections |
-| YAR-08 | Yaropolk | End-to-end failure demo |
-| MAX-05 | Max | Reproduce the run from the README alone |
+## Completion criteria
 
-Acceptance: all P3 tasks ticked.
+### Nazar is finished when…
+- NAZ-01–NAZ-10, NAZ-15, NAZ-16, NAZ-17 and NAZ-21 are ticked with evidence.
+- D8 is decided; D4, D9, D13, D15 and D16 are agreed; D17 is decided, or both paths are written in the H1 note.
+- Stage 1 ran in a workspace where no Silver, Gold, audit table or runner of this project existed for the prefix used.
+- The H1 note is merged after Yaropolk's review.
 
-### P4 — Analysis and monitoring (Max leads)
+**Not required for Nazar to be finished:** any Silver, Gold, audit table, `run_pipeline`, full or rerun run, Q1–Q4 result, the final README, the deck, the rehearsal or the submission. After this point Nazar only fixes defects in Stage 1 deliverables, takes part in contract changes that touch `00_config` or Bronze, and presents the Stage 1 part.
 
-| ID | Owner | Task |
-|---|---|---|
-| MAX-06 | Max | Monthly delay-rate chart (chart 5) |
-| MAX-07 | Max | Q1–Q4 answers in the README "Results" section |
-| YAR-09 | Yaropolk | Review the answer numbers against Gold |
+These lists are completion conditions, not a second checklist: they are met when the listed tasks are ticked in [Tasks by person](#tasks-by-person).
 
-Acceptance: all P4 tasks ticked.
+### Yaropolk's stage is finished when…
+- YAR-01–YAR-08 and YAR-10–YAR-13 are ticked with evidence.
+- D14 is agreed.
+- The H2 note is merged after Max's review.
 
-### P5 — README, presentation and submission (Nazar assembles, all contribute)
+Remaining duties after H2 (they verify Max's work and cannot happen earlier): YAR-09 (review the answer numbers) and YAR-14 (reproduce the run from the README).
 
-| ID | Owner | Task |
-|---|---|---|
-| NAZ-16 | Nazar | Get the due date and presentation format |
-| YAR-10 | Yaropolk | README validation section |
-| YAR-11 | Yaropolk | Validation, 3NF and ER slides |
-| MAX-08 | Max | Q1–Q4 and monitoring slides |
-| NAZ-17 | Nazar | Team, repo, pipeline and challenges slides |
-| NAZ-18 | Nazar | Final README assembly |
-| NAZ-19 | Nazar | Deck assembly, demo script and timed rehearsal |
-| NAZ-20 | Nazar | Public repo check and submission |
-
-Acceptance: all P5 tasks ticked; the deck covers R-P1 to R-P7 (requirements §2.2).
+### Max is finished when…
+- MAX-01–MAX-04 and MAX-06–MAX-17 are ticked with evidence.
+- D5, D6, D7, D10, D11 and D12 are agreed.
+- The submission confirmation is in the evidence log, dated before the due date.
 
 ## Tasks by person
 
@@ -156,27 +192,32 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Depends on: NAZ-01
   - Done when: each step's output is in the evidence log, the scratch schema is dropped, D8 is decided, and the related `[VERIFY]` tags in design §10 are resolved.
 
-- [ ] **NAZ-04 · P0 · Git folder and `%run` behaviour.** Create a Git folder from the GitHub repo. On a scratch branch (never merged), use a 2-line test notebook to confirm that `%run ./00_config` shares variables with the caller and that an exception in a `%run` notebook stops the caller.
+- [ ] **NAZ-04 · P0 · Git folder and `%run` behaviour.** Create a Git folder from the GitHub repo. On a scratch branch (never merged), use small test notebooks to confirm:
+  1. `%run ./00_config` (or a 2-line stand-in) shares variables with the caller;
+  2. an exception in a `%run` notebook stops the caller;
+  3. a variable assigned in the caller before `%run ./child` (e.g. `run_id`) is visible inside the child and unchanged after the child itself runs `%run` of a config stand-in that does not assign it (needed for D15);
+  4. widget values set in the caller are the values the `%run` child reads.
   - Files: `docs/plan.md` (evidence log); `docs/design.md` §3 and §10 (`%run` `[VERIFY]` items)
   - Depends on: NAZ-01
-  - Done when: both behaviours are shown in the evidence log, and the `%run` `[VERIFY]` tags are resolved (or design §3 is changed through D7 if `%run` does not behave as assumed).
+  - Done when: all four behaviours are shown in the evidence log, and the `%run` `[VERIFY]` tags are resolved (or design §3 is changed through D7/D15 if `%run` does not behave as assumed).
 
-- [ ] **NAZ-05 · P1 · Drive D4, D7 and D9 to agreement.** D4 member mapping; D7 pipeline lifecycle and failure behaviour (staging → validate → publish, append-only audit, stale-output guard); D9 config parameters and schema names.
-  - Files: `docs/plan.md` (decision log); `docs/design.md` §2 and §3 if anything changes
-  - Depends on: D4: nothing (**start now**). D7: NAZ-04. D9: D8 (NAZ-03).
-  - Done when: D4, D7 and D9 are marked "agreed" with all three names and a date.
+- [ ] **NAZ-05 · P1 · Drive D4, D9, D13, D15, D16 and D17 to agreement.** D4 member mapping; D9 config parameters and schema names; D13 the allowed-list procedure (design §6, transferred from YAR-02 because Nazar applies it in NAZ-10); D15 the run_id and DQ interface (design §3.1); D16 this task distribution; D17 the workspace model.
+  - Files: `docs/plan.md` (decision log); `docs/design.md` §2, §3.1 and §6 if anything changes
+  - Depends on: D4, D13, D15, D16: nothing (**start now**). D9: D8 (NAZ-03). D15 is confirmed against NAZ-04. D17: NAZ-01, YAR-01, MAX-01 (each member knows their workspace).
+  - Done when: D4, D9, D13, D15 and D16 are marked "agreed" with all three names and a date, and D17 is decided or recorded as "both paths documented".
+  - D7 (lifecycle) — transferred → MAX-02 (D16), because Max implements the runner and the stale-output guard.
 
 - [ ] **NAZ-06 · P2 · Merge the uv setup.** `pyproject.toml`, `uv.lock` and `.gitignore` are committed on `docs/initial-plan` (local `uv lock`/`uv sync` evidence dated 2026-10-07). Get them reviewed and merged into `main`.
   - Files: `pyproject.toml`, `uv.lock`, `.gitignore`; `docs/requirements.md` (R-S7 status)
   - Depends on: nothing. **Start now.**
   - Done when: the PR is merged into `main` and R-S7 cites the evidence.
 
-- [ ] **NAZ-07 · P2 · `00_config`.** Widgets `catalog`, `schema_prefix`, `source`; derived schema names; a `run_id` generator; placeholders for the allowed-value constants (filled in by NAZ-10).
+- [ ] **NAZ-07 · P2 · `00_config`.** Widgets `catalog`, `schema_prefix`, `source`; derived schema names; the D15 helpers `new_run_id()` (returns a fresh `str(uuid.uuid4())`) and `require_run_id()` (returns the caller's `run_id` or raises if none is defined). `00_config` itself **never assigns `run_id`**. Placeholders for the allowed-value constants (filled in by NAZ-10).
   - Files: `notebooks/00_config.py`
-  - Depends on: D9 (NAZ-05)
-  - Done when: a caller notebook can `%run ./00_config` and use every name in design §2, and no other notebook needs a catalog or schema literal.
+  - Depends on: D9, D15 (NAZ-05); NAZ-04
+  - Done when: a caller notebook can `%run ./00_config` and use every name in design §2; no other notebook needs a catalog or schema literal; and the A5 test of [H1](#h1--nazar--yaropolk-naz-21) passes on a scratch branch (evidence).
 
-- [ ] **NAZ-08 · P2 · `01_bronze_ingest`.** All 8 tables copied as-is plus `_ingested_at` and `_source_table`, with `CREATE OR REPLACE`.
+- [ ] **NAZ-08 · P2 · `01_bronze_ingest`.** All 8 tables copied as-is plus `_ingested_at` and `_source_table`, with `CREATE OR REPLACE`. Needs only `00_config`: no `run_id`, audit table, Silver, Gold or runner.
   - Files: `notebooks/01_bronze_ingest.py`
   - Depends on: NAZ-07
   - Done when: for every table, Bronze columns equal the source columns plus the 2 metadata columns, and Bronze counts equal source counts (output in the evidence log).
@@ -184,62 +225,41 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 - [ ] **NAZ-09 · P2 · `profile_source`: value profiling.** On Bronze: value counts of `l_shipmode`, `l_returnflag`, `l_linestatus`, `o_orderpriority`; min/max of `o_orderdate`, `l_shipdate`, `l_commitdate`, `l_receiptdate`; lines per order (min / median / mean / max).
   - Files: `notebooks/profile_source.py` (value-profiling section); `docs/design.md` §5.5
   - Depends on: NAZ-08
-  - Done when: the matching design §5.5 rows are filled with the query, date and result, and the `[PROFILE]` tags they cover are resolved.
+  - Done when: the matching design §5.5 rows are filled with the query, date and result; the urgent literal of design §7 is confirmed or corrected; and the `[PROFILE]` tags they cover are resolved.
 
 - [ ] **NAZ-10 · P2 · Allowed-list constants.** Follow the design §6 procedure: compare the NAZ-09 output with the TPC-H documentation, log any mismatch in the decision log, then write the constants.
   - Files: `notebooks/00_config.py`; `docs/plan.md` (decision log, if there is a mismatch)
-  - Depends on: NAZ-09; D13 (YAR-02)
-  - Done when: `ALLOWED_SHIP_MODES`, `ALLOWED_RETURN_FLAGS` and `ALLOWED_LINE_STATUSES` hold the documented domain, the source is cited, and Yaropolk has approved the PR.
+  - Depends on: NAZ-09; D13 (NAZ-05)
+  - Done when: `ALLOWED_SHIP_MODES`, `ALLOWED_RETURN_FLAGS` and `ALLOWED_LINE_STATUSES` hold the documented domain, the source is cited, and the PR is approved by one other member (Yaropolk preferred, as the consumer in `03_validate`).
 
-- [ ] **NAZ-11 · P2 · `run_pipeline` and audit tables.** Creates the `{prefix}_audit` tables (`pipeline_runs`, `dq_check_results`, columns as in design §3) if missing, never overwriting them; writes the `started` row; runs `%run` of 01–05; writes the `succeeded` row.
-  - Files: `notebooks/run_pipeline.py`
-  - Depends on: NAZ-04, NAZ-07; D7 (NAZ-05)
-  - Done when: a forced failure in a step leaves a `started` row with no `succeeded` row (evidence), and a rerun keeps the earlier audit rows.
+- NAZ-11 — transferred → MAX-09 (`run_pipeline`, `pipeline_runs`) and YAR-12 (`dq_helpers`, `dq_check_results`) (D16).
+- NAZ-12 — transferred → MAX-10 (D16).
+- NAZ-13 — transferred → MAX-11 (D16).
+- NAZ-14 — transferred → MAX-12 (D16).
 
-- [ ] **NAZ-12 · P3 · Full run with the default prefix.**
-  - Files: `docs/plan.md` (evidence log)
-  - Depends on: NAZ-08, NAZ-10, NAZ-11, YAR-04, YAR-05, YAR-06, MAX-03 merged
-  - Done when: `pipeline_runs` shows `succeeded` for the run and all its `dq_check_results` rows have `passed = true` (output and `run_id` in the evidence log).
+- [ ] **NAZ-15 · P5 · README setup and Stage 1 sections.** *Rescoped (D16).* "Setup" (prerequisites, Git folder, uv, widget values) and "Configuration, Bronze and profiling" (how to run `00_config`, `01_bronze_ingest` and `profile_source` standalone; the observed allowed values and how they were derived). Use only commands actually run in NAZ-07–NAZ-09. The full-pipeline "How to run" section — transferred → MAX-13.
+  - Files: `README.md` ("Setup", "Configuration, Bronze and profiling")
+  - Depends on: NAZ-08, NAZ-09, NAZ-10
+  - Done when: every documented command has been run successfully (evidence-log reference), and the sections have no "planned" wording left.
 
-- [ ] **NAZ-13 · P3 · Rerun determinism.** Snapshot Gold to a scratch schema, rerun on unchanged data, then `EXCEPT ALL` in both directions. `_ingested_at`, `run_id` and the audit history are expected to differ.
-  - Files: `docs/plan.md` (evidence log)
-  - Depends on: NAZ-12
-  - Done when: both `EXCEPT ALL` queries return 0 rows for every Gold table (output in the evidence log), and the scratch snapshot is dropped.
-
-- [ ] **NAZ-14 · P3 · Portability run.** Run with `schema_prefix = nachalniki_logistics_porttest` and compare Gold with the default run.
-  - Files: `docs/plan.md` (evidence log)
-  - Depends on: NAZ-12
-  - Done when: `EXCEPT ALL` both ways returns 0 rows for every Gold table, and **only** the `porttest` schemas this test created are dropped (output in the evidence log).
-
-- [ ] **NAZ-15 · P3 · README setup and run sections.** Replace "planned" with the steps NAZ-12 actually used: Git folder, widget values, running `run_pipeline`, then `06_analysis`.
-  - Files: `README.md` ("How to run")
-  - Depends on: NAZ-12
-  - Done when: every documented command has been run successfully, and the section is ready for MAX-05 to follow.
-
-- [ ] **NAZ-16 · P5 · Get the due date and presentation format.** The PDF gives neither (requirements §4).
-  - Files: `docs/plan.md` (NAZ-20 and the decision log)
+- [ ] **NAZ-16 · P5 · Get the due date and presentation format.** The PDF gives neither (requirements §4). Also record where slide material goes (deck link or file).
+  - Files: `docs/plan.md` (MAX-17 and the decision log)
   - Depends on: nothing. **Start now.**
-  - Done when: the due date, how to submit, and any format rule are recorded with their source (course channel message or link).
+  - Done when: the due date, how to submit, any format rule and the deck location are recorded with their source (course channel message or link). If the course has not announced them yet, "not announced as of <date>" is recorded and MAX-17 owns the follow-up.
 
-- [ ] **NAZ-17 · P5 · Slides for team, repo, pipeline and challenges.** R-P2 "who did what" (from this plan), R-P3 repo link, a pipeline/config overview, and R-P4 challenges drawn from the decision log (each member supplies at least one from their area).
-  - Files: the deck (location per NAZ-16)
-  - Depends on: NAZ-12
-  - Done when: the slides are in the deck and both other members have checked their part of "who did what".
+- [ ] **NAZ-17 · P5 · Slide material for Stage 1.** *Rescoped (D16).* Ready-to-assemble slides for: repo and uv, with the R-P3 repo link; configuration and portability parameters; Bronze; profiling and how the allowed lists were derived (R-L-V2); at least one challenge from Stage 1 (R-P4). Include speaker notes and screenshots from the evidence log. The "who did what" slide — transferred → MAX-16.
+  - Files: the deck location from NAZ-16; if none is decided, `docs/slides/nazar.md` (slide titles, bullets, speaker notes, image paths)
+  - Depends on: NAZ-08, NAZ-09, NAZ-10
+  - Done when: the material is in place, every number on it cites an evidence-log row, and Max can drop it into the deck without rewriting.
 
-- [ ] **NAZ-18 · P5 · Final README assembly.** Merge the sections from NAZ-15, YAR-10 and MAX-07; add the ER image and the presentation link; remove the "planning" status note.
-  - Files: `README.md`
-  - Depends on: NAZ-15, YAR-10, MAX-07, NAZ-19
-  - Done when: the README has setup, run, validation, results, ER and presentation sections, and all three members have approved the PR (R-S10).
+- NAZ-18 — transferred → MAX-15 (D16).
+- NAZ-19 — transferred → MAX-16 (D16).
+- NAZ-20 — transferred → MAX-17 (D16).
 
-- [ ] **NAZ-19 · P5 · Deck assembly, demo script and timed rehearsal.** Combine NAZ-17, YAR-11 and MAX-08 into one deck; finalise the [demo script](#demo-script-draft--finalize-in-p5); run a timed rehearsal with all three.
-  - Files: the deck; `docs/plan.md` (demo script, evidence log)
-  - Depends on: NAZ-17, YAR-11, MAX-08
-  - Done when: the deck covers R-P1 to R-P7, and a rehearsal of 5–7 minutes is recorded in the evidence log with its time.
-
-- [ ] **NAZ-20 · P5 · Public repo check and submission.** Check that the repo is public from a logged-out browser, then submit before the due date (from NAZ-16).
-  - Files: `docs/plan.md` (evidence log)
-  - Depends on: NAZ-16, NAZ-18, NAZ-19
-  - Done when: the logged-out check and the submission confirmation are in the evidence log, dated before the due date.
+- [ ] **NAZ-21 · P2 · Handoff H1 to Yaropolk.** *New (D16).* Fill the H1 note with every deliverable in [H1](#h1--nazar--yaropolk-naz-21), including the current repo visibility (checked from a logged-out browser).
+  - Files: `docs/handoffs.md` (H1)
+  - Depends on: NAZ-01–NAZ-10, NAZ-15, NAZ-17
+  - Done when: the H1 note is merged after Yaropolk's review, and the A1–A6 result is in the evidence log (defects found later follow the defect path).
 
 ### Yaropolk
 
@@ -248,25 +268,30 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Depends on: nothing. **Start now.**
   - Done when: the output is in the evidence log.
 
-- [ ] **YAR-02 · P1 · Drive D13 and D14 to agreement.** D13: the allowed-list procedure (design §6). D14: the 3NF method (design §5.3, §5.4); any decomposition is decided later in YAR-03.
-  - Files: `docs/plan.md` (decision log); `docs/design.md` §5.3, §5.4, §6 if anything changes
+- [ ] **YAR-02 · P1 · Drive D14 to agreement.** D14: the 3NF method (design §5.3, §5.4); any decomposition is decided later in YAR-03. D13 — transferred → NAZ-05 (D16).
+  - Files: `docs/plan.md` (decision log); `docs/design.md` §5.3, §5.4 if anything changes
   - Depends on: nothing. **Start now.**
-  - Done when: D13 and D14 are marked "agreed" with all three names and a date.
+  - Done when: D14 is marked "agreed" with all three names and a date.
 
 - [ ] **YAR-03 · P2 · FD and candidate-key tests (3NF evidence).** Run the design §5.3 method: check candidate keys, test each candidate FD with `GROUP BY X HAVING count(DISTINCT A) > 1`, and classify it. Apply the §5.4 decomposition only if a real violation is confirmed.
-  - Files: `notebooks/profile_source.py` (a separate FD section, in its own PR; Nazar reviews); `docs/design.md` §5.3 and §5.5 (FD row)
-  - Depends on: NAZ-08; D14 (YAR-02)
-  - Done when: design §5.3/§5.5 hold the queries, outputs, dates and a classification for every candidate. If a decomposition is needed, it has a decision-log entry and an updated Silver contract approved by both other members.
+  - Files: `notebooks/profile_source.py` (a separate FD section, in its own PR; any one member reviews); `docs/design.md` §5.3 and §5.5 (FD row)
+  - Depends on: H1 (NAZ-21); D14 (YAR-02)
+  - Done when: design §5.3/§5.5 hold the queries, outputs, dates and a classification for every candidate. If a decomposition is needed, it has a decision-log entry and an updated Silver contract approved by Max (the consumer).
 
 - [ ] **YAR-04 · P2 · `02_silver_stage`.** Bronze → `{prefix}_staging.stg_*`, with casts and column selection only. No row filtering, no constraints.
   - Files: `notebooks/02_silver_stage.py`
-  - Depends on: NAZ-08; D10 (MAX-02)
+  - Depends on: H1 (NAZ-21); D10 (MAX-02)
   - Done when: staging columns match the design §5.1 contract, and staging counts equal Bronze counts for all 8 tables (output in the evidence log).
 
-- [ ] **YAR-05 · P2 · `03_validate`.** All rules DQ-L1–L9 and DQ-G1–G3 (design §6), appended to `{prefix}_audit.dq_check_results` with up to 10 sample keys; raises if any blocking rule fails.
+- [ ] **YAR-12 · P2 · `dq_helpers` and `dq_check_results`.** *New (D16; replaces the audit-table part of NAZ-11).* Implement design §3.1: `ensure_dq_check_results()` (create if missing, never replace), `record_dq_result(run_id, rule_id, layer, table_name, violation_count, sample_keys)` and `raise_if_failed(run_id, rule_ids)`, which reads only rows of that `run_id` and those `rule_ids` and raises if any is not `passed` or any rule has no row.
+  - Files: `notebooks/dq_helpers.py`
+  - Depends on: NAZ-07; D15
+  - Done when: a scratch-prefix test shows (a) the table keeps earlier rows across runs, (b) a failing row of the active run raises, and (c) a failing row of an *earlier* run does not affect the active run (evidence).
+
+- [ ] **YAR-05 · P2 · `03_validate`.** All rules DQ-L1–L9 and DQ-G1–G3 (design §6), recorded through `dq_helpers` with up to 10 sample keys; ends with `raise_if_failed(run_id, <its rule IDs>)`.
   - Files: `notebooks/03_validate.py`
-  - Depends on: YAR-04, NAZ-10 (allowed lists), NAZ-11 (audit tables)
-  - Done when: a run on clean data gives `passed = true` for every rule, and an injected bad row in a *scratch prefix* makes the matching rule fail and raise (evidence for both).
+  - Depends on: YAR-04, YAR-12, NAZ-10 (allowed lists)
+  - Done when: a run on clean data gives `passed = true` for every rule of that `run_id`, and an injected bad row in a *scratch prefix* makes the matching rule fail and raise (evidence for both).
 
 - [ ] **YAR-06 · P2 · `04_silver_publish`.** Staging → `{prefix}_silver`, then the enforced NOT NULL/CHECK constraints and the informational PK/FK.
   - Files: `notebooks/04_silver_publish.py`
@@ -274,29 +299,39 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Done when: `DESCRIBE TABLE EXTENDED` or `SHOW TBLPROPERTIES` shows the constraints on the Silver tables (output in the evidence log).
 
 - [ ] **YAR-07 · P2 · ER diagram.** Render it from the published Silver (updated Mermaid in design §5.2, or Catalog Explorer) and save the image.
-  - Files: `docs/design.md` §5.2; an image in `docs/` (e.g. `docs/er_silver.png`)
+  - Files: `docs/design.md` §5.2; `docs/silver_er.png`
   - Depends on: YAR-06; YAR-03
   - Done when: the image matches `DESCRIBE` of `{prefix}_silver`, and the `[VERIFY]` tag on design §5.2 is removed.
 
-- [ ] **YAR-08 · P3 · End-to-end failure demo.** In a scratch prefix, inject one bad row (e.g. receipt before ship) into the staging path. Show the DQ failure, that Silver and Gold are unchanged, and that `06_analysis` refuses to present stale results.
+- [ ] **YAR-08 · P3 · Stage-level success and failure demo.** *Rescoped (D16).* In a scratch prefix, run the Silver stage execution (design §3.1: fresh `run_id`, then `%run` 02 → 03 → 04 in one context). (a) Clean data: every rule of that run passes and Silver is published. (b) A new execution with one injected bad row in the staging path (e.g. receipt before ship): `03_validate` raises, the rule's row for *this* `run_id` has `passed = false`, `04_silver_publish` does not execute, and Silver is unchanged (`EXCEPT ALL` both ways against a snapshot = 0 rows). The Gold and `06_analysis` part — transferred → MAX-14.
   - Files: `docs/plan.md` (evidence log, demo script step 3)
-  - Depends on: NAZ-12; MAX-04 (run-state guard)
-  - Done when: all three effects are captured as evidence, and only the scratch schemas this demo created are dropped.
+  - Depends on: YAR-06
+  - Done when: both outcomes are captured as evidence, and only the scratch schemas this demo created are dropped.
 
-- [ ] **YAR-09 · P4 · Review the answer numbers.** Check every number in the README "Results" section against the Gold tables of the cited run. Nazar may review as well.
+- [ ] **YAR-09 · P4 · Review the answer numbers.** Check every number in the README "Results" section against the Gold tables of the cited run.
   - Files: none (PR review of MAX-07)
   - Depends on: MAX-07
   - Done when: Yaropolk has approved the MAX-07 PR, or each mismatch is fixed.
 
-- [ ] **YAR-10 · P5 · README validation section.** The validation approach: lifecycle and blocking rules, how the allowed lists were derived (from NAZ-09/NAZ-10), the 3NF summary, and where the DQ results are stored.
+- [ ] **YAR-10 · P5 · README validation section.** The validation approach: lifecycle and blocking rules, how the allowed lists were derived (from NAZ-09/NAZ-10), the 3NF summary, where the DQ results are stored, and the Silver stage execution commands.
   - Files: `README.md` ("Validation approach")
   - Depends on: YAR-05, YAR-03, NAZ-10
   - Done when: the section has no "planned" wording left, and every claim links to design.md or evidence.
 
-- [ ] **YAR-11 · P5 · Validation, 3NF and ER slides.** R-P5 validation part (how we validate, plus the failure demo) and R-P6 ER screenshot.
-  - Files: the deck
+- [ ] **YAR-11 · P5 · Validation, 3NF and ER slide material.** R-P5 validation part (how we validate, plus the YAR-08 failure demo), R-P6 ER screenshot, and at least one challenge from Stage 2 (R-P4), with speaker notes.
+  - Files: the deck location from NAZ-16; if none, `docs/slides/yaropolk.md`
   - Depends on: YAR-07, YAR-08
-  - Done when: the slides are in the deck and the validation part of the demo is rehearsed in NAZ-19.
+  - Done when: the material is in place, every number cites an evidence-log row, and Max can drop it into the deck without rewriting.
+
+- [ ] **YAR-13 · P3 · Handoff H2 to Max.** *New (D16).* Fill the H2 note with every deliverable in [H2](#h2--yaropolk--max-yar-13).
+  - Files: `docs/handoffs.md` (H2)
+  - Depends on: YAR-03–YAR-08, YAR-10, YAR-11, YAR-12
+  - Done when: the H2 note is merged after Max's review, and the B1–B5 result is in the evidence log.
+
+- [ ] **YAR-14 · P3 · Reproduce the run from the README alone.** *New (D16; replaces MAX-05).* As the second member, follow only the README to run the full pipeline.
+  - Files: `docs/plan.md` (evidence log); report README gaps to Max
+  - Depends on: MAX-13
+  - Done when: a `succeeded` run started by Yaropolk is in the evidence log, and every README gap found has been reported (Max fixes them in MAX-13).
 
 ### Max
 
@@ -305,40 +340,82 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Depends on: nothing. **Start now.**
   - Done when: the output is in the evidence log.
 
-- [ ] **MAX-02 · P1 · Drive D5, D6, D10, D11 and D12 to agreement.** D5 notebook charts as the visualisation; D6 naming (TPC-H names in Silver, business names in Gold); D10 Silver frozen columns for `orders` and `lineitem` (agreed with Yaropolk) and the Gold contracts; D11 metric definitions (transit, on time `<=`, fully on time, denominators, `percentile_cont`, predictability = p90 − p50, urgent literal, order-to-receipt as the primary Q4 measure); D12 monitoring grain = commit month with boundary months labelled.
-  - Files: `docs/plan.md` (decision log); `docs/design.md` §5.1, §7, §8, §9 if anything changes
-  - Depends on: D5, D11, D12: nothing (**start now**). D6, D10: NAZ-02 (`DESCRIBE` types).
-  - Done when: D5, D6, D10, D11 and D12 are marked "agreed" with all three names and a date.
+- [ ] **MAX-02 · P1 · Drive D5, D6, D7, D10, D11 and D12 to agreement.** D5 notebook charts as the visualisation; D6 naming (TPC-H names in Silver, business names in Gold); D7 pipeline lifecycle and failure behaviour (staging → validate → publish, append-only audit, stale-output guard; transferred from NAZ-05); D10 Silver frozen columns for `orders` and `lineitem` (agreed with Yaropolk) and the Gold contracts; D11 metric definitions (transit, on time `<=`, fully on time, denominators, `percentile_cont`, predictability = p90 − p50, urgent literal, order-to-receipt as the primary Q4 measure); D12 monitoring grain = commit month with boundary months labelled.
+  - Files: `docs/plan.md` (decision log); `docs/design.md` §3, §5.1, §7, §8, §9 if anything changes
+  - Depends on: D5, D11, D12: nothing (**start now**). D6, D10: NAZ-02 (`DESCRIBE` types). D7: NAZ-04 (`%run` evidence).
+  - Done when: D5, D6, D7, D10, D11 and D12 are marked "agreed" with all three names and a date.
 
-- [ ] **MAX-03 · P2 · `05_gold_build`.** The 8 Gold tables from design §9, plus DQ-GOLD1 and DQ-GOLD2 appended to `dq_check_results` (raises on failure). May be developed against a temporary Silver in a scratch prefix until YAR-06 is merged.
+- [ ] **MAX-03 · P2 · `05_gold_build`.** The 8 Gold tables from design §9, plus DQ-GOLD1 and DQ-GOLD2 recorded through `dq_helpers`, ending with `raise_if_failed(run_id, ["DQ-GOLD1", "DQ-GOLD2"])`. May be prototyped against a temporary Silver in a scratch prefix before H2.
   - Files: `notebooks/05_gold_build.py`
-  - Depends on: NAZ-07; D10, D11 (MAX-02); NAZ-03 (`percentile_cont` verified); NAZ-11 (audit tables)
-  - Done when: run against the real Silver, the columns match design §9 exactly and the DQ-GOLD rows pass (output in the evidence log).
+  - Depends on: H2 (YAR-13); YAR-12; D10, D11 (MAX-02); NAZ-03 (`percentile_cont` verified)
+  - Done when: run against the real Silver, the columns match design §9 exactly and the DQ-GOLD rows of that `run_id` pass (output in the evidence log).
 
 - [ ] **MAX-04 · P2 · `06_analysis`: guard, Q1–Q4 and charts 1–4.** A run-state guard that stops if the latest run in `pipeline_runs` has no `succeeded` row; Q1–Q4 queries on `{prefix}_gold` only; charts 1–4 (design §9); answer text cells that refer to the displayed numbers.
   - Files: `notebooks/06_analysis.py`
-  - Depends on: MAX-03; NAZ-11 (`pipeline_runs`)
+  - Depends on: MAX-03; MAX-09 (`pipeline_runs`)
   - Done when: the guard stops the notebook on a run without `succeeded` (evidence), the notebook reads no schema other than Gold and audit, and every answer cell cites a displayed query result.
 
-- [ ] **MAX-05 · P3 · Reproduce the run from the README alone.** As the second member, follow only the README to run the pipeline.
-  - Files: `docs/plan.md` (evidence log); report README gaps to Nazar
-  - Depends on: NAZ-15
-  - Done when: a `succeeded` run started by Max is in the evidence log, and every README gap found is fixed.
+- MAX-05 — transferred → YAR-14 (D16).
 
 - [ ] **MAX-06 · P4 · Monthly delay-rate chart (chart 5).** Line chart of `delay_rate` by commit month from `agg_delay_rate_monthly`, with `line_count`, boundary months labelled "potentially incomplete", and other low-count edge months named from the observed counts (design §8).
   - Files: `notebooks/06_analysis.py`
-  - Depends on: MAX-04; D12; NAZ-12 (real data)
+  - Depends on: MAX-04; D12; MAX-10 (real data)
   - Done when: the chart renders from a succeeded run, and a screenshot is saved for the deck.
 
 - [ ] **MAX-07 · P4 · Q1–Q4 answers in the README.** Write the answers with the actual numbers, the `run_id` and the date of the run they came from.
   - Files: `README.md` ("Results")
-  - Depends on: MAX-04, MAX-06; NAZ-12
+  - Depends on: MAX-04, MAX-06; MAX-10
   - Done when: every number matches a displayed result in `06_analysis` for the cited succeeded run, and the PR is open for YAR-09.
 
 - [ ] **MAX-08 · P5 · Q1–Q4 and monitoring slides.** R-P7: one slide per question with the chart, the query code and the answer, plus the monitoring chart.
   - Files: the deck
   - Depends on: MAX-07 (reviewed by YAR-09)
   - Done when: the slides are in the deck, and their numbers match the README.
+
+- [ ] **MAX-09 · P2 · `run_pipeline` and `pipeline_runs`.** *New (D16; replaces the runner part of NAZ-11).* `%run ./00_config`; then `run_id = new_run_id()` in its own cell, **always**, even if the session already holds a `run_id`; create `{prefix}_audit.pipeline_runs` if missing (never overwrite); append `started`; `%run` 01–05 (children use `require_run_id()`); append `succeeded`.
+  - Files: `notebooks/run_pipeline.py`
+  - Depends on: NAZ-07, NAZ-08; YAR-12 (helpers); D7, D15
+  - Done when: two consecutive executions in one session get different `run_id`s; a forced failure in a step leaves a `started` row with no `succeeded` row; and a rerun keeps the earlier audit rows (evidence for all three).
+
+- [ ] **MAX-10 · P3 · Full run with the default prefix.** *Transferred from NAZ-12.*
+  - Files: `docs/plan.md` (evidence log)
+  - Depends on: MAX-03, MAX-09, H2 (YAR-13)
+  - Done when: `pipeline_runs` shows `succeeded` for the run and all its `dq_check_results` rows have `passed = true` (output and `run_id` in the evidence log).
+
+- [ ] **MAX-11 · P3 · Rerun determinism.** *Transferred from NAZ-13.* Snapshot Gold to a scratch schema, rerun on unchanged data, then `EXCEPT ALL` in both directions. `_ingested_at`, `run_id` and the audit history are expected to differ.
+  - Files: `docs/plan.md` (evidence log)
+  - Depends on: MAX-10
+  - Done when: both `EXCEPT ALL` queries return 0 rows for every Gold table (output in the evidence log), and the scratch snapshot is dropped.
+
+- [ ] **MAX-12 · P3 · Portability run.** *Transferred from NAZ-14.* Run with `schema_prefix = nachalniki_logistics_porttest` and compare Gold with the default run.
+  - Files: `docs/plan.md` (evidence log)
+  - Depends on: MAX-10
+  - Done when: `EXCEPT ALL` both ways returns 0 rows for every Gold table, and **only** the `porttest` schemas this test created are dropped (output in the evidence log).
+
+- [ ] **MAX-13 · P3 · README "How to run".** *Transferred from the run part of NAZ-15.* The steps MAX-10 actually used: Git folder, widget values, running `run_pipeline`, then `06_analysis`. Links to the Stage 1 and validation sections rather than repeating them.
+  - Files: `README.md` ("How to run")
+  - Depends on: MAX-10
+  - Done when: every documented command has been run successfully, the section is ready for YAR-14, and every gap YAR-14 reports is fixed.
+
+- [ ] **MAX-14 · P3 · End-to-end failure check.** *Transferred from the end-to-end part of YAR-08.* In a scratch prefix with a succeeded run, start a new `run_pipeline` execution with one injected bad row. Show that the run has `started` but no `succeeded`, Gold is unchanged (`EXCEPT ALL` = 0 rows), and `06_analysis` refuses to present results.
+  - Files: `docs/plan.md` (evidence log, demo script)
+  - Depends on: MAX-04, MAX-10
+  - Done when: all three effects are captured as evidence, and only the scratch schemas this check created are dropped.
+
+- [ ] **MAX-15 · P5 · Final README assembly.** *Transferred from NAZ-18.* Merge the sections from NAZ-15, YAR-10, MAX-13 and MAX-07 without changing their meaning; add the ER image and the presentation link; remove the "planning" status note.
+  - Files: `README.md`
+  - Depends on: NAZ-15, YAR-10, MAX-13, MAX-07, MAX-16
+  - Done when: the README has setup, run, validation, results, ER and presentation sections, and the PR is approved by at least one other member (each section's author already approved its content in their own PR) (R-S10).
+
+- [ ] **MAX-16 · P5 · Deck assembly, demo script and timed rehearsal.** *Transferred from NAZ-19, plus the "who did what" and pipeline-overview slides from NAZ-17.* Combine NAZ-17, YAR-11 and MAX-08 into one deck; add R-P2 "who did what" (from this plan) and a pipeline overview; finalise the [demo script](#demo-script-draft--finalize-in-max-16); run a timed rehearsal with all three.
+  - Files: the deck; `docs/plan.md` (demo script, evidence log)
+  - Depends on: NAZ-17, YAR-11, MAX-08
+  - Done when: the deck covers R-P1 to R-P7, and a rehearsal of 5–7 minutes is recorded in the evidence log with its time.
+
+- [ ] **MAX-17 · P5 · Public repo check and submission.** *Transferred from NAZ-20.* Check that the repo is public from a logged-out browser, then submit before the due date (from NAZ-16; follow up with the course if it was not announced).
+  - Files: `docs/plan.md` (evidence log)
+  - Depends on: NAZ-16, MAX-15, MAX-16
+  - Done when: the logged-out check and the submission confirmation are in the evidence log, dated before the due date.
 
 ## Optional follow-ups (not acceptance gates; unassigned)
 
@@ -347,13 +424,13 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 - A Databricks Job chaining 01→05 (instead of `run_pipeline`).
 - A rigorous complete-period rule for monthly monitoring.
 
-## Demo script (draft — finalize in P5)
+## Demo script (draft — finalize in MAX-16)
 
-1. Nazar: show the repo README and config parameters (30 s).
-2. Nazar: run, or show the last run of, `run_pipeline`. Show `pipeline_runs` and `dq_check_results` (1 min).
-3. Yaropolk: show the failure demo: a bad row stops publish (1 min).
-4. Yaropolk: show the Silver ER diagram (30 s).
-5. Max: walk through charts Q1–Q4 and monitoring with the answers (2–3 min).
+1. Nazar: repo, config parameters, Bronze and how profiling produced the allowed lists (45 s).
+2. Max: run, or show the last run of, `run_pipeline`. Show `pipeline_runs` and `dq_check_results` for that `run_id` (1 min).
+3. Yaropolk: the failure demo: a bad row stops publish (1 min).
+4. Yaropolk: the Silver ER diagram (30 s).
+5. Max: charts Q1–Q4 and monitoring with the answers (2–3 min).
 
 ## Evidence log
 
@@ -372,11 +449,14 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 | D4 | 2026-10-07 | Member mapping M1 Nazar, M2 Yaropolk, M3 Max | Nazar (NAZ-05) | provisional |
 | D5 | 2026-10-07 | Notebook charts satisfy the visualisation and monitoring requirements; dashboard, Job and alert are optional | Max (MAX-02) | proposed |
 | D6 | 2026-10-07 | Silver keeps TPC-H column names; Gold uses business names | Max (MAX-02) | proposed |
-| D7 | 2026-10-07 | Lifecycle: Bronze → staging → validate (append DQ) → publish Silver → Gold; failed run leaves outputs flagged as stale via `pipeline_runs` | Nazar (NAZ-05) | proposed |
+| D7 | 2026-10-07 | Lifecycle: Bronze → staging → validate (append DQ) → publish Silver → Gold; failed run leaves outputs flagged as stale via `pipeline_runs`. Driver moved from Nazar (NAZ-05) to Max by D16 | Max (MAX-02) | proposed |
 | D8 | – | Catalog to use | Nazar (NAZ-03) | open (P0) |
 | D9 | – | Config and schema names (design §2) | Nazar (NAZ-05) | open (P1) |
 | D10 | – | Silver frozen columns and Gold contracts | Max (MAX-02) | open (P1) |
 | D11 | – | Metric definitions (design §7) | Max (MAX-02) | open (P1) |
 | D12 | – | Monitoring grain: commit month, with boundary months labelled | Max (MAX-02) | open (P1) |
-| D13 | – | Allowed-list procedure | Yaropolk (YAR-02) | open (P1) |
+| D13 | – | Allowed-list procedure (design §6). Driver moved from Yaropolk (YAR-02) to Nazar by D16 | Nazar (NAZ-05) | open (P1) |
 | D14 | – | 3NF method; any decomposition after profiling | Yaropolk (YAR-02, YAR-03) | open (P1, P2) |
+| D15 | 2026-10-07 | run_id and DQ interface (design §3.1): every execution (full pipeline or standalone stage) explicitly starts a fresh `run_id` with `new_run_id()`, even if the session already holds one; child notebooks only read it via `require_run_id()`; `00_config` never assigns it; `raise_if_failed` filters by the active `run_id` and the relevant rule IDs | Nazar (NAZ-05) | proposed |
+| D16 | 2026-10-07 | Sequential handoff distribution Nazar → Yaropolk → Max (this plan): Max owns integration, final README, deck and submission; transferred tasks keep their IDs as stubs | Nazar (NAZ-05) | proposed (needs all three names) |
+| D17 | – | Workspace model: one shared workspace or one per member (both handoff paths documented until decided) | Nazar (NAZ-05) | open (P0/P1) |

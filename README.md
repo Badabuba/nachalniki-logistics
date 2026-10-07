@@ -23,7 +23,8 @@ Assignment source: [`group_assignment_1.pdf`](group_assignment_1.pdf) (§3 deliv
 |---|---|
 | [docs/requirements.md](docs/requirements.md) | Every requirement from the PDF, with owner, deliverable and evidence |
 | [docs/design.md](docs/design.md) | Architecture, table contracts, 3NF method, validation rules, metric definitions |
-| [docs/plan.md](docs/plan.md) | Phases, task split, acceptance criteria, evidence log, decision log |
+| [docs/plan.md](docs/plan.md) | Stages, task split, handoffs, completion criteria, evidence log, decision log |
+| [docs/handoffs.md](docs/handoffs.md) | Handoff notes between stages (H1 Nazar → Yaropolk, H2 Yaropolk → Max) |
 | [CLAUDE.md](CLAUDE.md) | Working conventions for this repo, used by contributors and Claude Code |
 
 ## Planned architecture
@@ -56,7 +57,7 @@ Present now:
 group_assignment_1.pdf   assignment (source of truth)
 README.md  CLAUDE.md
 pyproject.toml  uv.lock  .gitignore
-docs/requirements.md  docs/design.md  docs/plan.md
+docs/requirements.md  docs/design.md  docs/plan.md  docs/handoffs.md
 ```
 
 Planned (not created yet):
@@ -66,6 +67,7 @@ notebooks/00_config.py           parameters, schema names, allowed values
 notebooks/profile_source.py      source profiling (allowed values, date ranges, FD checks)
 notebooks/01_bronze_ingest.py
 notebooks/02_silver_stage.py
+notebooks/dq_helpers.py          creates and appends dq_check_results; run-scoped failure checks
 notebooks/03_validate.py
 notebooks/04_silver_publish.py
 notebooks/05_gold_build.py
@@ -103,4 +105,4 @@ The rules, the method for building allowed lists by profiling, and the failure b
 
 ## Presentation
 
-> **Placeholder:** link to the slides will be added here (P5 in [docs/plan.md](docs/plan.md)).
+> **Placeholder:** link to the slides will be added here (MAX-15 and MAX-16 in [docs/plan.md](docs/plan.md)).

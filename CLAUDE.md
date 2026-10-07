@@ -2,29 +2,30 @@
 
 ## Project
 - **What:** a Bronze → Silver → Gold lakehouse on Databricks `samples.tpch` (8 tables) that answers the **Logistics** profile (§5.2) of `group_assignment_1.pdf`.
-- **Team «начальніки»:**
-  - M1 Nazar: repo, config, Bronze, profiling, integration, README
-  - M2 Yaropolk: Silver, validation, 3NF, ER
-  - M3 Max: Gold, analysis, charts, monitoring
+- **Team «начальніки»** — sequential stages with handoffs (**proposed, D16** in `docs/plan.md`, until all three agree):
+  - M1 Nazar, Stage 1: repo, uv, access checks, config (incl. run_id helpers), Bronze, value profiling, allowed lists, own README sections and slides → handoff H1
+  - M2 Yaropolk, Stage 2: Silver, `dq_helpers` and `dq_check_results`, validation, 3NF, ER, own README section and slides → handoff H2
+  - M3 Max, Stage 3: Gold, analysis, charts, monitoring, `run_pipeline` and `pipeline_runs`, integration runs, final README assembly, deck assembly, rehearsal and submission
 - **Scope:** all 8 tables in Bronze and Silver. Gold covers Logistics only. PySpark/SQL notebooks in `.py` source format. No Lakeflow, asset bundles or CI.
 - **Status:** planning. No pipeline code exists yet.
 
 ## Read before implementing
 1. `group_assignment_1.pdf`: authoritative. Read §3 and §5.2 in full.
 2. `docs/requirements.md`: requirement IDs, owners and evidence.
-3. `docs/design.md`: contracts (§2 config, §3 lifecycle, §5.1 Silver, §6 DQ rules, §7 metrics, §9 Gold). **Implement the contracts as written.** To change one, update design.md in the same PR, add a decision-log entry in `docs/plan.md`, and get both other members' approval.
+3. `docs/design.md`: contracts (§2 config, §3 lifecycle, §5.1 Silver, §6 DQ rules, §7 metrics, §9 Gold). **Implement the contracts as written.** To change one, update design.md in the same PR, add a decision-log entry in `docs/plan.md`, and get approval from every contributor whose deliverables produce or consume that contract (see plan.md Workflow).
 4. `docs/plan.md`: phases, acceptance criteria, evidence log, decision log.
 
 If the documents disagree, the precedence is PDF > requirements.md > design.md > plan.md. Fix the lower document rather than working around it.
 
 ## Architecture rules
-- Notebooks (planned): `00_config`, `profile_source`, `01_bronze_ingest`, `02_silver_stage`, `03_validate`, `04_silver_publish`, `05_gold_build`, `06_analysis`, `run_pipeline`.
+- Notebooks (planned): `00_config`, `profile_source`, `01_bronze_ingest`, `02_silver_stage`, `dq_helpers`, `03_validate`, `04_silver_publish`, `05_gold_build`, `06_analysis`, `run_pipeline`.
 - All names come from `00_config` (widgets `catalog`, `schema_prefix`, `source`). **Never hard-code** a catalog, schema, source or expected row count anywhere else.
 - Schemas are `{catalog}.{prefix}_bronze|_staging|_silver|_gold|_audit`. Silver keeps TPC-H column names. Gold uses the snake_case business names from design §9.
 - Lifecycle: Bronze as-is → staging (no filtering) → validate (append to `_audit.dq_check_results`, raise on a blocking failure) → publish Silver → Gold. Never silently drop invalid rows.
 - Late deliveries (`receipt > commit`) are **valid data**, not DQ failures.
 - PK/FK constraints in Databricks are informational. Referential integrity is proven by the anti-join rules in `03_validate`, not by declaring keys.
-- `_audit` tables are append-only. Never overwrite or drop them as part of a business-table rebuild.
+- `_audit` tables are append-only. Never overwrite or drop them as part of a business-table rebuild. Only `dq_helpers` writes `dq_check_results`; only `run_pipeline` writes `pipeline_runs`.
+- run_id (design §3.1): every execution (full pipeline or standalone stage) explicitly starts a fresh id with `new_run_id()`, even if the session already has one. Child notebooks only read it with `require_run_id()`; `00_config` never assigns it. DQ failure checks filter by the active `run_id` and the relevant rule IDs.
 - `06_analysis` must refuse to present results if the latest run in `pipeline_runs` has no `succeeded` row.
 - Reruns must reproduce the business rows and metrics. `_ingested_at`, `run_id` and the audit history are expected to change.
 - Optional items (dashboard, Job, SQL alert) must not block mandatory work.
@@ -52,7 +53,8 @@ Anything in the Databricks rows can only be confirmed by running it in a real wo
 
 ## Collaboration
 - Branch per task: `feat/<area>-<short>`. Open a PR into `main`, get ≥1 review, then squash-merge. Keep PRs small.
-- Each member works only in their own notebooks. Shared files (`00_config`, the docs) change through PRs that touch only those files.
+- Each member works only in their own notebooks. Shared files (`00_config`, the docs) change through PRs that touch only those files. Every shared helper and audit table has one owner (plan.md "Shared interfaces and owners").
+- Stages hand over through `docs/handoffs.md` (H1, H2). Git shares code, not tables: a handoff delivers code that rebuilds the tables plus evidence of what they contained.
 - Record decisions in the `docs/plan.md` decision log (ID, date, decision, status). Record evidence in the evidence log.
 - Never commit credentials, tokens, `.databrickscfg` or `.env`.
 
