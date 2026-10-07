@@ -75,7 +75,7 @@ The P0 checks NAZ-01–04 have run in Databricks (evidence log, 2026-10-07). Sta
 |---|---|---|
 | Nazar | No open Stage 1 work. H1 was accepted and the allowed lists were reviewed by Max on 2026-10-07 (D20; evidence rows "H1 acceptance" and "NAZ-10 review"), so NAZ-10 and NAZ-21 can be ticked | – |
 | Yaropolk | Stage 2 was taken over by Max (D20). Open for a member other than Max: YAR-09 (after MAX-07) and the R-S6 reproduction of YAR-14 (after MAX-13) | MAX-07, MAX-13 |
-| Max | Stage 2 is built and run (YAR-01–YAR-08, YAR-10–YAR-12 ticked); the H2 note waits only for its merge (YAR-13). Stage 3: MAX-01, MAX-02 (D5–D7, the Gold part of D10, D11, D12), MAX-03 (H2 code is on the Stage 2 branch), MAX-09 (YAR-12 done; needs D7); follow up the due date and submission method (MAX-17, NAZ-16) | MAX-03 against the real Silver after the H2 merge |
+| Max | Stage 2 is finished: YAR-01–YAR-08 and YAR-10–YAR-13 ticked, H2 merged (`fd64374`). Stage 3: MAX-01, MAX-02 (D5–D7, the Gold part of D10, D11, D12), MAX-03 (H2 code is on the Stage 2 branch), MAX-09 (YAR-12 done; needs D7); follow up the due date and submission method (MAX-17, NAZ-16) | – |
 
 Suggested execution order (a summary, not a dependency chain; each task's **Depends on** line is authoritative): NAZ-05 → NAZ-07 → NAZ-08 → NAZ-09 → NAZ-10 → NAZ-15, NAZ-17 → NAZ-21 (H1) → YAR-03, YAR-04 → YAR-05 → YAR-06 → YAR-07, YAR-08 → YAR-10, YAR-11 → YAR-13 (H2) → MAX-03 → MAX-04 → MAX-10 → MAX-06 → MAX-07 → MAX-08 → MAX-16 → MAX-15 → MAX-18 → MAX-17. Work that can run alongside it once its own dependencies are met: YAR-12 (after NAZ-07), MAX-09 (after YAR-12), MAX-11, MAX-12, MAX-13 (after MAX-10), MAX-14 (after MAX-04 and MAX-10), YAR-14 (after MAX-13), YAR-09 (after MAX-07).
 
@@ -158,7 +158,7 @@ These lists are completion conditions, not a second checklist: they are met when
 
 Remaining duties after H2 (they verify Max's work and cannot happen earlier): YAR-09 (review the answer numbers) and YAR-14 (reproduce the run from the README).
 
-Since D20 Max owns this stage; D14 counts as met when "decided" by the stage owner. Status 2026-10-07: every listed task except YAR-13 is ticked; YAR-13 waits for the merge of the H2 note.
+Since D20 Max owns this stage; D14 counts as met when "decided" by the stage owner. Status 2026-10-07: every listed task is ticked and H2 is merged (`fd64374`), so the stage is finished.
 
 ### Max is finished when…
 - MAX-01–MAX-04 and MAX-06–MAX-18 are ticked with evidence.
@@ -348,11 +348,11 @@ Max took over every task in this section on 2026-10-07 (D20). The IDs stay uncha
   - Done when: the material is in place, every number cites an evidence-log row, and Max can drop it into the deck without rewriting.
   - Status 2026-10-07: done. `docs/slides/stage2.md` (2 slides with speaker notes), images `docs/silver_er.png` and `docs/slides/img/silver_failure_demo_20261007.png` (rendered from the decoded run exports, not a live workspace screenshot).
 
-- [ ] **YAR-13 · P3 · Handoff H2 to Max.** *New (D16).* Fill the H2 note with every deliverable in [H2](#h2--yaropolk--max-yar-13).
+- [x] **YAR-13 · P3 · Handoff H2 to Max.** *New (D16).* Fill the H2 note with every deliverable in [H2](#h2--yaropolk--max-yar-13).
   - Files: `docs/handoffs.md` (H2)
   - Depends on: YAR-03–YAR-08, YAR-10, YAR-11, YAR-12
   - Done when: the H2 note is merged after Max's review, and the B1–B5 result is in the evidence log.
-  - Status 2026-10-07: H2 note filled and B1–B5 checked (evidence row "H2 B1–B5"). After D20 the sender and the receiver are the same person, so the check is not independent. Still pending: the merge into `main`.
+  - Status 2026-10-07: done. H2 note filled, B1–B5 checked (evidence row "H2 B1–B5") and merged into `main` in [PR #4](https://github.com/Badabuba/nachalniki-logistics/pull/4) (`fd64374`). After D20 the sender and the receiver are the same person, so the check is not independent.
 
 - [ ] **YAR-14 · P3 · Reproduce the run from the README alone.** *New (D16; replaces MAX-05).* As the second member, follow only the README to run the full pipeline.
   - Files: `docs/plan.md` (evidence log); report README gaps to Max

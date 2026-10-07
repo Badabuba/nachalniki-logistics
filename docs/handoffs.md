@@ -41,11 +41,11 @@ Acceptance (A1–A6): **H1 accepted on 2026-10-07 by Max**, who took over the re
 
 ## H2 — Yaropolk → Max (YAR-13)
 
-Status: **filled (2026-10-07); waiting for the merge into `main`.** Stage 2 was built and run by Max after he took over Yaropolk's tasks (D20), so the sender and the receiver are the same person.
+Status: **merged into `main` on 2026-10-07 ([PR #4](https://github.com/Badabuba/nachalniki-logistics/pull/4), merge commit `fd64374`); H2 complete.** Stage 2 was built and run by Max after he took over Yaropolk's tasks (D20), so the sender and the receiver are the same person.
 
 | Field | Value |
 |---|---|
-| Commit SHA on `main` | Not merged yet. Stage 2 is committed on branch `yaropolk-part/silver` (based on `docs/h1-merge-sha`, `694a4a0`); the `main` SHA is written here by whoever merges it |
+| Commit SHA on `main` | `fd64374c9077b74952fef21561f93988da23ccbb` (merge of PR #4, branch `yaropolk-part/silver`, 2026-10-07; it also brought `694a4a0` from `docs/h1-merge-sha` into `main`). The Stage 2 notebooks are unchanged from commit `79b1cc9`, whose versions ran in the evidence rows |
 | Workspace path (D17) and values used | Shared workspace `dbc-1766f78b-980d`. `catalog = workspace`, `schema_prefix = makc_logistics`, `source = samples.tpch`. Tables: `workspace.makc_logistics_{bronze,staging,silver,audit}` (Bronze `_ingested_at = 2026-10-07 16:28:41.562184` UTC). Nazar's `nachalniki_logistics_bronze` was not used or changed. After H2 the default prefix is written only by `run_pipeline` (MAX-10) |
 | Final Silver contract (design §5.1, any §5.4 decomposition and its decision-log entry) | 11 tables, defined in `notebooks/silver_contract.py` and design §5.1: the 8 source tables plus `brand`, `ship_date_status`, `part_quantity_price` from the 3NF decomposition (D21). `part` has no `p_mfgr`; `lineitem` has no `l_linestatus`, `l_extendedprice`. Frozen for Gold: `lineitem` `l_orderkey, l_linenumber, l_partkey, l_suppkey, l_shipdate, l_commitdate, l_receiptdate, l_shipmode, l_returnflag`; `orders` `o_orderkey, o_orderdate, o_orderpriority` (D10 Silver part) |
 | Silver stage execution sequence (design §3.1) | `checks/p2/silver_stage/silver_stage_entry`: `%run 00_config` → `run_id = new_run_id()` → `%run 02_silver_stage` → `%run 03_validate` → `%run 04_silver_publish`, one cell each; widgets `catalog`, `schema_prefix`, `source`, and `inject_bad_row` (`none`; `receipt_before_ship` only for the failure demo). Run as a serverless one-time job (README "Validation approach"). `run_pipeline` should `%run` `01`, `02`, `03`, `04`, `05` in the same order |
