@@ -11,7 +11,7 @@
 
 # COMMAND ----------
 
-# A1: every name of design §2 is defined after %run ./00_config.
+# A1: every name is defined after %run ./00_config.
 expected_names = [
     "catalog", "schema_prefix", "source",
     "bronze_schema", "staging_schema", "silver_schema", "gold_schema", "audit_schema",
@@ -24,7 +24,7 @@ for n in expected_names:
         print(f"{n} = {globals()[n]!r}")
 assert not missing_names, f"missing names: {missing_names}"
 assert "run_id" not in globals(), "00_config must not assign run_id"
-print("A1 OK: all design §2 names defined; 00_config did not assign run_id")
+print("A1 OK: all config names defined; 00_config did not assign run_id")
 
 # COMMAND ----------
 

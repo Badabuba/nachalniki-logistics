@@ -1,7 +1,7 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # Silver stage execution (entry notebook)
-# MAGIC Design §3.1: `%run 00_config` → `run_id = new_run_id()` → `%run 02` → `%run 03` → `%run 04`, each
+# MAGIC Sequence: `%run 00_config` → `run_id = new_run_id()` → `%run 02` → `%run 03` → `%run 04`, each
 # MAGIC in its own cell. Writes `dq_check_results` but not `pipeline_runs`; once `run_pipeline` has
 # MAGIC produced Gold in a prefix, use a scratch `schema_prefix` here.
 # MAGIC

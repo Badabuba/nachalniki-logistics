@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Two consecutive pipeline executions (MAX-09)
+# MAGIC # Two consecutive pipeline executions
 # MAGIC
 # MAGIC Runs the full pipeline twice in the same notebook context. The second execution must replace
 # MAGIC the session's old `run_id` with a fresh one, and append-only audit tables must retain rows from
@@ -44,6 +44,6 @@ display(
     .orderBy("event_ts")
 )
 print(
-    f"MAX-09 two-run check passed: first={first_run_id}, second={second_run_id}, "
+    f"two-run check passed: first={first_run_id}, second={second_run_id}, "
     f"retained DQ rows={retained_dq_rows}, second DQ rows={second_dq_rows}"
 )

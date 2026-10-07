@@ -6,7 +6,7 @@
 # MAGIC the Silver contract only. No row is filtered and no constraint is added; `03_validate` checks
 # MAGIC the staging tables and `04_silver_publish` publishes them only after every rule has passed.
 # MAGIC
-# MAGIC Run it from a Silver stage execution or `run_pipeline` (design §3.1), never on its own.
+# MAGIC Run it from a Silver stage execution or `run_pipeline`, never on its own.
 
 # COMMAND ----------
 

@@ -106,7 +106,7 @@ display(lines_per_order)
 # MAGIC %md
 # MAGIC ## Functional dependencies
 # MAGIC
-# MAGIC 3NF evidence (design §5.3): candidate keys, then each candidate non-key dependency `X → A`.
+# MAGIC 3NF evidence: candidate keys, then each candidate non-key dependency `X → A`.
 # MAGIC A dependency holds in this snapshot when no value of `X` has more than one distinct `A`.
 
 # COMMAND ----------
@@ -161,7 +161,7 @@ display(candidate_keys)
 
 # MAGIC %md
 # MAGIC ### Candidate non-key dependencies
-# MAGIC Candidates from design §5.3. `violating_groups` counts values of `X` with more than one
+# MAGIC Candidate dependencies: `violating_groups` counts values of `X` with more than one
 # MAGIC distinct `A`; 0 means the dependency holds in this snapshot. `A` may be an expression
 # MAGIC (the phone prefix).
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MAX-14: End-to-end failure check script.
+End-to-end failure check script.
 1. Prepares scratch prefix nachalniki_logistics_e2efail with existing succeeded state.
 2. Snapshots Gold to _snapshot.
 3. Submits e2e_failure_entry with bad row injection. Verifies job FAILS as intended.

@@ -2,11 +2,11 @@
 # MAGIC %md
 # MAGIC # silver_contract
 # MAGIC
-# MAGIC The Silver contract (design §5.1) in one place, loaded with `%run ./silver_contract` by
+# MAGIC The Silver contract in one place, loaded with `%run ./silver_contract` by
 # MAGIC `02_silver_stage`, `03_validate` and `04_silver_publish`: tables and typed columns, where each
 # MAGIC table comes from in Bronze, primary keys, foreign keys and the enforced constraints.
 # MAGIC
-# MAGIC Three tables are 3NF decompositions of documented TPC-H generation rules (design §5.3–5.4):
+# MAGIC Three tables are 3NF decompositions of documented TPC-H generation rules:
 # MAGIC `brand` (`p_brand → p_mfgr`), `ship_date_status` (`l_shipdate → l_linestatus`) and
 # MAGIC `part_quantity_price` (`(l_partkey, l_quantity) → l_extendedprice`). Each holds one row per
 # MAGIC distinct determinant value; if the data ever broke the rule, its primary key would be
