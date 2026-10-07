@@ -11,11 +11,13 @@ Rules:
 
 ## H1 — Nazar → Yaropolk (NAZ-21)
 
-Status: **ready for Yaropolk's review (2026-10-07).** Stage 1 is pushed on `docs/initial-plan` with an open PR into `main`: [#1](https://github.com/Badabuba/nachalniki-logistics/pull/1). H1 is accepted only when Yaropolk records it.
+Status: **implementation merged into `main` on 2026-10-07 ([PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1), squash commit `79d37e4`); receiver validation outstanding.** H1 is accepted only when Yaropolk records it.
+
+**Yaropolk, start here:** work from `main`. (1) Review the allowed-list constants in `notebooks/00_config.py` against design §5.5/§6 (NAZ-10). (2) Run A1–A6 ([plan.md H1](plan.md#h1--nazar--yaropolk-naz-21)) with your own `catalog` if you use a separate workspace; for A5 use `checks/p2/run_id_helpers/a5_interactive` (Run all twice in one session) and `a5_child` alone. (3) Record "H1 accepted" or a defect list in the [evidence log](plan.md#evidence-log), including your review of the constants (D19). Then continue with YAR-03, YAR-04 and YAR-12.
 
 | Field | Value |
 |---|---|
-| Commit SHA on `main` | Not merged yet. Implementation commit on `docs/initial-plan`: `2d18564587078cae019abcab18cbb69c6bd2ae17`. The `main` SHA is written here by whoever squash-merges PR #1 |
+| Commit SHA on `main` | `79d37e4772fba4ba1a7044d1a4853220e363245a` (squash merge of PR #1, 2026-10-07). Implementation commit on `docs/initial-plan`: `2d18564587078cae019abcab18cbb69c6bd2ae17`; the notebook and test files are unchanged between the two |
 | Workspace path (D17: shared or separate) | D17 is open (no arrangement confirmed), so both paths apply. **Separate workspace:** run the Stage 1 commands below with your own `catalog`. **Shared workspace (Nazar's):** Bronze exists in `workspace.nachalniki_logistics_bronze`, loaded at `_ingested_at = 2026-10-07 13:43:28.462558` UTC by run `1104358970299952`. That run executed the uploaded copy in `/Users/<nazar>/nachalniki_stage1/`, before the allowed lists were filled in `00_config`. The currently deployed notebooks are identical to commit `2d18564` (evidence row "Deployed notebooks vs repo"), but which exact version each earlier run executed cannot be shown, so that runtime evidence belongs to the uploaded version. Read grants for other users were not checked **[VERIFY]** |
 | `catalog` / `schema_prefix` / `source` used | `workspace` / `nachalniki_logistics` / `samples.tpch` (widget defaults) |
 | Bronze tables and column lists (8 tables + `_ingested_at`, `_source_table`) | `region`, `nation`, `supplier`, `customer`, `part`, `partsupp`, `orders`, `lineitem`. Each has exactly the source columns in source order and type (61 in total, listed in [06_describe_tables.csv](../checks/p0/outputs/source_discovery/06_describe_tables.csv)), then `_ingested_at` (timestamp, one value per execution) and `_source_table` (string, e.g. `samples.tpch.lineitem`) |

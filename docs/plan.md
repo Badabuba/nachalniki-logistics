@@ -73,8 +73,8 @@ The P0 checks NAZ-01–04 have run in Databricks (evidence log, 2026-10-07). Sta
 
 | Person | Can start now | Waits for |
 |---|---|---|
-| Nazar | No open Stage 1 work; fixes defects reported in the PR review or the H1 acceptance | NAZ-06, NAZ-10 and NAZ-21 wait for Yaropolk's review of the Stage 1 PR and the H1 acceptance (A1–A6), then the merge. |
-| Yaropolk | YAR-01, YAR-02 (D14); review the Stage 1 PR and run the H1 acceptance checks A1–A6 | YAR-03 and YAR-04 wait for H1 (NAZ-21). YAR-04 also needs D10. YAR-12 can start (NAZ-07 code is in the PR; D15 agreed). |
+| Nazar | No open Stage 1 work; fixes defects reported in Yaropolk's post-merge review or the H1 acceptance | NAZ-10 and NAZ-21 wait for Yaropolk's review of the allowed lists and the H1 acceptance (A1–A6), recorded in the evidence log (D19). |
+| Yaropolk | **First:** verify H1 from `main` (`79d37e4`): review the allowed lists in `00_config` (NAZ-10) and run A1–A6 ([H1](handoffs.md#h1--nazar--yaropolk-naz-21)), then record "H1 accepted" or a defect list in the evidence log. Also YAR-01, YAR-02 (D14) | YAR-03 and YAR-04 start after the H1 acceptance (NAZ-21). YAR-04 also needs D10. YAR-12 can start (NAZ-07 is on `main`; D15 agreed). |
 | Max | MAX-01, MAX-02 (D5, D6, D7, D10, D11, D12: their P0 inputs exist); follow up the due date and submission method (MAX-17, NAZ-16) | MAX-03 waits for H2 (YAR-13). MAX-09 needs NAZ-07, NAZ-08, YAR-12 and D7. |
 
 Suggested execution order (a summary, not a dependency chain; each task's **Depends on** line is authoritative): NAZ-05 → NAZ-07 → NAZ-08 → NAZ-09 → NAZ-10 → NAZ-15, NAZ-17 → NAZ-21 (H1) → YAR-03, YAR-04 → YAR-05 → YAR-06 → YAR-07, YAR-08 → YAR-10, YAR-11 → YAR-13 (H2) → MAX-03 → MAX-04 → MAX-10 → MAX-06 → MAX-07 → MAX-08 → MAX-16 → MAX-15 → MAX-18 → MAX-17. Work that can run alongside it once its own dependencies are met: YAR-12 (after NAZ-07), MAX-09 (after YAR-12), MAX-11, MAX-12, MAX-13 (after MAX-10), MAX-14 (after MAX-04 and MAX-10), YAR-14 (after MAX-13), YAR-09 (after MAX-07).
@@ -93,7 +93,7 @@ P1 acceptance: D4–D7, D9–D16 marked "agreed" with all three names and a date
 
 ## Handoffs
 
-The handoff notes themselves are written in [handoffs.md](handoffs.md). A handoff is complete when its note is merged after review by the receiver. If an acceptance check fails, the receiver lists the defects in the evidence log and the sender fixes them.
+The handoff notes themselves are written in [handoffs.md](handoffs.md). A handoff is complete when its note is merged after review by the receiver (for H1, the review follows the merge: D19). If an acceptance check fails, the receiver lists the defects in the evidence log and the sender fixes them.
 
 ### H1 — Nazar → Yaropolk (NAZ-21)
 
@@ -209,11 +209,11 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Status 2026-10-07: D4, D9, D13, D15, D16 agreed (team agreement reported by Nazar; no individual replies or PR approvals are recorded). D17 has no confirmed arrangement, so both paths are documented in H1.
   - D7 (lifecycle) — transferred → MAX-02 (D16), because Max implements the runner and the stale-output guard.
 
-- [ ] **NAZ-06 · P2 · Merge the uv setup.** `pyproject.toml`, `uv.lock` and `.gitignore` are committed on `docs/initial-plan` (local `uv lock`/`uv sync` evidence dated 2026-10-07). Get them reviewed and merged into `main`.
+- [x] **NAZ-06 · P2 · Merge the uv setup.** `pyproject.toml`, `uv.lock` and `.gitignore` are committed on `docs/initial-plan` (local `uv lock`/`uv sync` evidence dated 2026-10-07). Get them reviewed and merged into `main`.
   - Files: `pyproject.toml`, `uv.lock`, `.gitignore`; `docs/requirements.md` (R-S7 status)
   - Depends on: nothing. **Start now.**
   - Done when: the PR is merged into `main` and R-S7 cites the evidence.
-  - Status 2026-10-07: included in the Stage 1 PR from `docs/initial-plan`; waiting for review and merge.
+  - Status 2026-10-07: merged into `main` in [PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1) (squash commit `79d37e4`) without a prior review (D19); R-S7 cites the evidence.
 
 - [x] **NAZ-07 · P2 · `00_config`.** Widgets `catalog`, `schema_prefix`, `source`; derived schema names; the D15 helpers `new_run_id()` (returns a fresh `str(uuid.uuid4())`) and `require_run_id()` (returns the caller's `run_id` or raises if none is defined). `00_config` itself **never assigns `run_id`**. Placeholders for the allowed-value constants (filled in by NAZ-10).
   - Files: `notebooks/00_config.py`
@@ -235,7 +235,7 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Files: `notebooks/00_config.py`; `docs/plan.md` (decision log, if there is a mismatch)
   - Depends on: NAZ-09; D13 (NAZ-05)
   - Done when: `ALLOWED_SHIP_MODES`, `ALLOWED_RETURN_FLAGS` and `ALLOWED_LINE_STATUSES` are built from the profiled values; every value is classified as observed and documented, documented but not observed, or observed but not documented, against the cited documentation; every discrepancy is resolved in the decision log; and the PR is approved by one other member (Yaropolk preferred, as the consumer in `03_validate`).
-  - Status 2026-10-07: constants written and classified (design §6; no discrepancy). D13 agreed. Still pending: approval of the Stage 1 PR by another member.
+  - Status 2026-10-07: constants written and classified (design §6; no discrepancy), D13 agreed, merged into `main` (`79d37e4`). Still pending: Yaropolk's review of the constants. PR #1 was merged before any review (D19), so the approval is recorded as an evidence-log row by Yaropolk instead of a PR approval.
 
 - NAZ-11 — transferred → MAX-09 (`run_pipeline`, `pipeline_runs`) and YAR-12 (`dq_helpers`, `dq_check_results`) (D16).
 - NAZ-12 — transferred → MAX-10 (D16).
@@ -268,7 +268,7 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Files: `docs/handoffs.md` (H1)
   - Depends on: NAZ-01–NAZ-10, NAZ-15, NAZ-17
   - Done when: the H1 note is merged after Yaropolk's review, and the A1–A6 result is in the evidence log (defects found later follow the defect path).
-  - Status 2026-10-07: H1 note filled (handoffs.md), Stage 1 pushed and [PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1) opened; the implementer's self-check of A1–A6 is in the evidence log. Still pending: Yaropolk's review and Yaropolk's own A1–A6 run, then the merge. Whoever squash-merges PR #1 writes the resulting `main` SHA into the H1 note (in the merge PR or a direct follow-up commit); no action from Nazar is needed for that.
+  - Status 2026-10-07: implementation merged into `main` in [PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1) (squash commit `79d37e4`); H1 note filled with that SHA; the implementer's self-check of A1–A6 is in the evidence log. Still pending: Yaropolk's review of the H1 note and Yaropolk's own A1–A6 run, recorded as "H1 accepted" or a defect list (D19).
 
 ### Yaropolk
 
@@ -475,6 +475,7 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 | 2026-10-07 | NAZ-07 A5 (interactive session) | `checks/p2/run_id_helpers/a5_interactive` (in implementation commit `2d18564`) run by Nazar in an attached notebook session: Run all twice in the same session. Execution 1: previous `None`, `run_id = 00b598c1-e0c8-49de-a5b6-f5e6117d21cf`, child saw the same id. Execution 2: previous `00b598c1-…` (still in the session after a second `%run 00_config`), `run_id = 4864114c-5760-4a56-a2df-1fae3cd3af6f`, child saw the same id. Each execution printed `A5 interactive OK`, which is reached only after `assert run_id != previous_run_id` and `assert child_seen_run_id == run_id` passed. The output pasted by Nazar is saved unchanged: [a5_interactive_20261007_reported_by_nazar.txt](../checks/p2/outputs/run_id_helpers/a5_interactive_20261007_reported_by_nazar.txt). Independent check: `workspace export --format JUPYTER` of the notebook afterwards holds the saved outputs of execution 2, identical to the pasted text, including the child's own line `a5_child: require_run_id() = 4864114c-…` ([a5_interactive_20261007_session_export.ipynb](../checks/p2/outputs/run_id_helpers/a5_interactive_20261007_session_export.ipynb)); execution 1's outputs were overwritten by execution 2 and rest on the pasted text, corroborated by execution 2's `previous` value. The deployed source equals the committed file except for the serverless environment header Databricks added on attach | Nazar (run); recorded by Claude Code session for Nazar |
 | 2026-10-07 | NAZ-17 images | The `jobs export-run` HTML of run `1104358970299952` (NAZ-08) and run `1029034196915021` (NAZ-09), already saved in `checks/p2/outputs/`, rendered with headless Chrome and cropped to the result tables: [bronze_check_20261007.png](slides/img/bronze_check_20261007.png) (8 rows, all `ok = true`, lineitem 29999795 = 29999795) and [profiling_categorical_20261007.png](slides/img/profiling_categorical_20261007.png) (12 rows, values and counts as in design §5.5). These are renderings of the run exports, not screenshots of the live workspace | Claude Code session for Nazar |
 | 2026-10-07 | H1 implementer self-check (not the receiver's acceptance) | Run by the implementer from existing evidence, without rescans. A1: passed in job run `1113516903146913` (all design §2 names defined, `run_id` not). A2: passed in the NAZ-08 run (8 tables, source columns + 2 metadata columns, counts equal; the counts were compared with the source at runtime in Nazar's workspace). A3: design §5.5 rows filled with query, date and result; the `00_config` constants equal the profiled values and the design §6 classification; no discrepancy. A4: grep of `notebooks/` repeated locally on 2026-10-07 outside `00_config.py`: only markdown text and the names `compare_bronze_with_source` and `TPCH_TABLES` matched; no catalog, schema or source literal, no row count. A5: passed in one notebook context on serverless job runs (two different ids, the child echoed each; child alone failed) and in an attached interactive session (`a5_interactive`, Run all twice; row "NAZ-07 A5 (interactive session)"). A6: remaining assumptions listed in H1. Yaropolk's own A1–A6 run: not run | Claude Code session for Nazar |
+| 2026-10-07 | NAZ-06, Stage 1 merge | [PR #1](https://github.com/Badabuba/nachalniki-logistics/pull/1) squash-merged into `main` by Nazar: commit `79d37e4772fba4ba1a7044d1a4853220e363245a` (PR head `89a3cb6`, 11 commits). Before the merge: state `MERGEABLE`/`CLEAN`, no required status checks, `main` not protected and no rulesets, no reviews (D19). After the merge, the `main` tree equals the PR head tree, and `notebooks/` and `checks/p2/run_id_helpers/` are unchanged since implementation commit `2d18564` | Claude Code session for Nazar |
 
 ## Decision log
 
@@ -498,3 +499,4 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 | D16 | 2026-10-07 | Sequential handoff distribution Nazar → Yaropolk → Max (this plan): Max owns integration, final README, deck and submission; transferred tasks keep their IDs as stubs; final cleanup (MAX-18) comes before submission (MAX-17) | Nazar (NAZ-05) | agreed (Nazar, Yaropolk, Max; 2026-10-07; reported by Nazar, NAZ-05 evidence row) |
 | D17 | – | Workspace model: one shared workspace or one per member (both handoff paths documented until decided). Asked in the NAZ-05 proposal | Nazar (NAZ-05) | open; no arrangement confirmed as of 2026-10-07, both paths documented in H1 |
 | D18 | 2026-10-07 | Due date and submission method not provided to this session (the PDF has neither); MAX-17 gets them from the course. Format rules taken from PDF §3.2/§3.4 (NAZ-16). Slide material stays in `docs/slides/<name>.md` until a deck location is decided | Nazar (NAZ-16) | recorded; follow-up MAX-17 |
+| D19 | 2026-10-07 | Stage 1 PR #1 was squash-merged into `main` by Nazar without a prior review, so Yaropolk can start from `main`. This departs from the "≥1 review, then squash-merge" rule for this PR only. Yaropolk's review of the allowed lists (NAZ-10) and of the H1 note, and the A1–A6 run, happen after the merge and are recorded in the evidence log; defects follow the defect path. NAZ-10 and NAZ-21 are complete only when that row exists | Nazar | decided (Nazar); Yaropolk to note in the H1 acceptance row |

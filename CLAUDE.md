@@ -7,7 +7,7 @@
   - M2 Yaropolk, Stage 2: Silver, `dq_helpers` and `dq_check_results`, validation, 3NF, ER, own README section and slides → handoff H2
   - M3 Max, Stage 3: Gold, analysis, charts, monitoring, `run_pipeline` and `pipeline_runs`, integration runs, final README assembly, deck assembly, rehearsal and submission
 - **Scope:** all 8 tables in Bronze and Silver. Gold covers Logistics only. PySpark/SQL notebooks in `.py` source format. No Lakeflow, asset bundles or CI.
-- **Status:** Stage 1 (`00_config`, `01_bronze_ingest`, `profile_source`) built and run in Databricks on 2026-10-07 and handed over in H1 (awaiting Yaropolk's review); Silver, Gold, the runner and the analysis are not built yet.
+- **Status:** Stage 1 (`00_config`, `01_bronze_ingest`, `profile_source`) built and run in Databricks on 2026-10-07 and merged into `main` (`79d37e4`) and handed over in H1 (awaiting Yaropolk's review and A1–A6); Silver, Gold, the runner and the analysis are not built yet.
 
 ## Read before implementing
 1. `group_assignment_1.pdf`: authoritative. Read §3 and §5.2 in full.
