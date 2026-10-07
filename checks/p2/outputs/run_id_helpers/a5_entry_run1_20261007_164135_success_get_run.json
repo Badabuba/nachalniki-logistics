@@ -1,0 +1,64 @@
+{
+  "cleanup_duration": 0,
+  "creator_user_name": "mykolaichuk.pn@ucu.edu.ua",
+  "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+  "end_time": 1791380513368,
+  "execution_duration": 14000,
+  "job_id": 356841946234376,
+  "job_run_id": 1113516903146913,
+  "number_in_job": 1113516903146913,
+  "run_duration": 18836,
+  "run_id": 1113516903146913,
+  "run_name": "nachalniki_stage1_a5_entry_run1",
+  "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/356841946234376/run/1113516903146913",
+  "run_type": "SUBMIT_RUN",
+  "setup_duration": 4000,
+  "start_time": 1791380494532,
+  "state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "status": {
+    "state": "TERMINATED",
+    "termination_details": {
+      "code": "SUCCESS",
+      "message": "",
+      "type": "SUCCESS"
+    }
+  },
+  "tasks": [
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 0,
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1791380512960,
+      "execution_duration": 14000,
+      "notebook_task": {
+        "notebook_path": "/Users/mykolaichuk.pn@ucu.edu.ua/nachalniki_stage1/checks/p2/run_id_helpers/a5_entry",
+        "source": "WORKSPACE"
+      },
+      "run_id": 424666228582663,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/356841946234376/run/424666228582663",
+      "setup_duration": 4000,
+      "start_time": 1791380494563,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "task_key": "a5_entry_run1"
+    }
+  ]
+}

@@ -1,0 +1,701 @@
+[
+  {
+    "notebook": "f28b631e-7cb1-49b2-959a-7ea73cb031f0",
+    "commands": [
+      {
+        "command": "%md\n# A5 entry (test notebook, not pipeline code)\nChecks the run_id helpers of `00_config` (handoff checks A1 and A5) inside ONE execution\ncontext: two consecutive executions are simulated by repeating the entry sequence\n(`%run 00_config` → `run_id = new_run_id()` → `%run` child) twice in the same notebook.",
+        "state": "finished",
+        "results": null,
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "%run ../../../notebooks/00_config",
+        "state": "finished",
+        "results": null,
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {
+            "catalog": "workspace",
+            "schema_prefix": "nachalniki_logistics",
+            "source": "samples.tpch"
+          },
+          "addedWidgets": {
+            "catalog": {
+              "widgetType": "text",
+              "name": "catalog",
+              "defaultValue": "workspace",
+              "label": "catalog",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            },
+            "schema_prefix": {
+              "widgetType": "text",
+              "name": "schema_prefix",
+              "defaultValue": "nachalniki_logistics",
+              "label": "schema_prefix",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            },
+            "source": {
+              "widgetType": "text",
+              "name": "source",
+              "defaultValue": "samples.tpch",
+              "label": "source (<catalog>.<schema>)",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            }
+          },
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "catalog='workspace', schema_prefix='nachalniki_logistics', source='samples.tpch'\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "# A1: every name of design §2 is defined after %run ./00_config.\nexpected_names = [\n    \"catalog\", \"schema_prefix\", \"source\",\n    \"bronze_schema\", \"staging_schema\", \"silver_schema\", \"gold_schema\", \"audit_schema\",\n    \"TPCH_TABLES\", \"ALLOWED_SHIP_MODES\", \"ALLOWED_RETURN_FLAGS\", \"ALLOWED_LINE_STATUSES\",\n    \"new_run_id\", \"require_run_id\",\n]\nmissing_names = [n for n in expected_names if n not in globals()]\nfor n in expected_names:\n    if n in globals() and not callable(globals()[n]):\n        print(f\"{n} = {globals()[n]!r}\")\nassert not missing_names, f\"missing names: {missing_names}\"\nassert \"run_id\" not in globals(), \"00_config must not assign run_id\"\nprint(\"A1 OK: all design §2 names defined; 00_config did not assign run_id\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "catalog = 'workspace'\nschema_prefix = 'nachalniki_logistics'\nsource = 'samples.tpch'\nbronze_schema = 'workspace.nachalniki_logistics_bronze'\nstaging_schema = 'workspace.nachalniki_logistics_staging'\nsilver_schema = 'workspace.nachalniki_logistics_silver'\ngold_schema = 'workspace.nachalniki_logistics_gold'\naudit_schema = 'workspace.nachalniki_logistics_audit'\nTPCH_TABLES = ['region', 'nation', 'supplier', 'customer', 'part', 'partsupp', 'orders', 'lineitem']\nALLOWED_SHIP_MODES = ['AIR', 'FOB', 'MAIL', 'RAIL', 'REG AIR', 'SHIP', 'TRUCK']\nALLOWED_RETURN_FLAGS = ['A', 'N', 'R']\nALLOWED_LINE_STATUSES = ['F', 'O']\nA1 OK: all design §2 names defined; 00_config did not assign run_id\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "# Before any execution starts, require_run_id() must fail.\ntry:\n    require_run_id()\n    raise AssertionError(\"require_run_id() did not raise without a run_id\")\nexcept RuntimeError as e:\n    print(f\"OK: require_run_id() without run_id raised RuntimeError: {e}\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "OK: require_run_id() without run_id raised RuntimeError: run_id is not defined. Start from an entry notebook that runs `run_id = new_run_id()` after `%run ./00_config`.\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "# Execution 1\nrun_id = new_run_id()\nexecution_1_run_id = run_id\nprint(f\"execution 1: run_id = {run_id}\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "execution 1: run_id = e9a40fb4-6aec-425f-aa5f-fa83768a16c8\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "%run ./a5_child",
+        "state": "finished",
+        "results": null,
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {
+            "catalog": "workspace",
+            "schema_prefix": "nachalniki_logistics",
+            "source": "samples.tpch"
+          },
+          "addedWidgets": {
+            "catalog": {
+              "widgetType": "text",
+              "name": "catalog",
+              "defaultValue": "workspace",
+              "label": "catalog",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            },
+            "schema_prefix": {
+              "widgetType": "text",
+              "name": "schema_prefix",
+              "defaultValue": "nachalniki_logistics",
+              "label": "schema_prefix",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            },
+            "source": {
+              "widgetType": "text",
+              "name": "source",
+              "defaultValue": "samples.tpch",
+              "label": "source (<catalog>.<schema>)",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            }
+          },
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "catalog='workspace', schema_prefix='nachalniki_logistics', source='samples.tpch'\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "a5_child: require_run_id() = e9a40fb4-6aec-425f-aa5f-fa83768a16c8\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "assert child_seen_run_id == execution_1_run_id\nexecution_1_child_seen = child_seen_run_id\nprint(f\"execution 1: child saw {child_seen_run_id}\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "execution 1: child saw e9a40fb4-6aec-425f-aa5f-fa83768a16c8\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "# Execution 2 in the same context: config is loaded again while run_id from execution 1 still exists.",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "%run ../../../notebooks/00_config",
+        "state": "finished",
+        "results": null,
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {
+            "catalog": "workspace",
+            "schema_prefix": "nachalniki_logistics",
+            "source": "samples.tpch"
+          },
+          "addedWidgets": {
+            "catalog": {
+              "widgetType": "text",
+              "name": "catalog",
+              "defaultValue": "workspace",
+              "label": "catalog",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            },
+            "schema_prefix": {
+              "widgetType": "text",
+              "name": "schema_prefix",
+              "defaultValue": "nachalniki_logistics",
+              "label": "schema_prefix",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            },
+            "source": {
+              "widgetType": "text",
+              "name": "source",
+              "defaultValue": "samples.tpch",
+              "label": "source (<catalog>.<schema>)",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            }
+          },
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "catalog='workspace', schema_prefix='nachalniki_logistics', source='samples.tpch'\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "assert run_id == execution_1_run_id, \"re-running 00_config changed run_id\"\nprint(f\"after second %run 00_config, run_id is still execution 1's: {run_id}\")\nrun_id = new_run_id()\nexecution_2_run_id = run_id\nprint(f\"execution 2: run_id = {run_id}\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "after second %run 00_config, run_id is still execution 1's: e9a40fb4-6aec-425f-aa5f-fa83768a16c8\nexecution 2: run_id = 9d6c1392-ff52-4b4c-8f98-1792cd34e79a\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "%run ./a5_child",
+        "state": "finished",
+        "results": null,
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {
+            "catalog": "workspace",
+            "schema_prefix": "nachalniki_logistics",
+            "source": "samples.tpch"
+          },
+          "addedWidgets": {
+            "catalog": {
+              "widgetType": "text",
+              "name": "catalog",
+              "defaultValue": "workspace",
+              "label": "catalog",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            },
+            "schema_prefix": {
+              "widgetType": "text",
+              "name": "schema_prefix",
+              "defaultValue": "nachalniki_logistics",
+              "label": "schema_prefix",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            },
+            "source": {
+              "widgetType": "text",
+              "name": "source",
+              "defaultValue": "samples.tpch",
+              "label": "source (<catalog>.<schema>)",
+              "options": {
+                "widgetType": "text",
+                "validationRegex": null,
+                "autoCreated": null
+              }
+            }
+          },
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "catalog='workspace', schema_prefix='nachalniki_logistics', source='samples.tpch'\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "a5_child: require_run_id() = 9d6c1392-ff52-4b4c-8f98-1792cd34e79a\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      },
+      {
+        "command": "assert child_seen_run_id == execution_2_run_id\nassert execution_2_run_id != execution_1_run_id\nprint(f\"execution 2: child saw {child_seen_run_id}\")\nprint(f\"A5 OK in one context: execution 1 = {execution_1_run_id}, execution 2 = {execution_2_run_id}\")",
+        "state": "finished",
+        "results": {
+          "type": "listResults",
+          "data": [
+            {
+              "type": "ansi",
+              "data": "execution 2: child saw 9d6c1392-ff52-4b4c-8f98-1792cd34e79a\nA5 OK in one context: execution 1 = e9a40fb4-6aec-425f-aa5f-fa83768a16c8, execution 2 = 9d6c1392-ff52-4b4c-8f98-1792cd34e79a\n",
+              "name": "stdout",
+              "arguments": {},
+              "addedWidgets": {},
+              "removedWidgets": [],
+              "datasetInfos": [],
+              "metadata": {}
+            }
+          ],
+          "arguments": {},
+          "addedWidgets": {},
+          "removedWidgets": [],
+          "datasetInfos": [],
+          "metadata": {}
+        },
+        "error": null,
+        "errorSummary": null
+      }
+    ]
+  }
+]
