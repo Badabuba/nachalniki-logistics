@@ -1,6 +1,6 @@
 # Design — Logistics lakehouse on `samples.tpch`
 
-Status: **partly agreed** (see [plan.md](plan.md), gate P1): §2 config (D9), §3.1 run_id and DQ interface (D15) and §6 allowed-list procedure (D13) agreed on 2026-10-07; §5 Silver contract, 3NF method and decomposition decided by Max as Stage 2 owner on 2026-10-07 (D10 Silver part, D14, D21; see D20); the other contracts (D5–D7, the Gold part of D10, D11, D12) are still proposed.
+Status: **agreed for implementation** (see [plan.md](plan.md), gate P1): §2 config (D9), §3.1 run_id and DQ interface (D15) and §6 allowed-list procedure (D13) agreed on 2026-10-07; §5 Silver contract, 3NF method and decomposition decided by Max as Stage 2 owner on 2026-10-07 (D10 Silver part, D14, D21; see D20). Yaropolk audited the Stage 3 proposal under D22 and corrected the Q4 Gold contract on 2026-10-07; D5–D7, the Gold part of D10, D11 and D12 were then agreed by Nazar, Yaropolk and Max as reported by Yaropolk (MAX-02 evidence row).
 Requirements are in [requirements.md](requirements.md). The PDF `group_assignment_1.pdf` is authoritative.
 
 Tags used below:
@@ -91,20 +91,20 @@ This interface is agreed before Stage 1 is built, so that each stage runs on its
 - An **execution** is one top-to-bottom run of an entry notebook. Every execution explicitly starts a fresh id with `run_id = new_run_id()` in its own cell, right after `%run ./00_config` and before any step, **even if the notebook session already holds a `run_id`** from an earlier execution. "Keep it if it already exists" is not used, because that would reuse an earlier execution's id on a rerun in the same session.
 - **Child notebooks** (`02`–`05`, `dq_helpers`) only read the id with `require_run_id()` and never assign it, so every step of one execution shares the id its entry point started. A step opened on its own, without an entry point, fails fast instead of inventing an id.
 - Entry points:
-  - **Full pipeline**: `run_pipeline` (owner Max).
+  - **Full pipeline**: `run_pipeline` (owner Yaropolk under D22).
   - **Silver stage execution** (Stage 2 development and its demo, before `run_pipeline` exists), each line in its own cell: `%run ./00_config` → `run_id = new_run_id()` → `%run ./02_silver_stage` → `%run ./03_validate` → `%run ./04_silver_publish`. An exception in `03_validate` stops the cells after it, so `04` does not execute. Stage executions write `dq_check_results` but not `pipeline_runs`.
 - Re-running a single cell of an entry notebook is not a new execution. Run the entry notebook from the top.
 - Stage 1 does not use `run_id`: `01_bronze_ingest` and `profile_source` need only `00_config`, and Bronze never reads or writes audit tables.
 - Shown on serverless job runs (NAZ-04, 2026-10-07): a `run_id` assigned in the caller is visible inside a `%run` child and is unchanged after that child itself runs `%run` of a config stand-in that does not assign it. Widget values (defaults or job parameters) that the caller sees are the values a `%run` child reads. Widget values typed in the notebook UI were not tested.
 
-**`dq_check_results` (owner Yaropolk, `notebooks/dq_helpers.py`).** The only code that creates or appends to the table:
+**`dq_check_results` (owner Max after the Stage 2 takeover D20, `notebooks/dq_helpers.py`).** The only code that creates or appends to the table:
 - `ensure_dq_check_results()`: `CREATE SCHEMA IF NOT EXISTS {prefix}_audit` and `CREATE TABLE IF NOT EXISTS` with the columns above. Never replaces the table.
 - `record_dq_result(run_id, rule_id, layer, table_name, violation_count, sample_keys)`: appends one row with `run_ts`, `severity = 'blocking'` and `passed = (violation_count = 0)`.
 - `raise_if_failed(run_id, rule_ids)`: reads **only** rows with that `run_id` **and** a `rule_id` in `rule_ids`. It raises if any of those rows has `passed = false`, or if any rule in `rule_ids` has no row for that `run_id` (a missing result is a failure). Rows from other runs, including earlier failed runs, never affect the result.
 - `03_validate` ends with `raise_if_failed(run_id, <DQ-L1…L9, DQ-G1…G3>)`. `05_gold_build` ends with `raise_if_failed(run_id, ["DQ-GOLD1", "DQ-GOLD2"])`.
-- Exact signatures are finalised by Yaropolk and frozen in handoff H2. After H2, changing them is a contract change.
+- Exact signatures were finalised by Max and frozen in handoff H2. After H2, changing them is a contract change.
 
-**`pipeline_runs` (owner Max, `notebooks/run_pipeline.py`).** Only `run_pipeline` creates it (`CREATE TABLE IF NOT EXISTS`, never replaced) and appends `started`/`succeeded` rows for the `run_id` of that execution. `06_analysis` reads it for the stale-output guard. Because stage executions do not write `pipeline_runs`, they use a scratch `schema_prefix` once `run_pipeline` has produced Gold in a prefix; otherwise a Silver changed outside `run_pipeline` would not be visible to the guard.
+**`pipeline_runs` (owner Yaropolk under D22, `notebooks/run_pipeline.py`).** Only `run_pipeline` creates it (`CREATE TABLE IF NOT EXISTS`, never replaced) and appends `started`/`succeeded` rows for the `run_id` of that execution. `06_analysis` reads it for the stale-output guard. Because stage executions do not write `pipeline_runs`, they use a scratch `schema_prefix` once `run_pipeline` has produced Gold in a prefix; otherwise a Silver changed outside `run_pipeline` would not be visible to the guard.
 
 **Schemas.** Each writer creates the schema it writes with `CREATE SCHEMA IF NOT EXISTS`: `01` → `_bronze`, `02` → `_staging`, `04` → `_silver`, `05` → `_gold`, `dq_helpers` and `run_pipeline` → `_audit`.
 
@@ -421,7 +421,7 @@ All dates are `DATE`, and all day differences are `datediff(end, start)` in inte
 - We measure **both** quantities:
   - *order-to-receipt* (primary, "fulfilled"): `order_to_complete_days` at order grain
   - *ship-to-receipt*: `transit_days` at line grain, plus `order_to_ship_days`, to show where any difference comes from
-- Compare urgent with non-urgent orders on n, median, p90 and mean, computed directly from the fact tables, and also by each priority value.
+- Compare urgent with non-urgent orders on `order_count`, median, p90 and mean `order_to_complete_days`; compare the line-grain ship-to-receipt metric on `line_count`, median, p90 and mean `transit_days`. Report `order_to_ship_days` on the same line grain as supporting evidence showing where any difference arises. Compute every measure directly from its fact table, both for urgent versus non-urgent and for each priority value.
 
 **Denominators and nulls.**
 - Line metrics count all Silver lines.
@@ -452,8 +452,8 @@ Gold uses business-friendly snake_case names.
 | `agg_ship_mode_performance` | `ship_mode` | `ship_mode, line_count, transit_p50_days, transit_p90_days, transit_p90_minus_p50_days, transit_iqr_days, transit_mean_days, transit_stddev_days, late_line_count, delay_rate` | Q1, Q3 |
 | `agg_on_time_summary` | single row | `order_count, fully_on_time_order_count, order_on_time_share, line_count, on_time_line_count, line_on_time_share, lines_per_order_min, lines_per_order_p50, lines_per_order_mean, lines_per_order_max` | Q2 |
 | `agg_on_time_by_line_count` | `lines_in_order` | `lines_in_order, order_count, fully_on_time_order_count, order_on_time_share, line_on_time_share` | Q2 (gap explanation) |
-| `agg_priority_fulfillment` | `order_priority` | `order_priority, is_urgent, order_count, complete_p50_days, complete_p90_days, complete_mean_days, transit_p50_days, order_to_ship_p50_days` | Q4 |
-| `agg_urgency_fulfillment` | `is_urgent` (2 rows) | same measures as above, computed from the facts (not from `agg_priority_fulfillment`) | Q4 |
+| `agg_priority_fulfillment` | `order_priority` | `order_priority, is_urgent, order_count, complete_p50_days, complete_p90_days, complete_mean_days, line_count, transit_p50_days, transit_p90_days, transit_mean_days, order_to_ship_p50_days, order_to_ship_p90_days, order_to_ship_mean_days` | Q4 |
+| `agg_urgency_fulfillment` | `is_urgent` (2 rows) | `is_urgent, order_count, complete_p50_days, complete_p90_days, complete_mean_days, line_count, transit_p50_days, transit_p90_days, transit_mean_days, order_to_ship_p50_days, order_to_ship_p90_days, order_to_ship_mean_days`; computed directly from both facts, not from `agg_priority_fulfillment` | Q4 |
 | `agg_delay_rate_monthly` | `commit_month` | `commit_month, line_count, late_line_count, delay_rate, is_boundary_month` | monitoring |
 
 Notebook visuals in `06_analysis` (mandatory set):

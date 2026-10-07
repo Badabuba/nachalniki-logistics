@@ -2,7 +2,7 @@
 
 Source: `group_assignment_1.pdf` in the repo root (9 pages). Page numbers below are the printed page numbers, which match the PDF page indices. If this file and the PDF disagree, the PDF wins.
 
-Owners: **M1** = Nazar, **M2** = Yaropolk, **M3** = Max (D4, agreed 2026-10-07, see [plan.md](plan.md)). Ownership follows the sequential stages of plan.md (M1 foundation and Bronze → M2 Silver and data quality → M3 Gold, integration and delivery), agreed by all three members on 2026-10-07 (D16). Since 2026-10-07 Max carries out the M2 items (D20).
+Original aliases: **M1** = Nazar, **M2** = Yaropolk, **M3** = Max (D4/D16). Actual ownership changed later: Max carried out Stage 2 (D20), and Yaropolk owns Stage 3 implementation while Max retains presentation and submission work (D22). Where the tables below say M3 for Gold, analysis or integration, read that as Yaropolk under D22; presentation/submission items remain Max's responsibility.
 Status values: `not started` / `in progress` / `done (evidence: …)`. Only mark `done` with a link to the evidence.
 
 ## 1. Context from the PDF (not requirements by themselves)
@@ -60,7 +60,7 @@ Status values: `not started` / `in progress` / `done (evidence: …)`. Only mark
 | R-L-V1b | p.6 | Dates make sense relative to the parent order (a shipment cannot leave before the order was placed) | DQ-L1; plus DQ-L3 `commit ≥ order` (**our interpretation**) | M2 | `dq_check_results` rows | done (2026-10-07; DQ-L1, DQ-L3 rows of run `159dd764-…` passed) |
 | R-L-V2 | p.6 | Ship mode, return flag and line status contain only expected values. Build the allowed list by profiling the source and explain how. | `profile_source` → allowed lists in `00_config` → DQ-L5, DQ-L6, DQ-L7; method in [design §6](design.md#6-validation-rules) | M1 (profiling), M2 (rules) | Profiling output in design §5.5; method in the README; DQ rows | done (profiling and allowed lists: design §5.5 and §6, plan.md evidence log NAZ-09, NAZ-10; method described in the README Stage 1 section; DQ-L5–L7 rows of run `159dd764-…` passed on 2026-10-07, evidence row "YAR-04, YAR-05, YAR-06 success runs") |
 | R-L-V3a | p.6 | Every line item belongs to an existing order | DQ-L8 (anti join) | M2 | DQ row | done (2026-10-07; DQ-L8 row of run `159dd764-…` passed) |
-| R-L-V3b | p.6 | No order has zero line items | DQ-L9 (anti join); DQ-GOLD2 keeps such orders visible | M2 | DQ row | done for Silver (2026-10-07; DQ-L9 row of run `159dd764-…` passed); DQ-GOLD2 is part of MAX-03 |
+| R-L-V3b | p.6 | No order has zero line items | DQ-L9 (anti join); DQ-GOLD2 keeps such orders visible | M2 | DQ row | done (Silver: DQ-L9 of run `159dd764-…`; Gold: DQ-GOLD2 of run `253b9400-…`, MAX-03 evidence row; both passed) |
 | R-L-M1 | p.6 | Track the delay rate (share of line items received after the committed date) over time | `agg_delay_rate_monthly` (commit month), chart 5 in `06_analysis` | M3 | Chart with boundary months labelled | not started |
 | R-L-A1 | p.6 | **Optional:** alert on a meaningful increase | Optional SQL alert or dashboard ([design §8](design.md#8-monitoring-delay-rate-over-time)) | unassigned (if time) | Alert definition plus a demo trigger | optional |
 

@@ -2,7 +2,7 @@
 
 Team **«начальніки»**: Nazar, Yaropolk, Max. UCU Big Data, Group Assignment 1.
 
-> **Status: Stages 1 and 2 built.** Bronze, profiling, the Silver stage (staging, validation, publish) and the data-quality audit table have run in Databricks (outputs in `checks/p2/outputs/`). Gold, the runner and the analysis are not implemented yet, so no answers exist yet. Track progress in [docs/plan.md](docs/plan.md).
+> **Status: Stages 1 and 2 plus the Gold build are implemented.** Bronze, profiling, Silver, validation and the eight Gold tables have run in Databricks. The full runner and analysis notebook are not implemented yet, so no final answers exist yet. Track progress in [docs/plan.md](docs/plan.md).
 
 ## Purpose
 
@@ -66,15 +66,16 @@ notebooks/02_silver_stage.py     Bronze -> staging (casts and column selection, 
 notebooks/dq_helpers.py          creates and appends dq_check_results; run-scoped failure checks
 notebooks/03_validate.py         all blocking rules on staging; raises on any failure
 notebooks/04_silver_publish.py   staging -> Silver plus constraints, only after validation passed
+notebooks/05_gold_build.py       Silver -> eight Logistics Gold tables plus Gold DQ checks
 docs/silver_er.mmd  docs/silver_er.png   ER diagram of the published Silver
 checks/p0/               P0 diagnostic notebooks (not part of the pipeline) and their raw outputs
 checks/p2/               test and entry notebooks (run_id helpers, dq_helpers, Silver stage) and raw run outputs
+checks/p3/               Stage 3 entry notebooks and raw run evidence
 ```
 
 Planned (not created yet):
 
 ```
-notebooks/05_gold_build.py
 notebooks/06_analysis.py         answers + visualisations
 notebooks/run_pipeline.py        runs 01–05 in order and records the run state
 ```
