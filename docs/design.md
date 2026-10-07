@@ -1,0 +1,351 @@
+# Design — Logistics lakehouse on `samples.tpch`
+
+Status: **proposed, pending team sign-off** (see [plan.md](plan.md), gate P1).
+Requirements are in [requirements.md](requirements.md). The PDF `group_assignment_1.pdf` is authoritative.
+
+Tags used below:
+- **[VERIFY]**: a source-schema detail or platform capability not yet confirmed in a real Databricks workspace.
+- **[PROFILE]**: a value that must come from profiling the actual source. It is not filled in until that has been done.
+
+---
+
+## 1. Scope and approach
+
+| Item | Decision |
+|---|---|
+| Source | `samples.tpch` (8 tables), configurable (`source` parameter) |
+| Bronze | all 8 tables, as-is plus 2 metadata columns |
+| Silver | all 8 tables, 3NF, published only after validation passes |
+| Gold | Logistics profile only (§5.2 Q1–Q4 + delay-rate monitoring) |
+| Code | Databricks notebooks in `.py` source format (PySpark + SQL), run in order by `run_pipeline` |
+| Visuals | `display()` charts inside the analysis notebook (the PDF allows a notebook *or* a dashboard) |
+| Optional | AI/BI dashboard, Databricks Job, SQL alert. None of these is an acceptance gate. |
+
+**Why all 8 tables.** The PDF frames the work as a *migration* to a lakehouse (§1, p.1), and it asks for an ER diagram of the Silver tables (§3.4, p.3). Logistics only needs `orders` and `lineitem` for its answers. The two-column reference `lineitem (l_partkey, l_suppkey) → partsupp` and the `part`/`supplier`/`customer`/`nation`/`region` references can only be checked when those tables exist. The extra tables cost little because they all use the same pattern. The PDF does not state the expected ingestion scope, so this is our choice (decision D2 in plan.md).
+
+## 2. Configuration and naming
+
+Everything is driven by `notebooks/00_config.py` (planned), which is loaded with `%run`. Nothing else may hard-code a catalog, schema or source name.
+
+| Parameter (widget) | Default | Notes |
+|---|---|---|
+| `catalog` | `workspace` | **[VERIFY]**: P0 must confirm that this catalog exists and is writable. Otherwise use the catalog P0 finds. |
+| `schema_prefix` | `nachalniki_logistics` | A different prefix gives a fully independent copy (portability and rerun tests) |
+| `source` | `samples.tpch` | `<catalog>.<schema>` of the source |
+
+Derived schemas, all in `{catalog}`:
+
+| Schema | Content | Lifecycle |
+|---|---|---|
+| `{prefix}_bronze` | raw copies | replaced on each run |
+| `{prefix}_staging` | proposed Silver (`stg_<table>`) | replaced on each run, never used by Gold |
+| `{prefix}_silver` | published 3NF tables | replaced only after validation passes |
+| `{prefix}_gold` | Logistics facts and aggregates | replaced only after Silver is published |
+| `{prefix}_audit` | `pipeline_runs`, `dq_check_results` | **append-only**, never overwritten |
+
+Table names inside each schema stay the same as in the source (`lineitem`, `orders`, …) in Bronze and Silver. Gold uses `fct_*` and `agg_*`. Allowed categorical values (see §6) are constants in `00_config.py`, filled in from profiling.
+
+"Assume only pre-production data" (§3.2): the code must not depend on exact row counts or values of this sample. Counts are compared *between layers*, not against hard-coded numbers.
+
+## 3. Pipeline lifecycle (one run)
+
+```
+run_pipeline
+ 1. append pipeline_runs(run_id, 'started', ...)
+ 2. 01_bronze_ingest   source ─► {prefix}_bronze.*         (as-is copy, original data preserved)
+ 3. 02_silver_stage    bronze ─► {prefix}_staging.stg_*     (casts/renames only, NO row filtering, NO constraints)
+ 4. 03_validate        all DQ rules on staging (+ source/bronze counts)
+                       ─► append dq_check_results(run_id, ...)
+                       ─► raise if any blocking rule failed   ── run stops here, Silver/Gold untouched
+ 5. 04_silver_publish  staging ─► {prefix}_silver.*  + NOT NULL/CHECK (enforced) + PK/FK (informational)
+ 6. 05_gold_build      silver ─► {prefix}_gold.*  + gold reconciliation rules appended to dq_check_results
+                       ─► raise if any gold rule failed
+ 7. append pipeline_runs(run_id, 'succeeded', ...)
+```
+
+- `run_pipeline` executes the steps with `%run` in one notebook context, so `run_id` and the config are shared. Any exception stops all later cells, so no `succeeded` row is written. **[VERIFY]** that `%run` behaves like this on serverless.
+- **Invalid rows are never silently dropped.** Staging keeps every source row. If a blocking rule fails, the whole run fails, and the violation count plus up to 10 sample keys are saved in `dq_check_results`.
+- The enforced constraints are added in step 5, after validation has passed. They are defence in depth. If one rejects data at this point, the validation has a bug, and the run fails.
+- **After a failed run**, the Silver/Gold tables from the last successful run still exist, but they are *not current*. `06_analysis` therefore starts by reading `pipeline_runs`. If the most recent `run_id` has no `succeeded` row, it stops with a message showing the failed run, so stale outputs cannot be presented as current. The failed candidate stays in staging for debugging. (Partial failure: if step 6 fails, Silver is new but Gold is not. The run is still not `succeeded`, so the same guard applies.)
+- `pipeline_runs` columns: `run_id` (string uuid), `event` (`started`/`succeeded`), `event_ts`, `catalog`, `schema_prefix`, `source`.
+- `dq_check_results` columns: `run_id`, `run_ts`, `rule_id`, `layer` (`source`/`bronze`/`staging`/`gold`), `table_name`, `violation_count` (bigint), `sample_keys` (string, ≤10), `severity` (`blocking`), `passed` (boolean).
+
+### Rerun and determinism
+- Each layer is fully replaced (`CREATE OR REPLACE TABLE … AS SELECT`). Rerunning on unchanged source data must reproduce **identical business rows and metrics** in Silver and Gold.
+- These are *expected* to change between runs: `_ingested_at` in Bronze, `run_id`, timestamps, and the appended `pipeline_runs`/`dq_check_results` history.
+- Evidence for determinism: snapshot Gold tables to a scratch schema after run A, then after run B check `EXCEPT ALL` in both directions and expect 0 rows. The same check is done against a run with a second `schema_prefix` (portability).
+
+## 4. Bronze
+
+- Grain, keys and columns are identical to the source. Two metadata columns are added: `_ingested_at` (timestamp) and `_source_table` (string). These are needed to trace which source and run a copy came from. Nothing else is added.
+- Tables: `region, nation, supplier, customer, part, partsupp, orders, lineitem`.
+- Read with `spark.table(f"{source}.{t}")`, then write with `CREATE OR REPLACE TABLE`.
+
+## 5. Silver
+
+### 5.1 Tables and contracts
+
+Column names are kept exactly as in TPC-H, so there is nothing to map and everyone can use the TPC-H docs. Types follow the source: keys are integer types, money is `DECIMAL`, dates are `DATE`. **[VERIFY]** with `DESCRIBE` in P0 and record the result here. Bronze metadata columns are not carried into Silver.
+
+| Table | Row grain | Primary key | References (FK) | Important columns |
+|---|---|---|---|---|
+| `region` | one region | `r_regionkey` | – | `r_name` |
+| `nation` | one nation | `n_nationkey` | `n_regionkey → region` | `n_name` |
+| `supplier` | one supplier | `s_suppkey` | `s_nationkey → nation` | `s_name` |
+| `customer` | one customer | `c_custkey` | `c_nationkey → nation` | `c_mktsegment` |
+| `part` | one part | `p_partkey` | – | `p_brand`, `p_mfgr`, `p_retailprice` |
+| `partsupp` | one (part, supplier) offer | `(ps_partkey, ps_suppkey)` | `ps_partkey → part`, `ps_suppkey → supplier` | `ps_supplycost` |
+| `orders` | one order | `o_orderkey` | `o_custkey → customer` | `o_orderdate`, `o_orderpriority` |
+| `lineitem` | one order line | `(l_orderkey, l_linenumber)` | `l_orderkey → orders`; `(l_partkey, l_suppkey) → partsupp` | `l_shipdate`, `l_commitdate`, `l_receiptdate`, `l_shipmode`, `l_returnflag`, `l_linestatus` |
+
+Logistics Gold reads **only** `orders` and `lineitem`. These two contracts are frozen at gate P1:
+- `lineitem`: `l_orderkey, l_linenumber, l_partkey, l_suppkey, l_shipdate, l_commitdate, l_receiptdate, l_shipmode, l_returnflag, l_linestatus`
+- `orders`: `o_orderkey, o_orderdate, o_orderpriority`
+
+Constraints added at publish:
+- `NOT NULL` on all PK columns and on `o_orderdate, l_shipdate, l_commitdate, l_receiptdate, l_shipmode, l_returnflag, l_linestatus`
+- `CHECK (l_receiptdate >= l_shipdate)` on `lineitem`
+- PK/FK declared as informational
+
+Databricks docs say PK/FK constraints on Unity Catalog Delta tables are *informational only and not enforced*, while `NOT NULL` and `CHECK` are enforced. **Declaring an FK does not prove referential integrity.** That is proved by the anti-join rules in §6. **[VERIFY]** that constraint DDL works on our workspace and compute.
+
+### 5.2 Draft ER diagram  — **[VERIFY] against `DESCRIBE` output before taking the screenshot**
+
+```mermaid
+erDiagram
+    REGION   ||--o{ NATION   : "r_regionkey = n_regionkey"
+    NATION   ||--o{ SUPPLIER : "n_nationkey = s_nationkey"
+    NATION   ||--o{ CUSTOMER : "n_nationkey = c_nationkey"
+    CUSTOMER ||--o{ ORDERS   : "c_custkey = o_custkey"
+    PART     ||--o{ PARTSUPP : "p_partkey = ps_partkey"
+    SUPPLIER ||--o{ PARTSUPP : "s_suppkey = ps_suppkey"
+    ORDERS   ||--|{ LINEITEM : "o_orderkey = l_orderkey"
+    PARTSUPP ||--o{ LINEITEM : "(ps_partkey, ps_suppkey) = (l_partkey, l_suppkey)"
+
+    REGION {
+        bigint r_regionkey PK
+        string r_name
+    }
+    NATION {
+        bigint n_nationkey PK
+        bigint n_regionkey FK
+        string n_name
+    }
+    SUPPLIER {
+        bigint s_suppkey PK
+        bigint s_nationkey FK
+    }
+    CUSTOMER {
+        bigint c_custkey PK
+        bigint c_nationkey FK
+    }
+    PART {
+        bigint p_partkey PK
+        string p_brand
+    }
+    PARTSUPP {
+        bigint ps_partkey PK, FK
+        bigint ps_suppkey PK, FK
+    }
+    ORDERS {
+        bigint o_orderkey PK
+        bigint o_custkey FK
+        date o_orderdate
+        string o_orderpriority
+    }
+    LINEITEM {
+        bigint l_orderkey PK, FK
+        int l_linenumber PK
+        bigint l_partkey FK
+        bigint l_suppkey FK
+        date l_shipdate
+        date l_commitdate
+        date l_receiptdate
+        string l_shipmode
+        string l_returnflag
+        string l_linestatus
+    }
+```
+
+`ORDERS ||--|{ LINEITEM` ("each order has at least one line") is the Logistics rule. It is shown as a target, and DQ-L9 proves it. The types are placeholders. The screenshot for the presentation will come from this diagram (rendered) or from the Catalog Explorer ER view if that is available. **[VERIFY]**
+
+### 5.3 3NF analysis — to be completed with profiling evidence
+
+Copying a well-designed source does **not** prove 3NF. The argument has to cover the dependencies themselves.
+
+**Definition used.** A relation is in 3NF if it is in 1NF, and for every non-trivial functional dependency `X → A` that holds, either `X` is a superkey or `A` is prime (part of some candidate key).
+
+**Method (owner: M2 Yaropolk):**
+1. **1NF.** Each column holds one value of one type, and there are no repeating groups or arrays. Free-text columns (`*_comment`, `p_name`, `p_type`) are treated as atomic strings. We do not parse them, and Logistics does not use them.
+2. **Candidate keys.** Confirm each declared PK is unique and non-null (DQ-G1). Also list other unique columns (e.g., `n_name`, `r_name`, `c_name`, `s_name` may be unique) [PROFILE]. Alternative candidate keys do **not** break 3NF. They only make more attributes prime.
+3. **Candidate non-key dependencies.** Derive candidates from column *meaning* and the dataset documentation, and test each one on the data:
+   `SELECT X, count(DISTINCT A) FROM t GROUP BY X HAVING count(DISTINCT A) > 1`. Zero rows means the FD holds in this snapshot. If any rows come back, the FD is refuted.
+4. **Classify** each candidate:
+   - *Refuted by data*: not a dependency, no action.
+   - *Holds in the data but not documented as a rule*: recorded as an observation. One static sample is not enough evidence of a schema-level dependency, so we do not claim one.
+   - *Holds in the data **and** is documented as a business rule* (citing the dataset README/spec): this is a real FD with a non-superkey determinant, so it is a 3NF violation that **must be fixed** (see 5.4). No deviation is pre-authorised.
+5. **Derived or source-recorded attributes are not automatically violations.** For example, `o_totalprice` and `o_orderstatus` may be computed from an order's line items. That is a dependency on *other rows in another relation*, not an FD among attributes of `orders`. It is redundancy and a consistency concern (out of Logistics scope), but not a 3NF violation of `orders`. Its determinant is still `o_orderkey`.
+
+Candidates to test (hypotheses only, none claimed):
+
+| Relation | Candidate FD | Why it is a candidate |
+|---|---|---|
+| `part` | `p_brand → p_mfgr` | brand and manufacturer names look hierarchical |
+| `lineitem` | `l_shipdate → l_linestatus` | line status may reflect shipped/not-shipped as of a snapshot date |
+| `lineitem` | `l_receiptdate → l_returnflag` | return flag may depend on whether the item was received |
+| `lineitem` | `(l_partkey, l_quantity) → l_extendedprice` | extended price may be quantity × part price |
+| `customer`, `supplier` | `*_nationkey → prefix of *_phone` | phone prefix may encode the country (would be a 1NF/atomicity question about the phone column) |
+
+Results go in the table in §5.5, with the query and date.
+
+### 5.4 Compliant fix if a real violation is found
+
+Decompose: move the dependent attribute into a relation keyed by its determinant, and keep the determinant in the original table as an FK. The join is lossless because the determinant is the key of the new relation. Every attribute stays available.
+
+Examples (applied only if §5.3 confirms the FD):
+- `p_brand → p_mfgr`: add `brand(p_brand PK, p_mfgr)`, and `part` keeps `p_brand` (FK → `brand`).
+- `l_shipdate → l_linestatus`: add `ship_date_status(l_shipdate PK, l_linestatus)`, and `lineitem` keeps `l_shipdate`. Logistics still validates `l_linestatus` (DQ-L7 runs on staging and on the new table), and Gold can join it back if needed.
+
+Any decomposition changes the Silver contract and the ER diagram, so it needs a decision-log entry and a re-check of the §5.1 frozen columns.
+
+### 5.5 Profiling results (to be filled with real outputs — currently empty)
+
+| Check | Query / notebook | Date | Result |
+|---|---|---|---|
+| `DESCRIBE` of 8 tables | `profile_source` | – | not run |
+| distinct `l_shipmode` with counts | `profile_source` | – | not run |
+| distinct `l_returnflag` with counts | `profile_source` | – | not run |
+| distinct `l_linestatus` with counts | `profile_source` | – | not run |
+| distinct `o_orderpriority` with counts | `profile_source` | – | not run |
+| min/max of `o_orderdate`, `l_shipdate`, `l_commitdate`, `l_receiptdate` | `profile_source` | – | not run |
+| lines per order: min / median / mean / max | `profile_source` | – | not run |
+| FD candidates (§5.3) | `profile_source` | – | not run |
+
+## 6. Validation rules
+
+All rules are **blocking**. They are evaluated in `03_validate` on staging (the proposed Silver), except DQ-G3, which also reads source and Bronze. The Gold rules run in `05_gold_build`. Each rule records `violation_count`, and `passed = (violation_count = 0)`.
+
+| Rule | Check (violations counted) | PDF basis |
+|---|---|---|
+| DQ-L1 | `l_shipdate < o_orderdate` (joined on `l_orderkey`) | V1, explicit: "can't leave before the order was placed" |
+| DQ-L2 | `l_receiptdate < l_shipdate` | V1, explicit: "can't be received before it was shipped" |
+| DQ-L3 | `l_commitdate < o_orderdate` | V1, **our interpretation** of "make sense relative to the parent order" |
+| DQ-L4 | any of `o_orderdate, l_shipdate, l_commitdate, l_receiptdate` is NULL | needed for V1 to be evaluable |
+| DQ-L5 | `l_shipmode` NULL or not in `ALLOWED_SHIP_MODES` | V2 |
+| DQ-L6 | `l_returnflag` NULL or not in `ALLOWED_RETURN_FLAGS` | V2 |
+| DQ-L7 | `l_linestatus` NULL or not in `ALLOWED_LINE_STATUSES` | V2 |
+| DQ-L8 | `lineitem` rows with no matching `orders.o_orderkey` (left anti join) | V3 |
+| DQ-L9 | `orders` rows with no matching `lineitem.l_orderkey` (left anti join) | V3 |
+| DQ-G1 | duplicate or NULL PK, for each of the 8 tables | 3NF / enforced quality |
+| DQ-G2 | unresolved FKs from §5.1, including the two-column `(l_partkey, l_suppkey) → partsupp` (anti join on both columns) | 3NF / enforced quality |
+| DQ-G3 | row count differs between source, Bronze and staging for each table | no silent loss |
+| DQ-GOLD1 | `count(fct_lineitem_delivery) ≠ count(silver.lineitem)` | no double-counting or loss |
+| DQ-GOLD2 | `count(fct_order_fulfillment) ≠ count(silver.orders)` | orders without lines are not hidden |
+
+There are **no rules on lateness.** `l_receiptdate > l_commitdate` is a late delivery: a valid business outcome that stays in every layer and is the subject of Q2, Q3 and monitoring. Shipping after the commit date is also not invalid.
+
+Equality is valid in DQ-L1, DQ-L2 and DQ-L3: same-day ship, same-day receipt and same-day commit all pass.
+
+**How the allowed lists are built (V2).**
+1. In `profile_source`, run `SELECT col, count(*) … GROUP BY col` on Bronze for each of the three columns, and record the output in §5.5.
+2. Compare that output with the value lists in the dataset documentation (TPC-H README/spec), and cite the source.
+3. The allowed list is the documented domain. If observed values are outside it, or documented values are missing, that goes in the decision log before the list is frozen.
+4. Write the constants into `00_config.py`.
+5. Do not copy the observed values blindly. The point of the rule is that new or unexpected values will fail.
+
+The TPC-H spec values are *expected but not observed*. They are listed here only so they can be compared against the profiling output:
+- ship mode: AIR, FOB, MAIL, RAIL, REG AIR, SHIP, TRUCK
+- return flag: A, N, R
+- line status: F, O
+
+**[PROFILE]**
+
+## 7. Metric definitions (Gold)
+
+All dates are `DATE`, and all day differences are `datediff(end, start)` in integer days. No time zones are involved.
+
+| Metric | Definition |
+|---|---|
+| `transit_days` | `datediff(l_receiptdate, l_shipdate)`: ship to receipt (Q1) |
+| `order_to_ship_days` | `datediff(l_shipdate, o_orderdate)` per line |
+| `is_late` (line) | `l_receiptdate > l_commitdate`. Receipt **on** the commit date is on time. |
+| on-time line | `NOT is_late` |
+| fully on-time order | the order has `line_count ≥ 1` **and** `late_line_count = 0` |
+| line on-time share | on-time lines / all lines |
+| order on-time share | fully on-time orders / orders with `line_count ≥ 1` |
+| delay rate | late lines / all lines in the group (by ship mode for Q3, by commit month for monitoring) |
+| `order_to_complete_days` | `datediff(max(l_receiptdate), o_orderdate)` per order: the order is fulfilled when its **last** line is received. NULL when `line_count = 0`. |
+
+**Percentiles.** Use `percentile_cont(p) WITHIN GROUP (ORDER BY x)`, which is exact and interpolated (Databricks docs). Do not use `percentile_approx`. Percentiles are computed from the fact tables at the grain being reported. They are **never** averaged or combined across groups.
+
+**Q1: speed vs predictability.**
+- *Fastest* = lowest median `transit_days`. If medians tie, report the tie and compare the means, without inventing a winner.
+- *Most predictable* = smallest spread. The primary measure is `p90 − p50` (how far the slow tail sits beyond a typical shipment, directly from the two required numbers). The supporting measures are IQR (`p75 − p25`) and standard deviation.
+- Speed is about *location* and predictability is about *spread*. A mode can have a low median and a long tail, or a higher but tight distribution, so the two rankings can differ. If the differences are small, present them with line counts and do not over-interpret them.
+
+**Q2: order vs line on-time gap.** An order is fully on time only if *every* line is on time, so the order share is at most the line share. The answer uses **actual** numbers:
+- the observed distribution of lines per order (min, median, mean, max from `fct_order_fulfillment`)
+- the line and order on-time shares from `agg_on_time_summary`
+- the order on-time share for each `line_count` bucket from `agg_on_time_by_line_count`, which shows how the share falls as orders get bigger
+
+`p^n` may be shown only as an **illustration**. It assumes every line has the same on-time probability `p` and that lines are independent. It is not the empirical formula, and the observed bucket shares are the result.
+
+**Q3.** For each `l_shipmode`: `delay_rate = late lines / lines`. The worst mode has the highest delay rate, reported together with the line counts.
+
+**Q4: urgent vs others.**
+- `is_urgent = (o_orderpriority = '1-URGENT')`. That literal is **[PROFILE]**: confirm it in §5.5.
+- We measure **both** quantities:
+  - *order-to-receipt* (primary, "fulfilled"): `order_to_complete_days` at order grain
+  - *ship-to-receipt*: `transit_days` at line grain, plus `order_to_ship_days`, to show where any difference comes from
+- Compare urgent with non-urgent orders on n, median, p90 and mean, computed directly from the fact tables, and also by each priority value.
+
+**Denominators and nulls.**
+- Line metrics count all Silver lines.
+- Order metrics count orders with `line_count ≥ 1`.
+- Validation already guarantees non-null dates (DQ-L4) and no orphan or empty orders (DQ-L8, DQ-L9). Gold still uses `LEFT JOIN` from `orders`, so if that guarantee ever broke, empty orders would be visible as `line_count = 0` rather than dropped by an inner join.
+
+**Double-counting.**
+- Line metrics are computed only from the line-grain fact. Order metrics are computed only from the order-grain fact, which is built by aggregating lines **per `l_orderkey` before** joining to `orders`.
+- Gold does not join to `partsupp`, `part` or `supplier`, so lines cannot be multiplied.
+- DQ-GOLD1 and DQ-GOLD2 prove the row counts.
+
+## 8. Monitoring: delay rate over time
+
+- **Grain: commit month**, `date_trunc('MONTH', l_commitdate)`. The rationale: the delay rate measures kept promises, and each line's promise falls due on its commit date. Grouping by that date puts every line into the period its promise belongs to. Every line has a commit date regardless of whether it ended up late. Grouping by receipt month would push late lines into later months and mix periods.
+- Output: `agg_delay_rate_monthly` contains the **full observed series**, with `line_count` next to `delay_rate`.
+- **Boundary months**: the first and last observed commit months are flagged `is_boundary_month = true` and labelled "potentially incomplete" in the chart. Months near the edges with visibly lower `line_count` are also called out in the analysis text, based on the observed counts. A rigorous complete-period rule is optional follow-up work.
+- Visual: a line chart of `delay_rate` by month (with `line_count` as a secondary series or in a table) in `06_analysis`.
+- **Optional, not a gate**: a SQL alert or AI/BI dashboard tile that fires when the delay rate of the latest non-boundary month exceeds a baseline (e.g., trailing 12-month mean) by a chosen threshold.
+
+## 9. Gold tables (`{prefix}_gold`) — contracts
+
+Gold uses business-friendly snake_case names.
+
+| Table | Grain / key | Columns | Serves |
+|---|---|---|---|
+| `fct_lineitem_delivery` | line, (`order_key`, `line_number`) | `order_key, line_number, order_date, order_priority, is_urgent, ship_mode, ship_date, commit_date, receipt_date, transit_days, order_to_ship_days, is_late, commit_month` | Q1, Q3, Q4, monitoring |
+| `fct_order_fulfillment` | order, `order_key` | `order_key, order_date, order_priority, is_urgent, line_count, late_line_count, is_fully_on_time, first_ship_date, last_receipt_date, order_to_complete_days` | Q2, Q4 |
+| `agg_ship_mode_performance` | `ship_mode` | `ship_mode, line_count, transit_p50_days, transit_p90_days, transit_p90_minus_p50_days, transit_iqr_days, transit_mean_days, transit_stddev_days, late_line_count, delay_rate` | Q1, Q3 |
+| `agg_on_time_summary` | single row | `order_count, fully_on_time_order_count, order_on_time_share, line_count, on_time_line_count, line_on_time_share, lines_per_order_min, lines_per_order_p50, lines_per_order_mean, lines_per_order_max` | Q2 |
+| `agg_on_time_by_line_count` | `lines_in_order` | `lines_in_order, order_count, fully_on_time_order_count, order_on_time_share, line_on_time_share` | Q2 (gap explanation) |
+| `agg_priority_fulfillment` | `order_priority` | `order_priority, is_urgent, order_count, complete_p50_days, complete_p90_days, complete_mean_days, transit_p50_days, order_to_ship_p50_days` | Q4 |
+| `agg_urgency_fulfillment` | `is_urgent` (2 rows) | same measures as above, computed from the facts (not from `agg_priority_fulfillment`) | Q4 |
+| `agg_delay_rate_monthly` | `commit_month` | `commit_month, line_count, late_line_count, delay_rate, is_boundary_month` | monitoring |
+
+Notebook visuals in `06_analysis` (mandatory set):
+1. Grouped bars of p50 and p90 transit days by ship mode, plus a table with the spread measures (Q1).
+2. Bars of line vs order on-time share, plus a line chart of order on-time share by `lines_in_order` (Q2).
+3. Bars of delay rate by ship mode (Q3).
+4. Bars of median/p90 `order_to_complete_days` by priority, with urgent highlighted, plus a table of n, median, p90 and mean (Q4).
+5. A line chart of the monthly delay rate with boundary months labelled (monitoring).
+
+## 10. Open items requiring verification
+
+- [VERIFY] Catalog availability and write access. Whether `workspace` exists on our account.
+- [VERIFY] Column types in `samples.tpch` (`DESCRIBE`).
+- [VERIFY] `%run` chaining and error propagation on serverless notebooks.
+- [VERIFY] `ALTER TABLE … ADD CONSTRAINT … CHECK` and PK/FK DDL on our compute.
+- [VERIFY] `percentile_cont … WITHIN GROUP` availability on our compute.
+- [PROFILE] Allowed values, the urgent priority literal, date ranges, lines per order, and the FD candidates (§5.5).
+- [VERIFY] An ER-diagram rendering source (Mermaid render vs Catalog Explorer).
+- Optional: whether the dataset README at `/dbfs/databricks-datasets/tpch/README.md` is readable. This is a helpful aid but not a blocker.

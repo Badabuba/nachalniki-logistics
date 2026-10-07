@@ -1,0 +1,15 @@
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+
+# Local secrets and Databricks CLI state (never commit credentials)
+.env
+.databrickscfg
+.databricks/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

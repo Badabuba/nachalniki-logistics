@@ -1,0 +1,10 @@
+[project]
+name = "nachalniki-logistics"
+version = "0.1.0"
+description = "Bronze/Silver/Gold lakehouse on Databricks samples.tpch for the Logistics profile (UCU Big Data, group assignment 1)."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false
