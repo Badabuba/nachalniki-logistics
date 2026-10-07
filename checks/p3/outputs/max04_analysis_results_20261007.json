@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-07",
+  "workspace": "dbc-1766f78b-980d.cloud.databricks.com",
+  "analysis_run_id": "a89788f0-9a0d-48ff-93a9-733c1aa50ea7",
+  "successful_analysis": {
+    "job_run_id": 323622471233284,
+    "task_run_id": 127304226447423,
+    "result": "SUCCESS",
+    "duration_ms": 38034,
+    "charts_rendered": 4,
+    "gold_results_statement_id": "01f1c285-247d-1d12-8465-0362bdeeb5bc"
+  },
+  "answers": {
+    "q1": {
+      "fastest": "AIR and REG AIR tie at a 15-day median; REG AIR has the lower mean (15.495349 vs 15.498691 days)",
+      "most_predictable": "SHIP, with p90 - p50 = 11 days",
+      "rows": [
+        {"ship_mode": "AIR", "line_count": 4285543, "p50": 15.0, "p90": 28.0, "spread": 13.0, "iqr": 15.0, "mean": 15.498690831010213, "stddev": 8.657857102199863},
+        {"ship_mode": "FOB", "line_count": 4287168, "p50": 16.0, "p90": 28.0, "spread": 12.0, "iqr": 15.0, "mean": 15.505101502903548, "stddev": 8.65375865810007},
+        {"ship_mode": "MAIL", "line_count": 4282860, "p50": 16.0, "p90": 28.0, "spread": 12.0, "iqr": 15.0, "mean": 15.500924849282956, "stddev": 8.656810104908399},
+        {"ship_mode": "RAIL", "line_count": 4284870, "p50": 16.0, "p90": 28.0, "spread": 12.0, "iqr": 15.0, "mean": 15.503456347567138, "stddev": 8.655450842564528},
+        {"ship_mode": "REG AIR", "line_count": 4285596, "p50": 15.0, "p90": 27.0, "spread": 12.0, "iqr": 15.0, "mean": 15.49534930497415, "stddev": 8.653973060784976},
+        {"ship_mode": "SHIP", "line_count": 4285381, "p50": 16.0, "p90": 27.0, "spread": 11.0, "iqr": 15.0, "mean": 15.499497244235693, "stddev": 8.655900677761329},
+        {"ship_mode": "TRUCK", "line_count": 4288377, "p50": 16.0, "p90": 28.0, "spread": 12.0, "iqr": 15.0, "mean": 15.49776826990724, "stddev": 8.654457560374036}
+      ]
+    },
+    "q2": {
+      "order_count": 7500000,
+      "fully_on_time_order_count": 622660,
+      "order_on_time_share": 0.08302133333333334,
+      "line_count": 29999795,
+      "on_time_line_count": 11031691,
+      "line_on_time_share": 0.3677255461245652,
+      "lines_per_order": {"min": 1, "p50": 4.0, "mean": 3.999972666666667, "max": 7},
+      "order_on_time_share_by_line_count": {
+        "1": 0.36724660242016316,
+        "2": 0.13534226592972434,
+        "3": 0.05018054792369888,
+        "4": 0.01819327201713494,
+        "5": 0.006714051190209686,
+        "6": 0.0024389151167935126,
+        "7": 0.0009735880406424001
+      }
+    },
+    "q3": {
+      "worst_ship_mode": "AIR",
+      "worst_delay_rate": 0.6329298294288495,
+      "worst_late_line_count": 2712448,
+      "worst_line_count": 4285543,
+      "delay_rate_by_mode": {
+        "AIR": 0.6329298294288495,
+        "FOB": 0.6318740016719662,
+        "MAIL": 0.6320122534941605,
+        "RAIL": 0.6325391435446116,
+        "REG AIR": 0.6322656171977014,
+        "SHIP": 0.6321570940833499,
+        "TRUCK": 0.6321433493370568
+      }
+    },
+    "q4": {
+      "conclusion": "Urgent and non-urgent orders tie on median and p90 completion time; their means are also nearly identical.",
+      "urgent": {"order_count": 1501100, "complete_p50": 116.0, "complete_p90": 138.0, "complete_mean": 108.4016341349677, "line_count": 6004707, "transit_p50": 15.0, "transit_p90": 27.0, "transit_mean": 15.497869088366842, "order_to_ship_p50": 61.0, "order_to_ship_p90": 109.0, "order_to_ship_mean": 61.00747929915648},
+      "non_urgent": {"order_count": 5998900, "complete_p50": 116.0, "complete_p90": 138.0, "complete_mean": 108.38692893697178, "line_count": 23995088, "transit_p50": 16.0, "transit_p90": 27.0, "transit_mean": 15.50067392959759, "order_to_ship_p50": 61.0, "order_to_ship_p90": 109.0, "order_to_ship_mean": 60.99555346494249}
+    }
+  },
+  "guard_check": {
+    "failed_pipeline_job_run_id": 880293873043109,
+    "analysis_rejection_job_run_id": 119990228613342,
+    "analysis_rejection_task_run_id": 1087911471214068,
+    "result": "FAILED_AS_EXPECTED",
+    "latest_failed_run_id": "0d0aff89-eeea-4341-af8d-6ebcfa326f29",
+    "error": "Cannot present stale Gold results: latest pipeline run 0d0aff89-eeea-4341-af8d-6ebcfa326f29 started at 2026-10-07 19:25:46.730576 but has no succeeded event.",
+    "cleanup": {
+      "bronze_schema_drop_statement_id": "01f1c285-52de-17cc-9484-448e47317f49",
+      "audit_schema_drop_statement_id": "01f1c285-54ed-1df9-8f2c-db3e1cfef476",
+      "result": "SUCCEEDED"
+    }
+  }
+}

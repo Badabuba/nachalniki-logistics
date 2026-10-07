@@ -1,0 +1,75 @@
+{
+  "workspace": "dbc-1766f78b-980d",
+  "catalog": "workspace",
+  "schema_prefix": "yaropolk_logistics",
+  "executed_by": "kalmuk.pn@ucu.edu.ua",
+  "prerequisite_runs": {
+    "bronze_job_run_id": 108120222747131,
+    "bronze_status": "SUCCESS",
+    "silver_job_run_id": 503252245116571,
+    "silver_status": "SUCCESS"
+  },
+  "gold_run": {
+    "job_run_id": 1067762683130214,
+    "task_run_id": 656667484506696,
+    "status": "SUCCESS",
+    "run_id": "253b9400-828e-43a4-9553-a25f4917e3db"
+  },
+  "evidence_statement_id": "01f1c280-e642-12d4-9143-5c32799a411a",
+  "tables": [
+    {
+      "name": "fct_lineitem_delivery",
+      "row_count": 29999795,
+      "columns": "order_key,line_number,order_date,order_priority,is_urgent,ship_mode,ship_date,commit_date,receipt_date,transit_days,order_to_ship_days,is_late,commit_month"
+    },
+    {
+      "name": "fct_order_fulfillment",
+      "row_count": 7500000,
+      "columns": "order_key,order_date,order_priority,is_urgent,line_count,late_line_count,is_fully_on_time,first_ship_date,last_receipt_date,order_to_complete_days"
+    },
+    {
+      "name": "agg_ship_mode_performance",
+      "row_count": 7,
+      "columns": "ship_mode,line_count,transit_p50_days,transit_p90_days,transit_p90_minus_p50_days,transit_iqr_days,transit_mean_days,transit_stddev_days,late_line_count,delay_rate"
+    },
+    {
+      "name": "agg_on_time_summary",
+      "row_count": 1,
+      "columns": "order_count,fully_on_time_order_count,order_on_time_share,line_count,on_time_line_count,line_on_time_share,lines_per_order_min,lines_per_order_p50,lines_per_order_mean,lines_per_order_max"
+    },
+    {
+      "name": "agg_on_time_by_line_count",
+      "row_count": 7,
+      "columns": "lines_in_order,order_count,fully_on_time_order_count,order_on_time_share,line_on_time_share"
+    },
+    {
+      "name": "agg_priority_fulfillment",
+      "row_count": 5,
+      "columns": "order_priority,is_urgent,order_count,complete_p50_days,complete_p90_days,complete_mean_days,line_count,transit_p50_days,transit_p90_days,transit_mean_days,order_to_ship_p50_days,order_to_ship_p90_days,order_to_ship_mean_days"
+    },
+    {
+      "name": "agg_urgency_fulfillment",
+      "row_count": 2,
+      "columns": "is_urgent,order_count,complete_p50_days,complete_p90_days,complete_mean_days,line_count,transit_p50_days,transit_p90_days,transit_mean_days,order_to_ship_p50_days,order_to_ship_p90_days,order_to_ship_mean_days"
+    },
+    {
+      "name": "agg_delay_rate_monthly",
+      "row_count": 82,
+      "columns": "commit_month,line_count,late_line_count,delay_rate,is_boundary_month"
+    }
+  ],
+  "dq_results": [
+    {
+      "rule_id": "DQ-GOLD1",
+      "table_name": "fct_lineitem_delivery",
+      "violation_count": 0,
+      "passed": true
+    },
+    {
+      "rule_id": "DQ-GOLD2",
+      "table_name": "fct_order_fulfillment",
+      "violation_count": 0,
+      "passed": true
+    }
+  ]
+}

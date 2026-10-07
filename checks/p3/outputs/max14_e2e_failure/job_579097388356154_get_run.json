@@ -1,0 +1,101 @@
+{
+  "cleanup_duration": 0,
+  "creator_user_name": "matseliukh.pn@ucu.edu.ua",
+  "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+  "end_time": 1791409293335,
+  "execution_duration": 0,
+  "job_id": 237340970210432,
+  "job_run_id": 579097388356154,
+  "number_in_job": 579097388356154,
+  "run_duration": 526993,
+  "run_id": 579097388356154,
+  "run_name": "MAX-14 step 3 injected bad row",
+  "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/237340970210432/run/579097388356154",
+  "run_type": "SUBMIT_RUN",
+  "setup_duration": 0,
+  "start_time": 1791408766342,
+  "state": {
+    "life_cycle_state": "INTERNAL_ERROR",
+    "result_state": "FAILED",
+    "state_message": "Task t failed with message: Workload failed, see run output for details.",
+    "user_cancelled_or_timedout": false
+  },
+  "status": {
+    "state": "TERMINATED",
+    "termination_details": {
+      "code": "RUN_EXECUTION_ERROR",
+      "message": "Task t failed with message: Workload failed, see run output for details.",
+      "type": "CLIENT_ERROR"
+    }
+  },
+  "tasks": [
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 0,
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1791409032068,
+      "execution_duration": 261000,
+      "notebook_task": {
+        "base_parameters": {
+          "schema_prefix": "makc_logistics_e2e"
+        },
+        "notebook_path": "/Users/matseliukh.pn@ucu.edu.ua/nachalniki/checks/p3/failure_demo/e2e_failure_entry",
+        "source": "WORKSPACE"
+      },
+      "run_id": 636217062855955,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/237340970210432/run/636217062855955",
+      "setup_duration": 4000,
+      "start_time": 1791408766371,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "FAILED",
+        "state_message": "Workload failed, see run output for details",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "RUN_EXECUTION_ERROR",
+          "message": "Workload failed, see run output for details",
+          "type": "CLIENT_ERROR"
+        }
+      },
+      "task_key": "t"
+    },
+    {
+      "attempt_number": 1,
+      "cleanup_duration": 0,
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1791409292885,
+      "execution_duration": 254000,
+      "notebook_task": {
+        "base_parameters": {
+          "schema_prefix": "makc_logistics_e2e"
+        },
+        "notebook_path": "/Users/matseliukh.pn@ucu.edu.ua/nachalniki/checks/p3/failure_demo/e2e_failure_entry",
+        "source": "WORKSPACE"
+      },
+      "run_id": 620302362516868,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/237340970210432/run/620302362516868",
+      "setup_duration": 3000,
+      "start_time": 1791409035076,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "FAILED",
+        "state_message": "Workload failed, see run output for details",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "RUN_EXECUTION_ERROR",
+          "message": "Workload failed, see run output for details",
+          "type": "CLIENT_ERROR"
+        }
+      },
+      "task_key": "t"
+    }
+  ]
+}

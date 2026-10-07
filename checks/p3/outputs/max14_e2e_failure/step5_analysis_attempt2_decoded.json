@@ -1,0 +1,210 @@
+[
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "%md\n# 06_analysis\n\nAnswers Logistics questions Q1–Q4 from the published Gold aggregates. The first executable\nsection checks the append-only pipeline lifecycle and refuses to present stale Gold results\nwhen the newest pipeline run has no `succeeded` event.",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "%run ./00_config",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics_e2e', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "from html import escape\n\nimport matplotlib.pyplot as plt\nimport numpy as np\nfrom pyspark.sql import functions as F\n\nPIPELINE_RUNS = f\"{audit_schema}.pipeline_runs\"\n\n\ndef show_answer(title, body):\n    displayHTML(\n        f\"<div style='padding:12px;border-left:4px solid #2274a5;background:#f4f8fb'>\"\n",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "%md\n## Run-state guard\n\nThe latest execution is selected by its `started` timestamp. Analysis proceeds only if that\nsame `run_id` has a `succeeded` event. Stage-only executions do not write `pipeline_runs`.",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "if not spark.catalog.tableExists(PIPELINE_RUNS):\n    raise RuntimeError(f\"Cannot present results: lifecycle table {PIPELINE_RUNS} does not exist.\")\n\nrun_states = (\n    spark.table(PIPELINE_RUNS)\n    .groupBy(\"run_id\")\n    .agg(\n        F.min(F.when(F.col(\"event\") == \"started\", F.col(\"event_ts\"))).al",
+  "state": "error",
+  "output": "",
+  "table": null,
+  "error": "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m\n\u001b[0;31mRuntimeError\u001b[0m                              Traceback (most recent call last)\nFile \u001b[0;32m<command-7490082535302268>, line 17\u001b[0m\n\u001b[1;32m     15\u001b[0m     \u001b[38;5;28;01mraise\u001b[39;00m \u001b[38;5;167;01mRuntimeError\u001b[39;00m(\u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mCannot present results: lifecycle table \u001b[39m\u001b[38;5;132;01m{\u001b[39;00mPIPELINE_RUNS\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m is empty.\u001b[39m\u001b[38;5;124m\"\u001b[39m)\n\u001b[1;32m     16\u001b[0m \u001b[38;5;28;01mif\u001b[39;00m latest_run\u001b[38;5;241m.\u001b[39msucceeded_at \u001b[38;5;129;01mis\u001b[39;00m \u001b[38;5;28;01mNone\u001b[39;00m:\n\u001b[0;32m---> 17\u001b[0m     \u001b[38;5;28;01mraise\u001b[39;00m \u001b[38;5;167;01mRuntimeError\u001b[39;00m(\n\u001b[1;32m     18\u001b[0m         \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mCannot present stale Gold results: latest pipeline run \u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m     19\u001b[0m         \u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;132;01m{\u001b[39;00mlatest_run\u001b[38;5;241m.\u001b[39mrun_id\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m started at \u001b[39m\u001b[38;5;132;01m{\u001b[39;00mlatest_run\u001b[38;5;241m.\u001b[39mstarted_at\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m but has no succeeded event.\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m     20\u001b[0m     )\n\u001b[1;32m     22\u001b[0m analysis_run_id \u001b[38;5;241m=\u001b[39m latest_run\u001b[38;5;241m.\u001b[39mrun_id\n\u001b[1;32m     23\u001b[0m \u001b[38;5;28mprint\u001b[39m(\n\u001b[1;32m     24\u001b[0m     \u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mAnalysis is using Gold from succeeded run_id \u001b[39m\u001b[38;5;132;01m{\u001b[39;00manalysis_run_id\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m \u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m     25\u001b[0m     \u001b[38;5;124mf\u001b[39m\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124m(started \u001b[39m\u001b[38;5;132;01m{\u001b[39;00mlatest_run\u001b[38;5;241m.\u001b[39mstarted_at\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m, succeeded \u001b[39m\u001b[38;5;132;01m{\u001b[39;00mlatest_run\u001b[38;5;241m.\u001b[39msucceeded_at\u001b[38;5;132;01m}\u001b[39;00m\u001b[38;5;124m).\u001b[39m\u001b[38;5;124m\"\u001b[39m\n\u001b[1;32m     26\u001b[0m )\n\n\u001b[0;31mRuntimeError\u001b[0m: Cannot present stale Gold results: latest pipeline run e9e7b889-1715-41ec-85a2-0ff81489c10e started at 2026-10-07 21:37:25.725814 but has no succeeded event."
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "%md\n## Q1 — Transit speed and predictability by ship mode\n\nDisplayed result Q1 contains the required p50 and p90 plus the spread measures. The grouped\nbars use the same rows. Fastest means lowest p50; most predictable means lowest p90 − p50.",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "q1 = (\n    spark.table(f\"{gold_schema}.agg_ship_mode_performance\")\n    .select(\n        \"ship_mode\", \"line_count\", \"transit_p50_days\", \"transit_p90_days\",\n        \"transit_p90_minus_p50_days\", \"transit_iqr_days\", \"transit_mean_days\",\n        \"transit_stddev_days\",\n    )\n    .orderBy(\"ship_mode\")\n)\nd",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "lowest_median = q1_pdf[\"transit_p50_days\"].min()\nfastest = q1_pdf[q1_pdf[\"transit_p50_days\"] == lowest_median]\nif len(fastest) == 1:\n    fastest_text = f\"{fastest.iloc[0]['ship_mode']} ({days(lowest_median)} median)\"\nelse:\n    tied_modes = \", \".join(fastest[\"ship_mode\"].tolist())\n    best_mean_row =",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "%md\n## Q2 — Fully on-time orders versus on-time lines\n\nDisplayed result Q2a gives the two overall shares and the observed lines-per-order\ndistribution. Result Q2b shows how the order share changes with order size.",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "q2_summary = spark.table(f\"{gold_schema}.agg_on_time_summary\")\nq2_by_size = (\n    spark.table(f\"{gold_schema}.agg_on_time_by_line_count\")\n    .orderBy(\"lines_in_order\")\n)\ndisplay(q2_summary)\ndisplay(q2_by_size)\nq2_summary_row = q2_summary.first()\nq2_size_pdf = q2_by_size.toPandas()\n\nfig, axes = plt.",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "share_gap = q2_summary_row.line_on_time_share - q2_summary_row.order_on_time_share\nshow_answer(\n    \"Q2 answer — see displayed results Q2a and Q2b\",\n    f\"{percent(q2_summary_row.order_on_time_share)} of orders are fully on time, versus \"\n    f\"{percent(q2_summary_row.line_on_time_share)} of individ",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "%md\n## Q3 — Delay rate by ship mode\n\nDisplayed result Q3 reports both numerator and denominator; the chart uses the same rates.",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "q3 = (\n    spark.table(f\"{gold_schema}.agg_ship_mode_performance\")\n    .select(\"ship_mode\", \"line_count\", \"late_line_count\", \"delay_rate\")\n    .orderBy(F.col(\"delay_rate\").desc(), \"ship_mode\")\n)\ndisplay(q3)\nq3_pdf = q3.toPandas()\n\nfig, ax = plt.subplots(figsize=(10, 4.8))\nax.bar(q3_pdf[\"ship_mode\"],",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "worst_mode = q3_pdf.iloc[0]\nshow_answer(\n    \"Q3 answer — see displayed result Q3\",\n    f\"{worst_mode['ship_mode']} has the highest delay rate at \"\n    f\"{percent(worst_mode['delay_rate'])}: {int(worst_mode['late_line_count']):,} late lines \"\n    f\"out of {int(worst_mode['line_count']):,}.\",\n)",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "%md\n## Q4 — Urgent-priority fulfilment\n\nDisplayed result Q4a compares urgent with all other orders directly. Result Q4b provides\nthe per-priority counts and completion, transit and order-to-ship statistics. The chart uses\nthe primary order-grain fulfilment measure.",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "q4_urgency = (\n    spark.table(f\"{gold_schema}.agg_urgency_fulfillment\")\n    .orderBy(F.col(\"is_urgent\").desc())\n)\nq4_priority = (\n    spark.table(f\"{gold_schema}.agg_priority_fulfillment\")\n    .orderBy(\"order_priority\")\n)\ndisplay(q4_urgency)\ndisplay(q4_priority)\nq4_urgency_rows = {row.is_urgent: ro",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "urgent = q4_urgency_rows[True]\nother = q4_urgency_rows[False]\nif urgent.complete_p50_days < other.complete_p50_days:\n    conclusion = \"Urgent orders are faster by the median primary fulfilment measure\"\nelif urgent.complete_p50_days > other.complete_p50_days:\n    conclusion = \"Urgent orders are slowe",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "%md\n## Monitoring — Monthly delay rate over time (Chart 5)\n\nDisplays `agg_delay_rate_monthly` across commit months. The line chart shows `delay_rate`\nby commit month, with line count context and explicit annotations for boundary and edge\nmonths labelled \"potentially incomplete\".",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "monthly = (\n    spark.table(f\"{gold_schema}.agg_delay_rate_monthly\")\n    .orderBy(\"commit_month\")\n)\ndisplay(monthly)\nmonthly_pdf = monthly.toPandas()\n\nfig, ax1 = plt.subplots(figsize=(13, 5.2))\n\ncolor_rate = \"#d95f02\"\n\nax1.plot(\n    monthly_pdf[\"commit_month\"],\n    monthly_pdf[\"delay_rate\"],\n    col",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "first_m = monthly_pdf.iloc[0]\nlast_m = monthly_pdf.iloc[-1]\nedge_m = monthly_pdf.iloc[-2]\nmid_series = monthly_pdf[(~monthly_pdf[\"is_boundary_month\"]) & (monthly_pdf[\"commit_month\"] != \"1998-09-01\")]\nmean_stable_rate = mid_series[\"delay_rate\"].mean()\n\nshow_answer(\n    \"Monitoring summary — Monthly d",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ },
+ {
+  "notebook": "6738ab65-2372-4ed0-9370-3084db2e1967",
+  "command": "print(f\"Q1–Q4 analysis and monthly monitoring completed for succeeded run_id {analysis_run_id}.\")",
+  "state": "error",
+  "output": null,
+  "table": null,
+  "error": "Command skipped"
+ }
+]

@@ -1,0 +1,67 @@
+{
+  "cleanup_duration": 0,
+  "creator_user_name": "matseliukh.pn@ucu.edu.ua",
+  "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+  "end_time": 1791410591086,
+  "execution_duration": 78000,
+  "job_id": 1106283913434569,
+  "job_run_id": 704809310624884,
+  "number_in_job": 704809310624884,
+  "run_duration": 81829,
+  "run_id": 704809310624884,
+  "run_name": "logistics_analysis",
+  "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/1106283913434569/run/704809310624884",
+  "run_type": "SUBMIT_RUN",
+  "setup_duration": 3000,
+  "start_time": 1791410509257,
+  "state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "status": {
+    "state": "TERMINATED",
+    "termination_details": {
+      "code": "SUCCESS",
+      "message": "",
+      "type": "SUCCESS"
+    }
+  },
+  "tasks": [
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 0,
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1791410590668,
+      "execution_duration": 78000,
+      "notebook_task": {
+        "base_parameters": {
+          "schema_prefix": "makc_logistics"
+        },
+        "notebook_path": "/Users/matseliukh.pn@ucu.edu.ua/nachalniki/notebooks/06_analysis",
+        "source": "WORKSPACE"
+      },
+      "run_id": 999300676445662,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://dbc-1766f78b-980d.cloud.databricks.com/?o=7474659920821008#job/1106283913434569/run/999300676445662",
+      "setup_duration": 3000,
+      "start_time": 1791410509292,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "task_key": "analysis"
+    }
+  ]
+}

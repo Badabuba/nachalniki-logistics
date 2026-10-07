@@ -1,0 +1,496 @@
+{
+ "prefix": "makc_logistics_e2e",
+ "statements": [
+  {
+   "statement": "SELECT run_id, event, event_ts FROM workspace.makc_logistics_e2e_audit.pipeline_runs ORDER BY event_ts",
+   "statement_id": "01f1c296-8244-1847-891d-d830a6e98c89",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "4e1d79a1-56aa-4246-81bc-cb3f7aac93fd",
+     "started",
+     "2026-10-07T21:24:23.203Z"
+    ],
+    [
+     "4e1d79a1-56aa-4246-81bc-cb3f7aac93fd",
+     "succeeded",
+     "2026-10-07T21:31:23.707Z"
+    ]
+   ]
+  },
+  {
+   "statement": "CREATE SCHEMA IF NOT EXISTS workspace.makc_logistics_e2e_snapshot",
+   "statement_id": "01f1c296-840b-11b5-a163-5bc041aae32c",
+   "state": "SUCCEEDED",
+   "rows": []
+  },
+  {
+   "statement": "CREATE OR REPLACE TABLE workspace.makc_logistics_e2e_snapshot.agg_delay_rate_monthly AS SELECT * FROM workspace.makc_logistics_e2e_gold.agg_delay_rate_monthly",
+   "statement_id": "01f1c296-84f2-1684-92e2-5678dc63a536",
+   "state": "SUCCEEDED",
+   "rows": []
+  },
+  {
+   "statement": "CREATE OR REPLACE TABLE workspace.makc_logistics_e2e_snapshot.agg_on_time_by_line_count AS SELECT * FROM workspace.makc_logistics_e2e_gold.agg_on_time_by_line_count",
+   "statement_id": "01f1c296-8831-1854-a7c6-cc420d32eccb",
+   "state": "SUCCEEDED",
+   "rows": []
+  },
+  {
+   "statement": "CREATE OR REPLACE TABLE workspace.makc_logistics_e2e_snapshot.agg_on_time_summary AS SELECT * FROM workspace.makc_logistics_e2e_gold.agg_on_time_summary",
+   "statement_id": "01f1c296-8a93-1d03-8c2b-ff1682b9b744",
+   "state": "SUCCEEDED",
+   "rows": []
+  },
+  {
+   "statement": "CREATE OR REPLACE TABLE workspace.makc_logistics_e2e_snapshot.agg_priority_fulfillment AS SELECT * FROM workspace.makc_logistics_e2e_gold.agg_priority_fulfillment",
+   "statement_id": "01f1c296-8ce6-10da-a1f6-16f626779bb1",
+   "state": "SUCCEEDED",
+   "rows": []
+  },
+  {
+   "statement": "CREATE OR REPLACE TABLE workspace.makc_logistics_e2e_snapshot.agg_ship_mode_performance AS SELECT * FROM workspace.makc_logistics_e2e_gold.agg_ship_mode_performance",
+   "statement_id": "01f1c296-8f7b-1bbc-a322-9c2838823042",
+   "state": "SUCCEEDED",
+   "rows": []
+  },
+  {
+   "statement": "CREATE OR REPLACE TABLE workspace.makc_logistics_e2e_snapshot.agg_urgency_fulfillment AS SELECT * FROM workspace.makc_logistics_e2e_gold.agg_urgency_fulfillment",
+   "statement_id": "01f1c296-91cc-196f-b4ae-c779c20d4d75",
+   "state": "SUCCEEDED",
+   "rows": []
+  },
+  {
+   "statement": "CREATE OR REPLACE TABLE workspace.makc_logistics_e2e_snapshot.fct_lineitem_delivery AS SELECT * FROM workspace.makc_logistics_e2e_gold.fct_lineitem_delivery",
+   "statement_id": "01f1c296-93f5-1085-a185-d9b21a8bd788",
+   "state": "SUCCEEDED",
+   "rows": []
+  },
+  {
+   "statement": "CREATE OR REPLACE TABLE workspace.makc_logistics_e2e_snapshot.fct_order_fulfillment AS SELECT * FROM workspace.makc_logistics_e2e_gold.fct_order_fulfillment",
+   "statement_id": "01f1c296-980e-1385-b043-a1ee02b60880",
+   "state": "SUCCEEDED",
+   "rows": []
+  },
+  {
+   "statement": "SELECT count(*) FROM workspace.makc_logistics_e2e_gold.agg_delay_rate_monthly",
+   "statement_id": "01f1c296-9b6a-1394-8aa3-108824615171",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "82"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM workspace.makc_logistics_e2e_gold.agg_on_time_by_line_count",
+   "statement_id": "01f1c296-9c66-1ddb-82a0-7ae49d287af3",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "7"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM workspace.makc_logistics_e2e_gold.agg_on_time_summary",
+   "statement_id": "01f1c296-9d56-109f-a8c5-2e3faf7a1241",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "1"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM workspace.makc_logistics_e2e_gold.agg_priority_fulfillment",
+   "statement_id": "01f1c296-9e4e-1583-8c2b-967123b43e39",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "5"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM workspace.makc_logistics_e2e_gold.agg_ship_mode_performance",
+   "statement_id": "01f1c296-9f48-123f-ad8f-208e356fdff5",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "7"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM workspace.makc_logistics_e2e_gold.agg_urgency_fulfillment",
+   "statement_id": "01f1c296-a027-1780-907d-f58fa72a5c47",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "2"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM workspace.makc_logistics_e2e_gold.fct_lineitem_delivery",
+   "statement_id": "01f1c296-a10c-171e-a82d-cc21580aa105",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "29999795"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM workspace.makc_logistics_e2e_gold.fct_order_fulfillment",
+   "statement_id": "01f1c296-a1d8-131f-b3b9-55ea82362427",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "7500000"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT run_id, event, event_ts FROM workspace.makc_logistics_e2e_audit.pipeline_runs ORDER BY event_ts",
+   "statement_id": "01f1c297-e493-1a4e-8aaf-db097c40e4d9",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "4e1d79a1-56aa-4246-81bc-cb3f7aac93fd",
+     "started",
+     "2026-10-07T21:24:23.203Z"
+    ],
+    [
+     "4e1d79a1-56aa-4246-81bc-cb3f7aac93fd",
+     "succeeded",
+     "2026-10-07T21:31:23.707Z"
+    ],
+    [
+     "e1591d9a-5742-49c8-a6ec-3c515fdeb79d",
+     "started",
+     "2026-10-07T21:32:59.867Z"
+    ],
+    [
+     "e9e7b889-1715-41ec-85a2-0ff81489c10e",
+     "started",
+     "2026-10-07T21:37:25.725Z"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT rule_id, table_name, violation_count, sample_keys, passed FROM workspace.makc_logistics_e2e_audit.dq_check_results WHERE run_id = 'e9e7b889-1715-41ec-85a2-0ff81489c10e' AND NOT passed",
+   "statement_id": "01f1c297-e665-1e60-81f1-a67c8fdfb580",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "DQ-L2",
+     "lineitem",
+     "1",
+     "[\"1|1\"]",
+     "false"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM workspace.makc_logistics_e2e_audit.dq_check_results WHERE run_id = 'e9e7b889-1715-41ec-85a2-0ff81489c10e'",
+   "statement_id": "01f1c297-e785-19cb-b061-6d9174a5c5b7",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "41"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_gold.agg_delay_rate_monthly EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_delay_rate_monthly)",
+   "statement_id": "01f1c297-e88c-116e-805d-5550f111fe0c",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_delay_rate_monthly EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_gold.agg_delay_rate_monthly)",
+   "statement_id": "01f1c297-e999-1eaf-a772-9514e9aa2200",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_gold.agg_on_time_by_line_count EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_on_time_by_line_count)",
+   "statement_id": "01f1c297-ea9f-16b1-85c9-12a8e765019b",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_on_time_by_line_count EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_gold.agg_on_time_by_line_count)",
+   "statement_id": "01f1c297-eba7-1f77-906b-c40d0dcd727f",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_gold.agg_on_time_summary EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_on_time_summary)",
+   "statement_id": "01f1c297-ec9a-164e-bb10-419a276c88ea",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_on_time_summary EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_gold.agg_on_time_summary)",
+   "statement_id": "01f1c297-edb3-1182-9d0f-a4ce6d41a58b",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_gold.agg_priority_fulfillment EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_priority_fulfillment)",
+   "statement_id": "01f1c297-eeab-1e72-9888-8647f9f3415b",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_priority_fulfillment EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_gold.agg_priority_fulfillment)",
+   "statement_id": "01f1c297-efa5-11e6-89d6-42a64e594a65",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_gold.agg_ship_mode_performance EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_ship_mode_performance)",
+   "statement_id": "01f1c297-f0c2-155a-8692-8616a92d0d36",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_ship_mode_performance EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_gold.agg_ship_mode_performance)",
+   "statement_id": "01f1c297-f1dc-1eb3-b22d-a71bd467b101",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_gold.agg_urgency_fulfillment EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_urgency_fulfillment)",
+   "statement_id": "01f1c297-f2d7-176c-954b-56b4a4e18c9c",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_snapshot.agg_urgency_fulfillment EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_gold.agg_urgency_fulfillment)",
+   "statement_id": "01f1c297-f3d0-1fe2-adee-35fc241c43b3",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_gold.fct_lineitem_delivery EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_snapshot.fct_lineitem_delivery)",
+   "statement_id": "01f1c297-f4ce-16b4-8809-192b3c95ea19",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_snapshot.fct_lineitem_delivery EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_gold.fct_lineitem_delivery)",
+   "statement_id": "01f1c297-fb50-1579-9e06-bf88e9abf20b",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_gold.fct_order_fulfillment EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_snapshot.fct_order_fulfillment)",
+   "statement_id": "01f1c298-003f-1fa2-8551-ad43c9629acc",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  },
+  {
+   "statement": "SELECT count(*) FROM (SELECT * FROM workspace.makc_logistics_e2e_snapshot.fct_order_fulfillment EXCEPT ALL SELECT * FROM workspace.makc_logistics_e2e_gold.fct_order_fulfillment)",
+   "statement_id": "01f1c298-0370-1365-8670-b98fc99687ce",
+   "state": "SUCCEEDED",
+   "rows": [
+    [
+     "0"
+    ]
+   ]
+  }
+ ],
+ "jobs": {
+  "MAX-14 step 3 injected bad row": {
+   "job_run_id": 579097388356154,
+   "task_run_ids": [
+    636217062855955,
+    620302362516868
+   ],
+   "attempts": [
+    0,
+    1
+   ],
+   "result_state": "FAILED",
+   "state_message": "Task t failed with message: Workload failed, see run output for details.",
+   "duration_s": 527
+  },
+  "MAX-14 step 5 analysis guard": {
+   "job_run_id": 430238393155314,
+   "task_run_ids": [
+    13596920374671,
+    123835610100346
+   ],
+   "attempts": [
+    0,
+    1
+   ],
+   "result_state": "FAILED",
+   "state_message": "Task t failed with message: Workload failed, see run output for details.",
+   "duration_s": 41
+  }
+ },
+ "runs_before": [
+  [
+   "4e1d79a1-56aa-4246-81bc-cb3f7aac93fd",
+   "started",
+   "2026-10-07T21:24:23.203Z"
+  ],
+  [
+   "4e1d79a1-56aa-4246-81bc-cb3f7aac93fd",
+   "succeeded",
+   "2026-10-07T21:31:23.707Z"
+  ]
+ ],
+ "gold_counts": {
+  "agg_delay_rate_monthly": 82,
+  "agg_on_time_by_line_count": 7,
+  "agg_on_time_summary": 1,
+  "agg_priority_fulfillment": 5,
+  "agg_ship_mode_performance": 7,
+  "agg_urgency_fulfillment": 2,
+  "fct_lineitem_delivery": 29999795,
+  "fct_order_fulfillment": 7500000
+ },
+ "runs_after": [
+  [
+   "4e1d79a1-56aa-4246-81bc-cb3f7aac93fd",
+   "started",
+   "2026-10-07T21:24:23.203Z"
+  ],
+  [
+   "4e1d79a1-56aa-4246-81bc-cb3f7aac93fd",
+   "succeeded",
+   "2026-10-07T21:31:23.707Z"
+  ],
+  [
+   "e1591d9a-5742-49c8-a6ec-3c515fdeb79d",
+   "started",
+   "2026-10-07T21:32:59.867Z"
+  ],
+  [
+   "e9e7b889-1715-41ec-85a2-0ff81489c10e",
+   "started",
+   "2026-10-07T21:37:25.725Z"
+  ]
+ ],
+ "failed_run_id": "e9e7b889-1715-41ec-85a2-0ff81489c10e",
+ "failed_run_events": [
+  "started"
+ ],
+ "failed_run_dq_failures": [
+  [
+   "DQ-L2",
+   "lineitem",
+   "1",
+   "[\"1|1\"]",
+   "false"
+  ]
+ ],
+ "failed_run_dq_rows": 41,
+ "gold_except_all": {
+  "agg_delay_rate_monthly": [
+   0,
+   0
+  ],
+  "agg_on_time_by_line_count": [
+   0,
+   0
+  ],
+  "agg_on_time_summary": [
+   0,
+   0
+  ],
+  "agg_priority_fulfillment": [
+   0,
+   0
+  ],
+  "agg_ship_mode_performance": [
+   0,
+   0
+  ],
+  "agg_urgency_fulfillment": [
+   0,
+   0
+  ],
+  "fct_lineitem_delivery": [
+   0,
+   0
+  ],
+  "fct_order_fulfillment": [
+   0,
+   0
+  ]
+ },
+ "checks": {
+  "failure_job_failed": true,
+  "failed_run_has_started_only": true,
+  "dq_l2_failed": true,
+  "gold_unchanged": true,
+  "analysis_refused": true
+ }
+}

@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-07",
+  "workspace": "dbc-1766f78b-980d.cloud.databricks.com",
+  "catalog": "workspace",
+  "schema_prefix": "nachalniki_logistics",
+  "executed_by": "kalmuk.pn@ucu.edu.ua",
+  "analysis_job": {
+    "job_id": 278734410598845,
+    "job_run_id": 901645685241490,
+    "task_run_id": 382000191007440,
+    "run_name": "MAX-06 analysis with chart 5 test",
+    "result": "SUCCESS",
+    "execution_duration_ms": 37000,
+    "notebook_path": "/Users/kalmuk.pn@ucu.edu.ua/nachalniki_yaropolk/notebooks/06_analysis"
+  },
+  "monitoring_chart": {
+    "chart_number": 5,
+    "title": "Monitoring: Monthly delay rate by commit month (82 observed months; boundary/edge labelled)",
+    "table": "agg_delay_rate_monthly",
+    "total_months": 82,
+    "boundary_months": [
+      {
+        "month": "1992-01-01",
+        "line_count": 101741,
+        "late_line_count": 64391,
+        "delay_rate": 0.6328913613980598,
+        "label": "potentially incomplete (first month)"
+      },
+      {
+        "month": "1998-10-01",
+        "line_count": 101741,
+        "late_line_count": 47901,
+        "delay_rate": 0.4708131431772835,
+        "label": "potentially incomplete (last month)"
+      }
+    ],
+    "low_count_edge_months": [
+      {
+        "month": "1998-09-01",
+        "line_count": 284559,
+        "late_line_count": 164652,
+        "delay_rate": 0.5786216566687401,
+        "label": "potentially incomplete / lower line count"
+      }
+    ],
+    "stable_series_summary": {
+      "month_count": 79,
+      "mean_delay_rate": 0.6322880018868846,
+      "range": "62.97% to 63.42%",
+      "typical_lines_per_month": "348,744 to 389,002"
+    }
+  }
+}

@@ -2,7 +2,7 @@
 
 Team **«начальніки»**: Nazar, Yaropolk, Max. UCU Big Data, Group Assignment 1.
 
-> **Status: Stages 1 and 2 built.** Bronze, profiling, the Silver stage (staging, validation, publish) and the data-quality audit table have run in Databricks (outputs in `checks/p2/outputs/`). Gold, the runner and the analysis are not implemented yet, so no answers exist yet. Track progress in [docs/plan.md](docs/plan.md).
+> **Status: The full Bronze → Silver → Gold pipeline, automated runner, determinism, portability and Logistics Q1–Q4 analysis with monthly monitoring are verified on Databricks.** Succeeded runs, exact results and evidence references are reported below.
 
 ## Purpose
 
@@ -66,17 +66,13 @@ notebooks/02_silver_stage.py     Bronze -> staging (casts and column selection, 
 notebooks/dq_helpers.py          creates and appends dq_check_results; run-scoped failure checks
 notebooks/03_validate.py         all blocking rules on staging; raises on any failure
 notebooks/04_silver_publish.py   staging -> Silver plus constraints, only after validation passed
+notebooks/05_gold_build.py       Silver -> eight Logistics Gold tables plus Gold DQ checks
+notebooks/06_analysis.py         guarded Q1-Q4 tables, answers and charts
+notebooks/run_pipeline.py        complete Bronze -> Silver -> Gold run plus lifecycle audit
 docs/silver_er.mmd  docs/silver_er.png   ER diagram of the published Silver
 checks/p0/               P0 diagnostic notebooks (not part of the pipeline) and their raw outputs
 checks/p2/               test and entry notebooks (run_id helpers, dq_helpers, Silver stage) and raw run outputs
-```
-
-Planned (not created yet):
-
-```
-notebooks/05_gold_build.py
-notebooks/06_analysis.py         answers + visualisations
-notebooks/run_pipeline.py        runs 01–05 in order and records the run state
+checks/p3/               Stage 3 entry notebooks and raw run evidence
 ```
 
 ## Setup
@@ -137,12 +133,56 @@ Order: `01_bronze_ingest`, then `profile_source`. Neither needs a `run_id` or an
 
 A value outside these lists is never added silently: the Silver validation fails on it, and no row is dropped. Other observed values: `o_orderpriority` has 5 values, and the urgent one is `1-URGENT`. Dates run from 1992-01-01 (first order) to 1998-12-31 (last receipt). Every order has between 1 and 7 lines (median 4). The full results are in [design.md §5.5](docs/design.md).
 
-## How to run (planned, not yet implemented)
+## How to run
 
-1. In Databricks, create a Git folder from this repository.
-2. Open `notebooks/run_pipeline.py`, and set the `catalog` and `schema_prefix` widgets if the defaults do not fit.
-3. Run all cells. The run fails if any data-quality check fails, and then Silver and Gold are not republished.
-4. Open `notebooks/06_analysis.py` and run all cells to see the answers and charts.
+The full pipeline runs 01–05 in sequence under an append-only audit lifecycle. Individual stages can also be executed standalone (see [Stage 1](#configuration-bronze-and-profiling-stage-1) and [Stage 2](#running-the-silver-stage-on-its-own)).
+
+### Interactive execution (UI)
+
+1. In Databricks, create a Git folder from this repository (or import `notebooks/` into a workspace folder).
+2. Open `notebooks/run_pipeline.py`. Configure widget values if needed (`catalog` defaults to `workspace`, `schema_prefix` to `nachalniki_logistics`, `source` to `samples.tpch`). In a shared workspace, use your own `schema_prefix`.
+3. Run all cells. The runner:
+   - Starts a fresh `run_id` via `new_run_id()`.
+   - Records `started` in `{prefix}_audit.pipeline_runs`.
+   - Executes `%run ./01_bronze_ingest` (copies 8 TPC-H tables).
+   - Executes `%run ./02_silver_stage` (casts Bronze into 11 staging tables).
+   - Executes `%run ./03_validate` (runs 12 blocking data-quality rules). If any check fails, execution halts immediately and publishing is skipped.
+   - Executes `%run ./04_silver_publish` (publishes Silver tables and applies Delta constraints).
+   - Executes `%run ./05_gold_build` (computes 8 Logistics Gold tables and Gold DQ checks).
+   - Records `succeeded` in `{prefix}_audit.pipeline_runs`.
+4. Open `notebooks/06_analysis.py` and run all cells. The run-state guard halts if the latest run in `pipeline_runs` did not succeed. When valid, it displays query tables, renders 5 charts (Q1–Q4 and monthly monitoring), and displays factual answer summaries.
+
+### Command-line execution (Databricks CLI)
+
+Run as serverless one-time jobs from your local terminal (tested in MAX-10 and MAX-12). First import every file of `notebooks/` into one workspace folder, e.g. `/Users/<you>/nachalniki/notebooks/`, with `databricks workspace import` as shown in [Stage 1](#configuration-bronze-and-profiling-stage-1); the `notebook_path` below must point to that folder. In a workspace shared with other users, set your own `schema_prefix` in `base_parameters` so the run does not replace another user's tables.
+
+```bash
+# 1. Run the full pipeline
+databricks jobs submit --json '{
+  "run_name": "full_pipeline",
+  "tasks": [{
+    "task_key": "pipeline",
+    "notebook_task": {
+      "notebook_path": "/Users/<you>/nachalniki/notebooks/run_pipeline",
+      "base_parameters": {}
+    }
+  }]
+}'
+
+# 2. Run the analysis and monitoring visualisations
+databricks jobs submit --json '{
+  "run_name": "logistics_analysis",
+  "tasks": [{
+    "task_key": "analysis",
+    "notebook_task": {
+      "notebook_path": "/Users/<you>/nachalniki/notebooks/06_analysis",
+      "base_parameters": {}
+    }
+  }]
+}'
+```
+
+Override widgets by specifying key-values in `base_parameters` (e.g. `{"schema_prefix": "custom_prefix"}`).
 
 ## Validation approach (Stage 2: Silver and data quality)
 
@@ -195,7 +235,86 @@ The entry notebook runs `%run 00_config` → `run_id = new_run_id()` → `02_sil
 
 ## Results
 
-*Not available yet.* The answers to Q1–Q4 will be added only from an actual successful run, together with the run date.
+The numbers below are read from the Gold tables of succeeded pipeline run `25979743-a4a7-4ab8-a4b2-c37af6d03805` (2026-10-07, catalog `workspace`, prefix `makc_logistics`, job run `317490104173577`; every DQ rule passed), as displayed by `06_analysis` (job run `954628711835688`). The same code produced the default-prefix run `64829233-7f8c-42e0-9fd9-c08c765f2aef`; the determinism rerun `f21d3f70-1d14-4bfa-bb60-47a5fc4e8ac0` and the portability run `1bc3ffae-424d-4281-948a-bb0ea9df243a` showed identical Gold across reruns and prefixes (`EXCEPT ALL` = 0 in all 8 tables).
+
+### Q1 — Transit speed and predictability by ship mode
+
+- **Fastest ship mode:** `AIR` and `REG AIR` tie with the lowest median transit time of **15.00 days**. Their means are both 15.50 days (15.495 vs 15.499), a difference too small to name a winner. All other modes (`FOB`, `MAIL`, `RAIL`, `SHIP`, `TRUCK`) have a median of 16.00 days.
+- **Most predictable ship mode:** `SHIP`, with the narrowest slow tail: p90 − p50 = **11.00 days** (p50 = 16.00 d, p90 = 27.00 d, IQR = 15.00 d, stddev = 8.66 d). The other modes have a p90 − p50 spread of 12.00 to 13.00 days.
+- **Why speed and predictability differ:** Speed is about the *location* of the transit-day distribution (median, mean); predictability is about its *spread* (p90 − p50, IQR, stddev). The two can rank modes differently: `AIR` has the lowest median (15 days) but the widest p90 − p50 spread (13 days), while `SHIP` has a higher median (16 days) and the narrowest spread (11 days). All means are 15.50 days, so the differences between modes are small.
+
+| Ship mode | Line items | p50 (days) | p90 (days) | Spread p90 − p50 | IQR | Mean (days) | Stddev (days) |
+|---|---|---|---|---|---|---|---|
+| **AIR** | 4,285,543 | **15.00** | 28.00 | 13.00 | 15.00 | 15.50 | 8.66 |
+| **REG AIR** | 4,285,596 | **15.00** | 27.00 | 12.00 | 15.00 | 15.50 | 8.65 |
+| **SHIP** | 4,285,381 | 16.00 | 27.00 | **11.00** | 15.00 | 15.50 | 8.66 |
+| **FOB** | 4,287,168 | 16.00 | 28.00 | 12.00 | 15.00 | 15.51 | 8.65 |
+| **MAIL** | 4,282,860 | 16.00 | 28.00 | 12.00 | 15.00 | 15.50 | 8.66 |
+| **RAIL** | 4,284,870 | 16.00 | 28.00 | 12.00 | 15.00 | 15.50 | 8.66 |
+| **TRUCK** | 4,288,377 | 16.00 | 28.00 | 12.00 | 15.00 | 15.50 | 8.65 |
+
+### Q2 — Fully on-time orders versus on-time line items
+
+- **Individual line on-time share:** **36.77%** (11,031,691 on-time lines out of 29,999,795 lines).
+- **Fully on-time order share:** **8.30%** (622,660 fully on-time orders out of 7,500,000 orders).
+- **Gap:** **28.47 percentage points**.
+- **Why the two differ:** An order is fully on time only if *every* line item is received on or before its commit date (`is_fully_on_time = (late_line_count == 0)`). Orders contain between 1 and 7 lines (median 4.0, mean 4.00). The line on-time share is about 36.8% in every order size, but the order on-time share falls sharply as orders get bigger:
+
+| Lines in order | Orders | Fully on-time orders | Order on-time share | Line on-time share |
+|---|---|---|---|---|
+| **1** | 1,071,498 | 393,504 | **36.72%** | 36.72% |
+| **2** | 1,072,178 | 145,111 | **13.53%** | 36.77% |
+| **3** | 1,070,076 | 53,697 | **5.02%** | 36.81% |
+| **4** | 1,071,495 | 19,494 | **1.82%** | 36.77% |
+| **5** | 1,072,080 | 7,198 | **0.67%** | 36.77% |
+| **6** | 1,071,378 | 2,613 | **0.24%** | 36.78% |
+| **7** | 1,071,295 | 1,043 | **0.10%** | 36.76% |
+
+### Q3 — Late delivery rate by ship mode
+
+- **Highest delay rate mode:** `AIR` with **63.29%** (2,712,448 late lines out of 4,285,543 lines).
+- **Distribution across all modes:** all 7 modes lie within 0.10 percentage points (63.19% to 63.29%), so the "worst" mode is only marginally worse:
+
+| Ship mode | Line count | Late lines | Delay rate |
+|---|---|---|---|
+| **AIR** | 4,285,543 | 2,712,448 | **63.29%** |
+| **RAIL** | 4,284,870 | 2,710,348 | **63.25%** |
+| **REG AIR** | 4,285,596 | 2,709,635 | **63.23%** |
+| **SHIP** | 4,285,381 | 2,709,034 | **63.22%** |
+| **TRUCK** | 4,288,377 | 2,710,869 | **63.21%** |
+| **MAIL** | 4,282,860 | 2,706,820 | **63.20%** |
+| **FOB** | 4,287,168 | 2,708,950 | **63.19%** |
+
+### Q4 — Fulfilment speed: urgent vs non-urgent priority
+
+- **Conclusion:** Urgent-priority orders (`1-URGENT`) are **not fulfilled faster** than non-urgent orders. By the primary order-grain measure (order date to the receipt of the last line), urgent and non-urgent orders tie on median and p90, and their means differ by less than 0.02 days:
+  - **Median completion days:** **116.00 days** for urgent (n = 1,501,100) vs **116.00 days** for non-urgent (n = 5,998,900).
+  - **p90 completion days:** **138.00 days** for urgent vs **138.00 days** for non-urgent.
+  - **Mean completion days:** **108.40 days** for urgent vs **108.39 days** for non-urgent.
+
+Supporting line-grain metrics show the same picture:
+- **Transit days (ship to receipt):** urgent median 15.00 d (p90 27.00 d, mean 15.50 d) vs non-urgent median 16.00 d (p90 27.00 d, mean 15.50 d).
+- **Order-to-ship days:** urgent median 61.00 d (p90 109.00 d, mean 61.01 d) vs non-urgent median 61.00 d (p90 109.00 d, mean 61.00 d).
+
+| Priority | Urgent? | Order count | Complete p50 | Complete p90 | Complete mean | Line count | Transit p50 | Transit p90 |
+|---|---|---|---|---|---|---|---|---|
+| **1-URGENT** | Yes | 1,501,100 | **116.00 d** | **138.00 d** | **108.40 d** | 6,004,707 | 15.00 d | 27.00 d |
+| **2-HIGH** | No | 1,499,192 | 116.00 d | 138.00 d | 108.41 d | 6,000,786 | 16.00 d | 28.00 d |
+| **3-MEDIUM** | No | 1,498,710 | 116.00 d | 138.00 d | 108.41 d | 5,991,279 | 16.00 d | 28.00 d |
+| **4-NOT SPECIFIED** | No | 1,501,281 | 116.00 d | 138.00 d | 108.38 d | 6,004,909 | 15.00 d | 27.00 d |
+| **5-LOW** | No | 1,499,717 | 116.00 d | 138.00 d | 108.35 d | 5,998,114 | 15.00 d | 28.00 d |
+
+### Monitoring — Monthly delay rate over time
+
+- **Series:** 82 commit months in `agg_delay_rate_monthly`, from 1992-01 to 1998-10. Over all 29,999,795 lines the delay rate is 63.23%.
+- **Stable period:** from 1992-04 to 1998-08 (77 months) the monthly delay rate stays between **62.97%** (1997-01) and **63.45%** (1992-06), with a mean of 63.23% and 348,744 to 389,002 lines per month.
+- **Boundary and edge months:**
+  - **1992-01** (first month, `is_boundary_month = true`, "potentially incomplete"): 213 lines, delay rate 86.38%.
+  - **1992-02** and **1992-03** (edge months with lower counts): 95,167 lines at 80.11% and 291,339 lines at 68.72%. Orders start on 1992-01-01 and commit dates fall 30–90 days after the order date, so the first commit months hold only part of the lines due then.
+  - **1998-09** (edge month): 284,559 lines, delay rate 57.86%.
+  - **1998-10** (last month, `is_boundary_month = true`, "potentially incomplete"): 101,741 lines, delay rate 47.08%.
+- The edge months contain only lines with particular commit lags (short lags at the start, long lags at the end), so their rates should not be read as a change in delivery performance.
+
 
 ## Presentation
 

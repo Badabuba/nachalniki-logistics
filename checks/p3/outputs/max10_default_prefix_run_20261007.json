@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-07",
+  "workspace": "dbc-1766f78b-980d.cloud.databricks.com",
+  "catalog": "workspace",
+  "schema_prefix": "nachalniki_logistics",
+  "source": "samples.tpch",
+  "executed_by": "kalmuk.pn@ucu.edu.ua",
+  "job": {
+    "job_id": 557459248521100,
+    "job_run_id": 828513369024121,
+    "task_run_id": 145038061861109,
+    "run_name": "MAX-10 default-prefix full pipeline rerun",
+    "result": "SUCCESS",
+    "execution_duration_ms": 410000,
+    "notebook_path": "/Users/kalmuk.pn@ucu.edu.ua/nachalniki_yaropolk/notebooks/run_pipeline"
+  },
+  "pipeline_run": {
+    "run_id": "64829233-7f8c-42e0-9fd9-c08c765f2aef",
+    "started_at": "2026-10-07T19:34:25.911Z",
+    "succeeded_at": "2026-10-07T19:41:02.564Z",
+    "pipeline_statement_id": "01f1c289-5e75-1b4e-9334-55fb84c217e8"
+  },
+  "data_quality": {
+    "total_checks": 43,
+    "passed_checks": 43,
+    "failed_checks": 0,
+    "dq_statement_id": "01f1c289-77d5-1b7d-881a-ecbbeb862930"
+  },
+  "gold_tables": {
+    "statement_id": "01f1c289-98c4-1641-bed6-43475e5faa63",
+    "counts": {
+      "fct_lineitem_delivery": 29999795,
+      "fct_order_fulfillment": 7500000,
+      "agg_ship_mode_performance": 7,
+      "agg_on_time_summary": 1,
+      "agg_on_time_by_line_count": 7,
+      "agg_priority_fulfillment": 5,
+      "agg_urgency_fulfillment": 2,
+      "agg_delay_rate_monthly": 82
+    }
+  }
+}

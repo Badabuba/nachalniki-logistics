@@ -1,0 +1,602 @@
+[
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "%md\n# run_pipeline\n\nRuns the complete Bronze → Silver → Gold pipeline in one notebook context. Every execution\nstarts a fresh `run_id`, appends `started` to the append-only `pipeline_runs` table, and\nappends `succeeded` only after all five child notebooks finish. An exception in any child\nstops the ",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "%run ./00_config",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "run_id = new_run_id()\nprint(f\"run_id = {run_id}\")",
+  "state": "finished",
+  "output": "run_id = 25979743-a4a7-4ab8-a4b2-c37af6d03805\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "from datetime import datetime, timezone\n\nfrom pyspark.sql import functions as F\n\nPIPELINE_RUNS = f\"{audit_schema}.pipeline_runs\"\nPIPELINE_RUNS_SCHEMA = (\n    \"run_id string, event string, event_ts timestamp, catalog string, schema_prefix string, source string\"\n)\n\n\ndef ensure_pipeline_runs():\n    \"\"\"",
+  "state": "finished",
+  "output": "pipeline_runs: started for run_id 25979743-a4a7-4ab8-a4b2-c37af6d03805\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "%run ./01_bronze_ingest",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "ingested samples.tpch.region -> workspace.makc_logistics_bronze.region\ningested samples.tpch.nation -> workspace.makc_logistics_bronze.nation\ningested samples.tpch.supplier -> workspace.makc_logistics_bronze.supplier\ningested samples.tpch.customer -> workspace.makc_logistics_bronze.customer\ningested samples.tpch.part -> workspace.makc_logistics_bronze.part\ningested samples.tpch.partsupp -> workspace.makc_logistics_bronze.partsupp\ningested samples.tpch.orders -> workspace.makc_logistics_bronze.orders\ningested samples.tpch.lineitem -> workspace.makc_logistics_bronze.lineitem\n_ingested_at = 2026-10-07 21:12:37.464329 (UTC)\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"schema\": [\"table_name\", \"source_columns\", \"bronze_columns\", \"names_and_types_match\", \"metadata_columns_present\", \"source_rows\", \"bronze_rows\", \"row_counts_match\", \"ok\"], \"rows\": [[\"region\", 3, 3, true, true, 5, 5, true, true], [\"nation\", 4, 4, true, true, 25, 25, true, true], [\"supplier\", 7, 7, true, true, 50000, 50000, true, true], [\"customer\", 8, 8, true, true, 750000, 750000, true, true], [\"part\", 9, 9, true, true, 1000000, 1000000, true, true], [\"partsupp\", 5, 5, true, true, 4000000, 4000000, true, true], [\"orders\", 9, 9, true, true, 7500000, 7500000, true, true], [\"lineitem\", 16, 16, true, true, 29999795, 29999795, true, true]]}\nOK: 8 Bronze tables match samples.tpch (column names, types, row counts).\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "%run ./02_silver_stage",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "run_id = 25979743-a4a7-4ab8-a4b2-c37af6d03805\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "staged workspace.makc_logistics_staging.stg_region\nstaged workspace.makc_logistics_staging.stg_nation\nstaged workspace.makc_logistics_staging.stg_supplier\nstaged workspace.makc_logistics_staging.stg_customer\nstaged workspace.makc_logistics_staging.stg_brand\nstaged workspace.makc_logistics_staging.stg_part\nstaged workspace.makc_logistics_staging.stg_partsupp\nstaged workspace.makc_logistics_staging.stg_orders\nstaged workspace.makc_logistics_staging.stg_ship_date_status\nstaged workspace.makc_logistics_staging.stg_part_quantity_price\nstaged workspace.makc_logistics_staging.stg_lineitem\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"schema\": [\"table_name\", \"columns_match_contract\", \"bronze_rows\", \"staging_rows\", \"row_counts_match\", \"ok\"], \"rows\": [[\"region\", true, 5, 5, true, true], [\"nation\", true, 25, 25, true, true], [\"supplier\", true, 50000, 50000, true, true], [\"customer\", true, 750000, 750000, true, true], [\"brand\", true, null, 25, true, true], [\"part\", true, 1000000, 1000000, true, true], [\"partsupp\", true, 4000000, 4000000, true, true], [\"orders\", true, 7500000, 7500000, true, true], [\"ship_date_status\", true, null, 2526, true, true], [\"part_quantity_price\", true, null, 22657201, true, true], [\"lineitem\", true, 29999795, 29999795, true, true]]}\nOK: 11 staging tables match the Silver contract; source tables keep every Bronze row.\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "%run ./03_validate",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "run_id = 25979743-a4a7-4ab8-a4b2-c37af6d03805\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-L1 [staging.lineitem]: passed, violations = 0\nDQ-L2 [staging.lineitem]: passed, violations = 0\nDQ-L3 [staging.lineitem]: passed, violations = 0\nDQ-L4 [staging.lineitem]: passed, violations = 0\nDQ-L4 [staging.orders]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-L5 [staging.lineitem]: passed, violations = 0\nDQ-L6 [staging.lineitem]: passed, violations = 0\nDQ-L7 [staging.ship_date_status]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-L8 [staging.lineitem]: passed, violations = 0\nDQ-L9 [staging.orders]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-G1 [staging.region]: passed, violations = 0\nDQ-G1 [staging.nation]: passed, violations = 0\nDQ-G1 [staging.supplier]: passed, violations = 0\nDQ-G1 [staging.customer]: passed, violations = 0\nDQ-G1 [staging.brand]: passed, violations = 0\nDQ-G1 [staging.part]: passed, violations = 0\nDQ-G1 [staging.partsupp]: passed, violations = 0\nDQ-G1 [staging.orders]: passed, violations = 0\nDQ-G1 [staging.ship_date_status]: passed, violations = 0\nDQ-G1 [staging.part_quantity_price]: passed, violations = 0\nDQ-G1 [staging.lineitem]: passed, violations = 0\nDQ-G2 [staging.nation.nation_region_fk]: passed, violations = 0\nDQ-G2 [staging.supplier.supplier_nation_fk]: passed, violations = 0\nDQ-G2 [staging.customer.customer_nation_fk]: passed, violations = 0\nDQ-G2 [staging.part.part_brand_fk]: passed, violations = 0\nDQ-G2 [staging.partsupp.partsupp_part_fk]: passed, violations = 0\nDQ-G2 [staging.partsupp.partsupp_supplier_fk]: passed, violations = 0\nDQ-G2 [staging.orders.orders_customer_fk]: passed, violations = 0\nDQ-G2 [staging.part_quantity_price.part_quantity_price_part_fk]: passed, violations = 0\nDQ-G2 [staging.lineitem.lineitem_orders_fk]: passed, violations = 0\nDQ-G2 [staging.lineitem.lineitem_partsupp_fk]: passed, violations = 0\nDQ-G2 [staging.lineitem.lineitem_ship_date_status_fk]: passed, violations = 0\nDQ-G2 [staging.lineitem.lineitem_part_quantity_price_fk]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "DQ-G3 [staging.region]: passed, violations = 0\nDQ-G3 [staging.nation]: passed, violations = 0\nDQ-G3 [staging.supplier]: passed, violations = 0\nDQ-G3 [staging.customer]: passed, violations = 0\nDQ-G3 [staging.part]: passed, violations = 0\nDQ-G3 [staging.partsupp]: passed, violations = 0\nDQ-G3 [staging.orders]: passed, violations = 0\nDQ-G3 [staging.lineitem]: passed, violations = 0\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"schema\": [\"run_id\", \"run_ts\", \"rule_id\", \"layer\", \"table_name\", \"violation_count\", \"sample_keys\", \"severity\", \"passed\"], \"rows\": [[\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:46.090Z\", \"DQ-G1\", \"staging\", \"brand\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:39.034Z\", \"DQ-G1\", \"staging\", \"customer\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:10.972Z\", \"DQ-G1\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:31.590Z\", \"DQ-G1\", \"staging\", \"nation\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:57.906Z\", \"DQ-G1\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:49.781Z\", \"DQ-G1\", \"staging\", \"part\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:05.956Z\", \"DQ-G1\", \"staging\", \"part_quantity_price\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:53.611Z\", \"DQ-G1\", \"staging\", \"partsupp\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:28.687Z\", \"DQ-G1\", \"staging\", \"region\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:00.665Z\", \"DQ-G1\", \"staging\", \"ship_date_status\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:34.965Z\", \"DQ-G1\", \"staging\", \"supplier\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:21.664Z\", \"DQ-G2\", \"staging\", \"customer.customer_nation_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:44.263Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_orders_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:59.152Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_part_quantity_price_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:49.759Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_partsupp_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:52.600Z\", \"DQ-G2\", \"staging\", \"lineitem.lineitem_ship_date_status_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:13.826Z\", \"DQ-G2\", \"staging\", \"nation.nation_region_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:35.899Z\", \"DQ-G2\", \"staging\", \"orders.orders_customer_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:25.061Z\", \"DQ-G2\", \"staging\", \"part.part_brand_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:39.315Z\", \"DQ-G2\", \"staging\", \"part_quantity_price.part_quantity_price_part_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:28.833Z\", \"DQ-G2\", \"staging\", \"partsupp.partsupp_part_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:32.375Z\", \"DQ-G2\", \"staging\", \"partsupp.partsupp_supplier_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:16:18.201Z\", \"DQ-G2\", \"staging\", \"supplier.supplier_nation_fk\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:17:10.647Z\", \"DQ-G3\", \"staging\", \"customer\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:17:21.548Z\", \"DQ-G3\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:17:05.564Z\", \"DQ-G3\", \"staging\", \"nation\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:17:18.933Z\", \"DQ-G3\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:17:13.308Z\", \"DQ-G3\", \"staging\", \"part\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:17:15.968Z\", \"DQ-G3\", \"staging\", \"partsupp\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:17:03.113Z\", \"DQ-G3\", \"staging\", \"region\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:17:08.068Z\", \"DQ-G3\", \"staging\", \"supplier\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:14:49.428Z\", \"DQ-L1\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:14:53.676Z\", \"DQ-L2\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:14:59.805Z\", \"DQ-L3\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:02.448Z\", \"DQ-L4\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:05.372Z\", \"DQ-L4\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:09.003Z\", \"DQ-L5\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:12.280Z\", \"DQ-L6\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:15.608Z\", \"DQ-L7\", \"staging\", \"ship_date_status\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:20.565Z\", \"DQ-L8\", \"staging\", \"lineitem\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:15:24.844Z\", \"DQ-L9\", \"staging\", \"orders\", 0, \"[]\", \"blocking\", true]]}\nAll 12 rules passed for run_id 25979743-a4a7-4ab8-a4b2-c37af6d03805.\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "%run ./04_silver_publish",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "run_id = 25979743-a4a7-4ab8-a4b2-c37af6d03805\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "published workspace.makc_logistics_silver.region\npublished workspace.makc_logistics_silver.nation\npublished workspace.makc_logistics_silver.supplier\npublished workspace.makc_logistics_silver.customer\npublished workspace.makc_logistics_silver.brand\npublished workspace.makc_logistics_silver.part\npublished workspace.makc_logistics_silver.partsupp\npublished workspace.makc_logistics_silver.orders\npublished workspace.makc_logistics_silver.ship_date_status\npublished workspace.makc_logistics_silver.part_quantity_price\npublished workspace.makc_logistics_silver.lineitem\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "constraints added\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"schema\": [\"table_name\", \"staging_rows\", \"silver_rows\", \"ok\"], \"rows\": [[\"region\", 5, 5, true], [\"nation\", 25, 25, true], [\"supplier\", 50000, 50000, true], [\"customer\", 750000, 750000, true], [\"brand\", 25, 25, true], [\"part\", 1000000, 1000000, true], [\"partsupp\", 4000000, 4000000, true], [\"orders\", 7500000, 7500000, true], [\"ship_date_status\", 2526, 2526, true], [\"part_quantity_price\", 22657201, 22657201, true], [\"lineitem\", 29999795, 29999795, true]]}\n{\"schema\": [\"table_name\", \"constraint_name\", \"constraint_type\", \"columns\"], \"rows\": [[\"brand\", \"brand_pk\", \"PRIMARY KEY\", \"p_brand\"], [\"customer\", \"customer_nation_fk\", \"FOREIGN KEY\", \"c_nationkey\"], [\"customer\", \"customer_pk\", \"PRIMARY KEY\", \"c_custkey\"], [\"lineitem\", \"lineitem_orders_fk\", \"FOREIGN KEY\", \"l_orderkey\"], [\"lineitem\", \"lineitem_part_quantity_price_fk\", \"FOREIGN KEY\", \"l_partkey, l_quantity\"], [\"lineitem\", \"lineitem_partsupp_fk\", \"FOREIGN KEY\", \"l_partkey, l_suppkey\"], [\"lineitem\", \"lineitem_ship_date_status_fk\", \"FOREIGN KEY\", \"l_shipdate\"], [\"lineitem\", \"lineitem_pk\", \"PRIMARY KEY\", \"l_orderkey, l_linenumber\"], [\"nation\", \"nation_region_fk\", \"FOREIGN KEY\", \"n_regionkey\"], [\"nation\", \"nation_pk\", \"PRIMARY KEY\", \"n_nationkey\"], [\"orders\", \"orders_customer_fk\", \"FOREIGN KEY\", \"o_custkey\"], [\"orders\", \"orders_pk\", \"PRIMARY KEY\", \"o_orderkey\"], [\"part\", \"part_brand_fk\", \"FOREIGN KEY\", \"p_brand\"], [\"part\", \"part_pk\", \"PRIMARY KEY\", \"p_partkey\"], [\"part_quantity_price\", \"part_quantity_price_part_fk\", \"FOREIGN KEY\", \"l_partkey\"], [\"part_quantity_price\", \"part_quantity_price_pk\", \"PRIMARY KEY\", \"l_partkey, l_quantity\"], [\"partsupp\", \"partsupp_part_fk\", \"FOREIGN KEY\", \"ps_partkey\"], [\"partsupp\", \"partsupp_supplier_fk\", \"FOREIGN KEY\", \"ps_suppkey\"], [\"partsupp\", \"partsupp_pk\", \"PRIMARY KEY\", \"ps_partkey, ps_suppkey\"], [\"region\", \"region_pk\", \"PRIMARY KEY\", \"r_regionkey\"], [\"ship_date_status\", \"ship_date_status_pk\", \"PRIMARY KEY\", \"l_shipdate\"], [\"supplier\", \"supplier_nation_fk\", \"FOREIGN KEY\", \"s_nationkey\"], [\"supplier\", \"supplier_pk\", \"PRIMARY KEY\", \"s_suppkey\"]]}\n{\"schema\": [\"table_name\", \"column_name\", \"is_nullable\"], \"rows\": [[\"brand\", \"p_brand\", \"NO\"], [\"customer\", \"c_custkey\", \"NO\"], [\"lineitem\", \"l_orderkey\", \"NO\"], [\"lineitem\", \"l_linenumber\", \"NO\"], [\"lineitem\", \"l_returnflag\", \"NO\"], [\"lineitem\", \"l_shipdate\", \"NO\"], [\"lineitem\", \"l_commitdate\", \"NO\"], [\"lineitem\", \"l_receiptdate\", \"NO\"], [\"lineitem\", \"l_shipmode\", \"NO\"], [\"nation\", \"n_nationkey\", \"NO\"], [\"orders\", \"o_orderkey\", \"NO\"], [\"orders\", \"o_orderdate\", \"NO\"], [\"part\", \"p_partkey\", \"NO\"], [\"part_quantity_price\", \"l_partkey\", \"NO\"], [\"part_quantity_price\", \"l_quantity\", \"NO\"], [\"partsupp\", \"ps_partkey\", \"NO\"], [\"partsupp\", \"ps_suppkey\", \"NO\"], [\"region\", \"r_regionkey\", \"NO\"], [\"ship_date_status\", \"l_shipdate\", \"NO\"], [\"ship_date_status\", \"l_linestatus\", \"NO\"], [\"supplier\", \"s_suppkey\", \"NO\"]]}\n{\"schema\": [\"key\", \"value\"], \"rows\": [[\"delta.constraints.lineitem_receipt_after_ship\", \"l_receiptdate >= l_shipdate\"]]}\nOK: 11 Silver tables published for run_id 25979743-a4a7-4ab8-a4b2-c37af6d03805.\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "%run ./05_gold_build",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "catalog='workspace', schema_prefix='makc_logistics', source='samples.tpch'\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": null,
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "run_id = 25979743-a4a7-4ab8-a4b2-c37af6d03805\n\n{\"type\": \"mimeBundle\", \"data\": {\"text/plain\": \"DataFrame[]\"}, \"executionCount\": 62, \"arguments\": {}, \"addedWidgets\": {}, \"removedWidgets\": [], \"datasetInfos\": [], \"metadata\": {\"kernelSessionId\": \"acd8cd71-53cd663bcc3a54f52eba245f\"}}",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"type\": \"mimeBundle\", \"data\": {\"text/plain\": \"DataFrame[num_affected_rows: bigint, num_inserted_rows: bigint]\"}, \"executionCount\": 63, \"arguments\": {}, \"addedWidgets\": {}, \"removedWidgets\": [], \"datasetInfos\": [], \"metadata\": {\"kernelSessionId\": \"acd8cd71-53cd663bcc3a54f52eba245f\"}}",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"type\": \"mimeBundle\", \"data\": {\"text/plain\": \"DataFrame[num_affected_rows: bigint, num_inserted_rows: bigint]\"}, \"executionCount\": 64, \"arguments\": {}, \"addedWidgets\": {}, \"removedWidgets\": [], \"datasetInfos\": [], \"metadata\": {\"kernelSessionId\": \"acd8cd71-53cd663bcc3a54f52eba245f\"}}",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"type\": \"mimeBundle\", \"data\": {\"text/plain\": \"DataFrame[num_affected_rows: bigint, num_inserted_rows: bigint]\"}, \"executionCount\": 65, \"arguments\": {}, \"addedWidgets\": {}, \"removedWidgets\": [], \"datasetInfos\": [], \"metadata\": {\"kernelSessionId\": \"acd8cd71-53cd663bcc3a54f52eba245f\"}}",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"type\": \"mimeBundle\", \"data\": {\"text/plain\": \"DataFrame[num_affected_rows: bigint, num_inserted_rows: bigint]\"}, \"executionCount\": 66, \"arguments\": {}, \"addedWidgets\": {}, \"removedWidgets\": [], \"datasetInfos\": [], \"metadata\": {\"kernelSessionId\": \"acd8cd71-53cd663bcc3a54f52eba245f\"}}",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"type\": \"mimeBundle\", \"data\": {\"text/plain\": \"DataFrame[num_affected_rows: bigint, num_inserted_rows: bigint]\"}, \"executionCount\": 67, \"arguments\": {}, \"addedWidgets\": {}, \"removedWidgets\": [], \"datasetInfos\": [], \"metadata\": {\"kernelSessionId\": \"acd8cd71-53cd663bcc3a54f52eba245f\"}}",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "",
+  "state": "finished",
+  "output": "{\"schema\": [\"table_name\", \"row_count\", \"columns_match_contract\"], \"rows\": [[\"agg_delay_rate_monthly\", 82, true], [\"agg_on_time_by_line_count\", 7, true], [\"agg_on_time_summary\", 1, true], [\"agg_priority_fulfillment\", 5, true], [\"agg_ship_mode_performance\", 7, true], [\"agg_urgency_fulfillment\", 2, true], [\"fct_lineitem_delivery\", 29999795, true], [\"fct_order_fulfillment\", 7500000, true]]}\nDQ-GOLD1 [gold.fct_lineitem_delivery]: passed, violations = 0\nDQ-GOLD2 [gold.fct_order_fulfillment]: passed, violations = 0\n\n{\"schema\": [\"run_id\", \"run_ts\", \"rule_id\", \"layer\", \"table_name\", \"violation_count\", \"sample_keys\", \"severity\", \"passed\"], \"rows\": [[\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:20:25.514Z\", \"DQ-GOLD1\", \"gold\", \"fct_lineitem_delivery\", 0, \"[]\", \"blocking\", true], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"2026-10-07T21:20:28.043Z\", \"DQ-GOLD2\", \"gold\", \"fct_order_fulfillment\", 0, \"[]\", \"blocking\", true]]}\nAll 2 rules passed for run_id 25979743-a4a7-4ab8-a4b2-c37af6d03805.\nOK: 8 Gold tables match design §9 for run_id 25979743-a4a7-4ab8-a4b2-c37af6d03805.\n",
+  "table": null,
+  "error": null
+ },
+ {
+  "notebook": "87d41fe3-edf1-423c-82a4-403db4ece377",
+  "command": "record_pipeline_event(\"succeeded\")\n\ndisplay(\n    spark.table(PIPELINE_RUNS)\n    .where(F.col(\"run_id\") == run_id)\n    .orderBy(\"event_ts\")\n)\nprint(f\"Pipeline succeeded for run_id {run_id}.\")",
+  "state": "finished",
+  "output": "pipeline_runs: succeeded for run_id 25979743-a4a7-4ab8-a4b2-c37af6d03805\n\n{\"schema\": [\"run_id\", \"event\", \"event_ts\", \"catalog\", \"schema_prefix\", \"source\"], \"rows\": [[\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"started\", \"2026-10-07T21:12:32.770Z\", \"workspace\", \"makc_logistics\", \"samples.tpch\"], [\"25979743-a4a7-4ab8-a4b2-c37af6d03805\", \"succeeded\", \"2026-10-07T21:20:31.213Z\", \"workspace\", \"makc_logistics\", \"samples.tpch\"]]}\nPipeline succeeded for run_id 25979743-a4a7-4ab8-a4b2-c37af6d03805.\n",
+  "table": null,
+  "error": null
+ }
+]
