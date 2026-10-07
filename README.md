@@ -1,31 +1,23 @@
 # nachalniki-logistics
 
-Team **«начальніки»**: Nazar, Yaropolk, Max. UCU Big Data, Group Assignment 1.
+Team **«начальніки»**: Nazar, Yaropolk, Max. UCU Big Data, Group Assignment 1 ([`group_assignment_1.pdf`](group_assignment_1.pdf), §3 deliverables, §5.2 Logistics).
 
-> **Status: The full Bronze → Silver → Gold pipeline, automated runner, determinism, portability and Logistics Q1–Q4 analysis with monthly monitoring are verified on Databricks.** Succeeded runs, exact results and evidence references are reported below.
+A Bronze → Silver → Gold lakehouse on Databricks `samples.tpch` (8 TPC-H tables) that answers the **Logistics** profile:
 
-## Purpose
-
-This project migrates the TPC-H wholesale-supplier data (`samples.tpch` on Databricks) into a Bronze → Silver → Gold lakehouse and answers the business questions of the **Logistics** customer profile:
-
-1. Median and p90 transit time (ship → receipt) per ship mode. Which mode is fastest, which is most predictable, and why those differ.
-2. The share of fully on-time orders vs the share of on-time line items, and why the two differ.
-3. The share of late line items (received after the commit date) per ship mode, and the worst mode.
+1. Median and p90 transit time (ship → receipt) per ship mode; fastest vs most predictable mode.
+2. Share of fully on-time orders vs share of on-time line items, and the gap.
+3. Share of late line items (received after the commit date) per ship mode; worst mode.
 4. Whether urgent-priority orders are fulfilled faster than others.
 
-The project also validates date logic, categorical values, and order ↔ line-item integrity, and it monitors the delay rate over time.
+It also validates dates, categorical values and order ↔ line-item integrity, and monitors the delay rate over time. The full pipeline, determinism across reruns, portability to another schema prefix, the validation failure behaviour and the analysis were run on Databricks (serverless) on 2026-10-07; results and evidence are below.
 
-Assignment source: [`group_assignment_1.pdf`](group_assignment_1.pdf) (§3 deliverables, §5.2 Logistics).
+## Team responsibilities
 
-## Documents
-
-| File | Contents |
+| Member | Work |
 |---|---|
-| [docs/requirements.md](docs/requirements.md) | Every requirement from the PDF, with owner, deliverable and evidence |
-| [docs/design.md](docs/design.md) | Architecture, table contracts, 3NF method, validation rules, metric definitions |
-| [docs/plan.md](docs/plan.md) | Stages, task split, handoffs, completion criteria, evidence log, decision log |
-| [docs/handoffs.md](docs/handoffs.md) | Handoff notes between stages (H1 Nazar → Yaropolk, H2 Yaropolk → Max) |
-| [CLAUDE.md](CLAUDE.md) | Working conventions for this repo, used by contributors and Claude Code |
+| Nazar | repository and uv, configuration (`00_config`, run_id helpers), Bronze ingest, source profiling and allowed value lists |
+| Max | Silver (`silver_contract`, `02_silver_stage`, `03_validate`, `04_silver_publish`, `dq_helpers`), 3NF analysis and ER diagram, presentation assembly and submission |
+| Yaropolk | Gold (`05_gold_build`), Q1–Q4 analysis and charts, delay-rate monitoring, `run_pipeline`, integration runs and the README |
 
 ## Architecture
 
@@ -47,83 +39,95 @@ samples.tpch (8 tables)
    │  06_analysis           Q1–Q4 + monthly delay-rate charts (refuses to run on a failed run)
 ```
 
-Defaults: `catalog = workspace`, `prefix = nachalniki_logistics`, `source = samples.tpch`. All three are notebook parameters, so another workspace or schema prefix can run the project unchanged. Details are in [design.md §2–§3](docs/design.md).
+Defaults: `catalog = workspace`, `prefix = nachalniki_logistics`, `source = samples.tpch`. They are the widgets of `00_config`; nothing else hard-codes a catalog, schema or source, so another workspace or prefix runs the project unchanged.
+
+Run lifecycle: `run_pipeline` starts a fresh `run_id` (`new_run_id()`), appends `started` to `{prefix}_audit.pipeline_runs`, runs steps 01–05 with `%run`, and appends `succeeded` only at the end. Any exception stops the run, so a failed run has no `succeeded` row. Child notebooks only read the id with `require_run_id()`. `06_analysis` refuses to present results if the latest run in `pipeline_runs` has no `succeeded` row, so stale Gold is never shown as current. Audit tables are append-only; only `dq_helpers` writes `dq_check_results` and only `run_pipeline` writes `pipeline_runs`.
 
 ## Repository layout
 
-Present now:
-
 ```
-group_assignment_1.pdf   assignment (source of truth)
-README.md  CLAUDE.md
+group_assignment_1.pdf   assignment
 pyproject.toml  uv.lock  .gitignore
-docs/requirements.md  docs/design.md  docs/plan.md  docs/handoffs.md  docs/slides/
-notebooks/00_config.py           parameters, schema names, allowed values, run_id helpers
-notebooks/01_bronze_ingest.py    source -> Bronze, with a source/Bronze comparison
-notebooks/profile_source.py      value profiling and the 3NF key and dependency tests on Bronze
-notebooks/silver_contract.py     Silver tables, typed columns, keys, foreign keys and constraints
-notebooks/02_silver_stage.py     Bronze -> staging (casts and column selection, no filtering)
-notebooks/dq_helpers.py          creates and appends dq_check_results; run-scoped failure checks
-notebooks/03_validate.py         all blocking rules on staging; raises on any failure
-notebooks/04_silver_publish.py   staging -> Silver plus constraints, only after validation passed
-notebooks/05_gold_build.py       Silver -> eight Logistics Gold tables plus Gold DQ checks
-notebooks/06_analysis.py         guarded Q1-Q4 tables, answers and charts
-notebooks/run_pipeline.py        complete Bronze -> Silver -> Gold run plus lifecycle audit
+notebooks/
+  00_config.py           parameters, schema names, allowed values, run_id helpers
+  01_bronze_ingest.py    source -> Bronze, with a source/Bronze comparison
+  profile_source.py      value profiling; 3NF key and dependency tests on Bronze
+  silver_contract.py     Silver tables, typed columns, keys, foreign keys, constraints
+  02_silver_stage.py     Bronze -> staging (casts, no filtering)
+  dq_helpers.py          creates/appends dq_check_results; run-scoped failure checks
+  03_validate.py         all blocking rules on staging; raises on any failure
+  04_silver_publish.py   staging -> Silver plus constraints, only after validation passed
+  05_gold_build.py       Silver -> eight Gold tables plus Gold DQ checks
+  06_analysis.py         guarded Q1-Q4 tables, answers and charts, monthly monitoring
+  run_pipeline.py        complete Bronze -> Silver -> Gold run plus lifecycle audit
 docs/silver_er.mmd  docs/silver_er.png   ER diagram of the published Silver
-checks/p0/               P0 diagnostic notebooks (not part of the pipeline) and their raw outputs
-checks/p2/               test and entry notebooks (run_id helpers, dq_helpers, Silver stage) and raw run outputs
-checks/p3/               Stage 3 entry notebooks and raw run evidence
+checks/                  entry notebooks and scripts for the failure demos, determinism and run_id tests
+checks/*/outputs/        raw outputs of the Databricks runs cited below (kept unchanged)
 ```
 
 ## Setup
 
 Prerequisites:
-- A Databricks workspace with access to `samples.tpch` and a catalog where you can create schemas (`CREATE SCHEMA` permission; without it the Bronze notebook fails on its first statement).
+- A Databricks workspace with access to `samples.tpch` and a catalog where you can create schemas (`CREATE SCHEMA`; without it the Bronze notebook fails on its first statement).
 - Git, and [uv](https://docs.astral.sh/uv/) for local tooling.
-- Optional: the [Databricks CLI](https://docs.databricks.com/dev-tools/cli/) (v1.19.0 was used) with a logged-in profile (OAuth, `databricks auth login`). Add `-p <profile>` to the commands below if it is not the default profile.
-
-Local environment:
+- Optional: the [Databricks CLI](https://docs.databricks.com/dev-tools/cli/) (v1.19.0 was used) with a logged-in profile (`databricks auth login`). Add `-p <profile>` to the commands below if it is not the default.
 
 ```bash
-uv sync      # creates .venv; the project has no dependencies (Spark is provided by Databricks)
+uv sync      # creates .venv; there are no dependencies (Spark is provided by Databricks)
 ```
 
-Notebook parameters (widgets of `notebooks/00_config.py`; every notebook takes them from there):
+Notebook parameters (widgets of `notebooks/00_config.py`):
 
 | Widget | Default | Meaning |
 |---|---|---|
 | `catalog` | `workspace` | catalog where the project schemas are created |
-| `schema_prefix` | `nachalniki_logistics` | schemas are `{catalog}.{prefix}_bronze`, `_staging`, `_silver`, `_gold`, `_audit`; another prefix gives an independent copy |
+| `schema_prefix` | `nachalniki_logistics` | schemas are `{catalog}.{prefix}_bronze`, `_staging`, `_silver`, `_gold`, `_audit`; another prefix gives an independent copy. In a shared workspace use your own prefix |
 | `source` | `samples.tpch` | `<catalog>.<schema>` of the 8 TPC-H tables |
 
-## Configuration, Bronze and profiling (Stage 1)
+## How to run
 
-The notebooks use relative `%run ./00_config`, so they must sit together in one workspace folder, either a Git folder of this repository or an imported copy. Stage 1 was run on 2026-10-07 from an imported copy, with serverless one-time jobs:
+The notebooks use relative `%run ./00_config`, so they must sit together in one workspace folder (a Git folder of this repository, or an imported copy of `notebooks/`).
+
+### Interactive (UI)
+
+1. Create a Git folder from this repository in Databricks (or import `notebooks/`).
+2. Open `notebooks/run_pipeline.py`, set widgets if needed, and run all cells. It runs `01_bronze_ingest` → `02_silver_stage` → `03_validate` (halts if any rule fails; nothing is published) → `04_silver_publish` → `05_gold_build`, and records `started` / `succeeded` in `pipeline_runs`.
+3. Open `notebooks/06_analysis.py` and run all cells: the run-state guard, the Q1–Q4 tables, five charts (Q1–Q4 and monthly monitoring) and the answer summaries.
+
+### Command line (Databricks CLI, serverless one-time jobs)
+
+Import every file of `notebooks/` into one workspace folder, then submit the notebooks:
 
 ```bash
-# copy the notebooks into a workspace folder
 databricks workspace mkdirs /Users/<you>/nachalniki/notebooks
 databricks workspace import /Users/<you>/nachalniki/notebooks/00_config --file notebooks/00_config.py --format SOURCE --language PYTHON
-# (same for 01_bronze_ingest and profile_source)
+# (same for the other files in notebooks/)
 
-# run a notebook as a serverless one-time job (no cluster given); widget values go in base_parameters
-databricks jobs submit --json @submit_bronze.json
+databricks jobs submit --json '{"run_name": "full_pipeline", "tasks": [{"task_key": "pipeline",
+  "notebook_task": {"notebook_path": "/Users/<you>/nachalniki/notebooks/run_pipeline", "base_parameters": {}}}]}'
+
+databricks jobs submit --json '{"run_name": "logistics_analysis", "tasks": [{"task_key": "analysis",
+  "notebook_task": {"notebook_path": "/Users/<you>/nachalniki/notebooks/06_analysis", "base_parameters": {}}}]}'
 ```
 
-`submit_bronze.json` (`{}` keeps the widget defaults; e.g. `{"schema_prefix": "my_prefix"}` overrides one):
+Override widgets in `base_parameters`, e.g. `{"schema_prefix": "my_prefix"}`. Stages can also run alone: `01_bronze_ingest` and `profile_source` need only the source and Bronze.
 
-```json
-{"run_name": "bronze", "tasks": [{"task_key": "bronze", "notebook_task": {
-  "notebook_path": "/Users/<you>/nachalniki/notebooks/01_bronze_ingest", "base_parameters": {}}}]}
-```
+### Check notebooks
 
-Order: `01_bronze_ingest`, then `profile_source`. Neither needs a `run_id` or any table other than the source and Bronze.
+The notebooks under `checks/` use `%run ../../../notebooks/...`, so import the repository folder structure (`notebooks/` and the `checks/` subfolders) as it is. Use a scratch `schema_prefix` for every check.
 
-- **`00_config`** defines the widgets, the derived schema names, `TPCH_TABLES`, the allowed-value lists and two run_id helpers. An entry notebook starts every execution with `run_id = new_run_id()`; child notebooks read it with `require_run_id()`, which fails if no entry notebook set one. `00_config` never sets `run_id`. Tested on serverless job runs and in an interactive session (`checks/p2/run_id_helpers/a5_interactive.py`, Run all twice): each execution got a different id, a `%run` child read the caller's id, and the child alone failed (`checks/p2/outputs/run_id_helpers/`).
-- **`01_bronze_ingest`** copies all 8 tables with `CREATE OR REPLACE TABLE … AS SELECT *` and adds only `_ingested_at` (one UTC timestamp per execution) and `_source_table` (e.g. `samples.tpch.lineitem`). Its last cell compares each table with the source and fails on any difference in column names, order, data types or row counts. Run of 2026-10-07: all 8 tables matched (`checks/p2/outputs/bronze_ingest/`).
-- **`profile_source`** reads Bronze only and writes nothing. It shows the value counts and value lengths of `l_shipmode`, `l_returnflag`, `l_linestatus` and `o_orderpriority`, the date ranges, and lines per order counted from every order (an order without lines would count as 0).
+- `checks/p2/silver_stage/silver_stage_entry`: `00_config` → `run_id = new_run_id()` → `02_silver_stage` → `03_validate` → `04_silver_publish` (run `01_bronze_ingest` first). `silver_snapshot` snapshots Silver before a run and compares it afterwards (`EXCEPT ALL` in both directions).
+- `checks/p3/failure_demo/`: end-to-end failure check. `run_e2e_failure_demo.py` submits the jobs through the CLI; its workspace path and SQL warehouse id are those of the original run and must be changed.
+- `checks/p3/pipeline_runner/two_runs_entry`: two consecutive pipeline executions get different `run_id`s and the audit tables keep both.
+- `checks/p2/run_id_helpers/`, `checks/p2/dq_helpers/`: tests of the run_id helpers and of `dq_helpers`.
 
-**How the allowed values were derived.** We profiled the values in Bronze and compared them with the TPC-H Standard Specification rev. 3.0.1 (clause 4.2.2.13, "Modes" list; clause 4.2.3, the rules for `L_RETURNFLAG` and `L_LINESTATUS`). Every value was both observed and documented, with no NULLs and no extra whitespace, so the lists are exactly:
+## Configuration, Bronze and profiling
+
+- **`00_config`** defines the widgets, the derived schema names, `TPCH_TABLES`, the allowed-value lists and the two run_id helpers. An entry notebook starts every execution with `run_id = new_run_id()`; `00_config` never sets it.
+- **`01_bronze_ingest`** copies all 8 tables with `CREATE OR REPLACE TABLE … AS SELECT *` and adds only `_ingested_at` and `_source_table`. Its last cell compares each table with the source and fails on any difference in column names, order, types or row counts. Run of 2026-10-07: all 8 matched.
+- **`profile_source`** reads Bronze only. It shows value counts and lengths of `l_shipmode`, `l_returnflag`, `l_linestatus`, `o_orderpriority`, the date ranges, lines per order, and the key and dependency tests used for 3NF.
+
+**Allowed values.** Profiled in Bronze and compared with the TPC-H Standard Specification rev. 3.0.1 (clause 4.2.2.13 "Modes"; clause 4.2.3 for `L_RETURNFLAG` / `L_LINESTATUS`). Every value was both observed and documented, with no NULLs and no extra whitespace, so the lists are exactly:
 
 | Constant | Values (rows observed, 2026-10-07) |
 |---|---|
@@ -131,64 +135,11 @@ Order: `01_bronze_ingest`, then `profile_source`. Neither needs a `run_id` or an
 | `ALLOWED_RETURN_FLAGS` | A 7403889, N 15189553, R 7406353 |
 | `ALLOWED_LINE_STATUSES` | F 15002681, O 14997114 |
 
-A value outside these lists is never added silently: the Silver validation fails on it, and no row is dropped. Other observed values: `o_orderpriority` has 5 values, and the urgent one is `1-URGENT`. Dates run from 1992-01-01 (first order) to 1998-12-31 (last receipt). Every order has between 1 and 7 lines (median 4). The full results are in [design.md §5.5](docs/design.md).
+A value outside these lists is never added silently: validation fails on it and no row is dropped. `o_orderpriority` has 5 values; the urgent one is `1-URGENT`. Dates run from 1992-01-01 (first order) to 1998-12-31 (last receipt). Every order has 1–7 lines (median 4).
 
-## How to run
+## Validation
 
-The full pipeline runs 01–05 in sequence under an append-only audit lifecycle. Individual stages can also be executed standalone (see [Stage 1](#configuration-bronze-and-profiling-stage-1) and [Stage 2](#running-the-silver-stage-on-its-own)).
-
-### Interactive execution (UI)
-
-1. In Databricks, create a Git folder from this repository (or import `notebooks/` into a workspace folder).
-2. Open `notebooks/run_pipeline.py`. Configure widget values if needed (`catalog` defaults to `workspace`, `schema_prefix` to `nachalniki_logistics`, `source` to `samples.tpch`). In a shared workspace, use your own `schema_prefix`.
-3. Run all cells. The runner:
-   - Starts a fresh `run_id` via `new_run_id()`.
-   - Records `started` in `{prefix}_audit.pipeline_runs`.
-   - Executes `%run ./01_bronze_ingest` (copies 8 TPC-H tables).
-   - Executes `%run ./02_silver_stage` (casts Bronze into 11 staging tables).
-   - Executes `%run ./03_validate` (runs 12 blocking data-quality rules). If any check fails, execution halts immediately and publishing is skipped.
-   - Executes `%run ./04_silver_publish` (publishes Silver tables and applies Delta constraints).
-   - Executes `%run ./05_gold_build` (computes 8 Logistics Gold tables and Gold DQ checks).
-   - Records `succeeded` in `{prefix}_audit.pipeline_runs`.
-4. Open `notebooks/06_analysis.py` and run all cells. The run-state guard halts if the latest run in `pipeline_runs` did not succeed. When valid, it displays query tables, renders 5 charts (Q1–Q4 and monthly monitoring), and displays factual answer summaries.
-
-### Command-line execution (Databricks CLI)
-
-Run as serverless one-time jobs from your local terminal (tested in MAX-10 and MAX-12). First import every file of `notebooks/` into one workspace folder, e.g. `/Users/<you>/nachalniki/notebooks/`, with `databricks workspace import` as shown in [Stage 1](#configuration-bronze-and-profiling-stage-1); the `notebook_path` below must point to that folder. In a workspace shared with other users, set your own `schema_prefix` in `base_parameters` so the run does not replace another user's tables.
-
-```bash
-# 1. Run the full pipeline
-databricks jobs submit --json '{
-  "run_name": "full_pipeline",
-  "tasks": [{
-    "task_key": "pipeline",
-    "notebook_task": {
-      "notebook_path": "/Users/<you>/nachalniki/notebooks/run_pipeline",
-      "base_parameters": {}
-    }
-  }]
-}'
-
-# 2. Run the analysis and monitoring visualisations
-databricks jobs submit --json '{
-  "run_name": "logistics_analysis",
-  "tasks": [{
-    "task_key": "analysis",
-    "notebook_task": {
-      "notebook_path": "/Users/<you>/nachalniki/notebooks/06_analysis",
-      "base_parameters": {}
-    }
-  }]
-}'
-```
-
-Override widgets by specifying key-values in `base_parameters` (e.g. `{"schema_prefix": "custom_prefix"}`).
-
-## Validation approach (Stage 2: Silver and data quality)
-
-**Lifecycle.** Bronze is never changed. `02_silver_stage` builds the proposed Silver in `{prefix}_staging` (`stg_<table>`) with column selection and casts only, so every Bronze row is kept. `03_validate` runs every rule on staging and appends one result row per rule and table to `{prefix}_audit.dq_check_results`. If any rule fails, it raises, and `04_silver_publish` does not execute, so the previous Silver stays as it was. Invalid rows are never dropped: the run fails and the violating keys are stored. Only after a full pass does `04_silver_publish` replace Silver and add the constraints.
-
-**Rules** (all blocking; [design.md §6](docs/design.md#6-validation-rules)):
+**Lifecycle.** Bronze is never changed. `02_silver_stage` builds the proposed Silver in `{prefix}_staging` (`stg_<table>`) with column selection and casts only, so every Bronze row is kept. `03_validate` runs every rule on staging and appends one row per rule and table to `{prefix}_audit.dq_check_results` (`run_id`, `run_ts`, `rule_id`, `layer`, `table_name`, `violation_count`, `sample_keys` with up to 10 violating keys, `severity`, `passed`). If any rule fails it raises, `04_silver_publish` does not execute, and the previous Silver stays as it was. Invalid rows are never dropped. `raise_if_failed(run_id, rule_ids)` reads only the rows of the given run, and a rule without a row counts as failed.
 
 | Rule | Fails when | Assignment requirement |
 |---|---|---|
@@ -197,41 +148,58 @@ Override widgets by specifying key-values in `base_parameters` (e.g. `{"schema_p
 | DQ-L3 | a line's commit date is before its order date (our interpretation of "make sense relative to the parent order") | dates vs the parent order |
 | DQ-L4 | an order or line date is NULL | dates must be checkable |
 | DQ-L5–L7 | `l_shipmode`, `l_returnflag`, `l_linestatus` is NULL or outside the allowed list | categorical values |
-| DQ-L8, DQ-L9 | a line without an order, an order without lines | order ↔ line integrity |
+| DQ-L8, DQ-L9 | a line without an order; an order without lines | order ↔ line integrity |
 | DQ-G1, DQ-G2 | a NULL or duplicate primary key; a foreign key with no parent row (anti join), in all 11 Silver tables | keys of the 3NF model |
 | DQ-G3 | row counts differ between source, Bronze and staging | no silent loss |
+| DQ-GOLD1, DQ-GOLD2 | Gold fact row counts differ from Silver `lineitem` / `orders` | no double counting or loss |
 
-Late deliveries (received after the commit date) are valid business outcomes and have no rule. Same-day ship, receipt and commit dates pass. The allowed lists come from profiling (see [Configuration, Bronze and profiling](#configuration-bronze-and-profiling-stage-1)).
+Late deliveries (received after the commit date) are valid business outcomes and have no rule. Same-day ship, receipt and commit dates pass.
 
-**Where the results are.** `{prefix}_audit.dq_check_results` is append-only: `run_id`, `run_ts`, `rule_id`, `layer`, `table_name`, `violation_count`, `sample_keys` (up to 10 violating keys), `severity`, `passed`. Only `notebooks/dq_helpers.py` writes it. `raise_if_failed(run_id, rule_ids)` reads only the rows of the given run, so an earlier failed run never blocks a new one, and a rule without a row counts as failed.
+**Failure behaviour (demonstrated).**
+- Silver stage, scratch prefix `makc_logistics_s2demo`: one staged line (`1|1`) was set to be received a day before it was shipped. `03_validate` recorded DQ-L2 `passed = false` with sample key `1|1` and raised; `04_silver_publish` was skipped; Silver compared with a snapshot taken before the run had 0 differing rows in both directions for all 11 tables (`checks/p2/outputs/silver_stage/`).
+- End to end, scratch prefix `makc_logistics_e2e`: an injected bad row made the pipeline job fail with a `started` row but no `succeeded` row in `pipeline_runs`, DQ-L2 recorded as failed, all 8 Gold tables identical to a snapshot (`EXCEPT ALL` = 0), and `06_analysis` stopped at the run-state guard (`checks/p3/outputs/max14_e2e_failure/`).
+- Success run `159dd764-f326-4abf-ade9-279d5d540f7e` (prefix `makc_logistics`): all 41 result rows of the 12 rule IDs passed; 11 Silver tables published (lineitem 29,999,795 rows).
 
-**3NF.** Every declared key was confirmed unique, and every candidate dependency was tested on the data (`GROUP BY X HAVING count(DISTINCT A) > 1`) and checked against the TPC-H specification ([design.md §5.3](docs/design.md#53-3nf-analysis--method-decided-d14-results-below)). Three dependencies hold in the data *and* are documented generation rules, so they were removed by decomposition:
+## Silver and 3NF
 
-| Dependency | Rule in TPC-H spec rev. 3.0.1, §4.2.3 | New Silver table |
-|---|---|---|
-| `p_brand → p_mfgr` | brand `Brand#MN` carries the manufacturer number `M` | `brand(p_brand, p_mfgr)` |
-| `l_shipdate → l_linestatus` | `O` if shipped after 1995-06-17, else `F` | `ship_date_status(l_shipdate, l_linestatus)` |
-| `(l_partkey, l_quantity) → l_extendedprice` | `l_extendedprice = l_quantity × p_retailprice` | `part_quantity_price(l_partkey, l_quantity, l_extendedprice)` |
+Definition used: a relation is in 3NF if for every non-trivial functional dependency `X → A`, `X` is a superkey or `A` is prime. Copying a well-designed source does not prove this, so each candidate dependency was tested on Bronze (`GROUP BY X HAVING count(DISTINCT A) > 1`; zero rows means it holds) and checked against the TPC-H specification (clauses 4.2.2.9, 4.2.2.12, 4.2.3; snapshot date `CURRENTDATE = 1995-06-17`). A dependency was treated as a violation only if it held in the data **and** is a documented generation rule. Raw output: `checks/p2/outputs/fd_analysis/`.
 
-`l_receiptdate → l_returnflag` was refuted by the data (R and A are random). The phone country code (`nationkey + 10`) is a dependency on part of one string, which we keep atomic; the constant `o_shippriority` is kept as a documented deviation. Silver therefore has 11 tables:
+| Relation | Candidate dependency | Data | Documented rule | Outcome |
+|---|---|---|---|---|
+| all 8 | declared primary keys | unique, no NULL | – | candidate keys confirmed |
+| `region`, `nation`, `supplier`, `customer` | name columns unique | unique | `S_NAME`/`C_NAME` = prefix + key; fixed name lists | alternative keys; make the name prime, no violation |
+| `part` | `p_brand → p_mfgr` | holds (0 of 25 brands violate) | `P_BRAND = "Brand#" M N`, `M` from `P_MFGR` | **violation** → `brand(p_brand, p_mfgr)` |
+| `lineitem` | `l_shipdate → l_linestatus` | holds (0 of 2,526 dates) | `O` if shipped after 1995-06-17, else `F` | **violation** → `ship_date_status(l_shipdate, l_linestatus)` |
+| `lineitem` | `(l_partkey, l_quantity) → l_extendedprice` | holds (0 of 22,657,201) | `l_extendedprice = l_quantity × p_retailprice` | **violation** → `part_quantity_price(l_partkey, l_quantity, l_extendedprice)` |
+| `lineitem` | `l_receiptdate → l_returnflag` | refuted (1,261 of 2,555 dates have both R and A) | R or A at random if received on/before the cutoff, else N | not a dependency |
+| `customer`, `supplier` | `*_nationkey → phone prefix` | holds | country code = nation index + 10 | dependency on part of one string; phone kept atomic |
+| `orders` | `∅ → o_shippriority` | constant 0 | set to 0 | one-row relation adds no information; kept as a documented deviation |
+| `orders` | `o_orderstatus`, `o_totalprice` | – | computed from the order's lines | depends on rows of another relation, not an FD within `orders` |
+
+Each violation is fixed by decomposition: the dependent attribute moves to a table keyed by its determinant, and the original table keeps the determinant as a foreign key, so the join is lossless. The decomposed tables are built with `SELECT DISTINCT`; if the data ever broke a rule, the key would be duplicated and DQ-G1 would block the run. Silver therefore has 11 tables (`lineitem` no longer carries `l_linestatus`, which no Gold table uses):
 
 ![Silver ER diagram](docs/silver_er.png)
 
-**Constraints** (added by `04_silver_publish`): `NOT NULL` on every key and the validated dates and categories, and `CHECK (l_receiptdate >= l_shipdate)`, both enforced by Delta; a primary key on every table and 12 foreign keys, which Databricks records but does not enforce (referential integrity is proved by DQ-G2).
+**Constraints** (added by `04_silver_publish`): `NOT NULL` on every key and the validated dates and categories, and `CHECK (l_receiptdate >= l_shipdate)`, both enforced by Delta; a primary key on every table and 12 foreign keys, which Databricks records but does not enforce. Referential integrity is proven by the anti-join rules DQ-G2 and DQ-L8/L9.
 
-**Running the Silver stage on its own.** The notebooks must sit in one workspace folder that mirrors the repo layout (the entry notebook uses `%run ../../../notebooks/...`). Import `notebooks/` (`00_config`, `01_bronze_ingest`, `silver_contract`, `dq_helpers`, `02_silver_stage`, `03_validate`, `04_silver_publish`) and `checks/p2/silver_stage/silver_stage_entry` as in [Stage 1](#configuration-bronze-and-profiling-stage-1), run `01_bronze_ingest`, then run the entry notebook as a serverless one-time job:
+## Gold and metric definitions
 
-```json
-{"run_name": "silver stage", "tasks": [{"task_key": "silver", "notebook_task": {
-  "notebook_path": "/Users/<you>/nachalniki/checks/p2/silver_stage/silver_stage_entry",
-  "base_parameters": {"schema_prefix": "my_prefix"}}}]}
-```
+Gold tables (snake_case business names): `fct_lineitem_delivery` (line grain), `fct_order_fulfillment` (order grain; lines are aggregated per `l_orderkey` before joining `orders`), `agg_ship_mode_performance`, `agg_on_time_summary`, `agg_on_time_by_line_count`, `agg_priority_fulfillment`, `agg_urgency_fulfillment`, `agg_delay_rate_monthly`. Gold uses `LEFT JOIN` from `orders`, so an order without lines would show `line_count = 0` instead of disappearing.
 
-The entry notebook runs `%run 00_config` → `run_id = new_run_id()` → `02_silver_stage` → `03_validate` → `04_silver_publish`. It writes `dq_check_results` but not `pipeline_runs`, so use a scratch `schema_prefix` once the full pipeline has produced Gold in a prefix.
+| Metric | Definition |
+|---|---|
+| `transit_days` | `datediff(l_receiptdate, l_shipdate)` |
+| `order_to_ship_days` | `datediff(l_shipdate, o_orderdate)` per line |
+| `is_late` | `l_receiptdate > l_commitdate` (receipt on the commit date is on time) |
+| fully on-time order | `line_count ≥ 1` and `late_line_count = 0` |
+| line / order on-time share | on-time lines / all lines; fully on-time orders / orders |
+| delay rate | late lines / all lines in the group (ship mode for Q3, commit month for monitoring) |
+| `order_to_complete_days` | `datediff(max(l_receiptdate), o_orderdate)` per order: fulfilled when the last line arrives |
+| `is_urgent` | `o_orderpriority = '1-URGENT'` |
 
-**Results of 2026-10-07** (prefix `makc_logistics`; raw outputs in `checks/p2/outputs/`):
-- Success run `159dd764-f326-4abf-ade9-279d5d540f7e`: all 41 result rows of the 12 rule IDs passed; 11 Silver tables published with their constraints (lineitem 29,999,795 rows, `part_quantity_price` 22,657,201, `ship_date_status` 2,526, `brand` 25).
-- Failure demo in the scratch prefix `makc_logistics_s2demo`: one staged line (`1|1`) was set to be received a day before it was shipped. `03_validate` recorded DQ-L2 `passed = false` with sample key `1|1` and raised; `04_silver_publish` was skipped; Silver compared with a snapshot taken before the run gave 0 differing rows in both directions for all 11 tables. The scratch schemas were dropped afterwards.
+Percentiles use exact `percentile_cont`, never `percentile_approx`, and are computed at the reported grain, never averaged across groups. Q1: *fastest* = lowest median `transit_days`; *most predictable* = smallest `p90 − p50` (supported by IQR and standard deviation). Speed is the location of the distribution and predictability its spread, so the rankings can differ. Q4 uses the order grain (`order_to_complete_days`) as the primary measure, with line-grain `transit_days` and `order_to_ship_days` as supporting evidence.
+
+**Monitoring.** The delay rate is grouped by **commit month** (`date_trunc('MONTH', l_commitdate)`): each line's promise falls due on its commit date, so every line lands in the period its promise belongs to, whereas grouping by receipt month would push late lines into later months. `agg_delay_rate_monthly` holds the whole series with `line_count`; the first and last observed months are flagged `is_boundary_month`, and edge months with visibly fewer lines are called out in `06_analysis`. A SQL alert or dashboard on the delay rate was not built (optional in the assignment).
 
 ## Results
 
@@ -316,6 +284,29 @@ Supporting line-grain metrics show the same picture:
 - The edge months contain only lines with particular commit lags (short lags at the start, long lags at the end), so their rates should not be read as a change in delivery performance.
 
 
-## Presentation
+## Limitations
 
-> **Placeholder:** link to the slides will be added here (MAX-15 and MAX-16 in [docs/plan.md](docs/plan.md)).
+- Primary and foreign keys are informational in Databricks; only `NOT NULL` and `CHECK` are enforced. Integrity is proven by the validation rules.
+- 3NF is argued for the dependencies examined; free-text columns and `*_phone` are treated as atomic strings.
+- TPC-H is synthetic: delay rates and transit times are nearly identical across modes and priorities, so the differences in Q1 and the "worst" mode in Q3 are small and should not be over-interpreted.
+- The first and last commit months are incomplete; the rates of the edge months are not a change in delivery performance.
+- No alert, dashboard or scheduled Job was built.
+
+## Evidence
+
+Raw outputs of the Databricks runs are kept unchanged under `checks/p2/outputs/` and `checks/p3/outputs/` (job metadata `*_get_run.json` with run ids and parameters, decoded notebook cells `*_decoded.json`, query results `*.json`).
+
+| Result | Evidence |
+|---|---|
+| Bronze ingest and comparison | `checks/p2/outputs/bronze_ingest/` |
+| Profiling and 3NF dependency tests | `checks/p2/outputs/profiling/`, `checks/p2/outputs/fd_analysis/` |
+| Silver stage success, DQ results, failure demo | `checks/p2/outputs/silver_stage/` |
+| run_id and `dq_helpers` tests | `checks/p2/outputs/run_id_helpers/`, `checks/p2/outputs/dq_helpers/` |
+| End-to-end failure check | `checks/p3/outputs/max14_e2e_failure/` |
+| Pipeline run behind the Results (job run `317490104173577`) and analysis run `954628711835688` | `checks/p3/outputs/yar14_reproduction/` |
+| Gold values read back to verify the Results | `checks/p3/outputs/yar09_review/gold_makc_logistics_20261008.json` |
+| Latest `06_analysis` run, with monthly monitoring (job run `704809310624884`, prefix `makc_logistics`) | `checks/p3/outputs/analysis_monitoring_fix/` |
+| Default-prefix run, determinism rerun, portability run | `checks/p3/outputs/max10_*`, `max11_*`, `max12_*` |
+
+## Presentation
+Presentation link — to be added by the team before submission.
