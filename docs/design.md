@@ -45,6 +45,16 @@ Derived schemas, all in `{catalog}`:
 
 Table names inside each schema stay the same as in the source (`lineitem`, `orders`, …) in Bronze and Silver. Gold uses `fct_*` and `agg_*`. Allowed categorical values (see §6) are constants in `00_config.py`, filled in from profiling.
 
+Names provided by `00_config` after `%run ./00_config` (D9). Other notebooks use these names and never build catalog or schema names themselves. Renaming or removing one is a contract change.
+
+| Name | Content |
+|---|---|
+| `catalog`, `schema_prefix`, `source` | widget values (table above) |
+| `bronze_schema`, `staging_schema`, `silver_schema`, `gold_schema`, `audit_schema` | full schema names `{catalog}.{prefix}_bronze` … `{catalog}.{prefix}_audit` |
+| `TPCH_TABLES` | the 8 source table names of §4 |
+| `ALLOWED_SHIP_MODES`, `ALLOWED_RETURN_FLAGS`, `ALLOWED_LINE_STATUSES` | allowed values, built by the §6 procedure |
+| `new_run_id()`, `require_run_id()` | run_id helpers (§3.1) |
+
 "Assume only pre-production data" (§3.2): the code must not depend on exact row counts or values of this sample. Counts are compared *between layers*, not against hard-coded numbers.
 
 ## 3. Pipeline lifecycle (one run)
@@ -276,12 +286,13 @@ There are **no rules on lateness.** `l_receiptdate > l_commitdate` is a late del
 
 Equality is valid in DQ-L1, DQ-L2 and DQ-L3: same-day ship, same-day receipt and same-day commit all pass.
 
-**How the allowed lists are built (V2).**
-1. In `profile_source`, run `SELECT col, count(*) … GROUP BY col` on Bronze for each of the three columns, and record the output in §5.5.
-2. Compare that output with the value lists in the dataset documentation (TPC-H README/spec), and cite the source.
-3. The allowed list is the documented domain. If observed values are outside it, or documented values are missing, that goes in the decision log before the list is frozen.
-4. Write the constants into `00_config.py`.
-5. Do not copy the observed values blindly. The point of the rule is that new or unexpected values will fail.
+**How the allowed lists are built (V2, D13).**
+1. Profile the source: in `profile_source`, run `SELECT col, count(*) … GROUP BY col` on Bronze (an as-is copy of the source) for each of the three columns, and record the output in §5.5.
+2. Cross-check the observed values with the value lists in the dataset documentation (TPC-H README/spec), and cite the source.
+3. Classify every value as *observed and documented*, *documented but not observed*, or *observed but not documented*.
+4. Any discrepancy (a value in either of the last two classes) is recorded in the decision log and resolved there, with a reason, before the constants are frozen.
+5. Write the constants into `00_config.py`, and record which values were observed and which were only documented.
+6. An unexplained unexpected value is never silently added to a list, and its rows are never dropped: staging keeps every row, and DQ-L5–L7 fail on values outside the lists. The point of the rule is that new or unexpected values fail.
 
 The TPC-H spec values are *expected but not observed*. They are listed here only so they can be compared against the profiling output:
 - ship mode: AIR, FOB, MAIL, RAIL, REG AIR, SHIP, TRUCK

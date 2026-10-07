@@ -61,7 +61,7 @@ Anything in the Databricks rows can only be confirmed by running it in a real wo
 ## Working documents vs the final submission
 - `CLAUDE.md` and `docs/*.md` are working documents. Use and keep them during implementation.
 - Keep task IDs, decision IDs and plan links mainly in the working documents, not in pipeline code or final user-facing text.
-- The final submission must be self-contained. MAX-18 (final delivery owner, after everyone finishes) consolidates what is needed into the README, notebooks and deck, then prunes the working documents and fixes links, without dropping required evidence, attribution or config files.
+- The final submission must be self-contained. MAX-18 (final delivery owner, after the other members' work is done and before submission in MAX-17) consolidates what is needed into the README, notebooks and deck, then prunes the working documents and fixes links, without dropping required evidence, attribution or config files.
 
 ## Collaboration
 - Branch per task: `feat/<area>-<short>`. Open a PR into `main`, get ≥1 review, then squash-merge. Keep PRs small.

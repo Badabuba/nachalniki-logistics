@@ -20,8 +20,8 @@ Status: **not started**
 | `catalog` / `schema_prefix` / `source` used | – |
 | Bronze tables and column lists (8 tables + `_ingested_at`, `_source_table`) | – |
 | Evidence-log rows: P0 (NAZ-01–04), inventory and `DESCRIBE` (NAZ-02), Bronze run (NAZ-08), profiling (NAZ-09) | – |
-| Allowed-list constants and the documentation they were compared with | – |
-| Mismatches logged under D13 | – |
+| Allowed-list constants and the documentation they were cross-checked against | – |
+| Observed vs documented-only values, and discrepancies resolved under D13 | – |
 | Observed `o_orderpriority` values and the confirmed urgent literal | – |
 | Commands that run Stage 1 (widgets, notebooks, order) | – |
 | run_id helpers (`new_run_id()`, `require_run_id()`) and the test that covered them | – |

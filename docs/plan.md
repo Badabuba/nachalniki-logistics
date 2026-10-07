@@ -2,7 +2,7 @@
 
 Living document. Requirements: [requirements.md](requirements.md). Design and contracts: [design.md](design.md). Handoff notes: [handoffs.md](handoffs.md).
 
-> **Task distribution: proposed (D16), pending agreement of Nazar, Yaropolk and Max.** It replaces the earlier split in which Nazar also owned integration, the final README, the deck and submission. Until all three names are on D16, treat the ownership below as a proposal.
+> **Task distribution: proposed (D16), approved by Nazar on 2026-10-07; Yaropolk's and Max's confirmations pending.** It replaces the earlier split in which Nazar also owned integration, the final README, the deck and submission. Until all three names are on D16, treat the ownership below as a proposal.
 
 **How to use this plan**
 - Every task has one ID (`NAZ-nn`, `YAR-nn`, `MAX-nn`) and one primary owner: the person whose section it is in. Others review and help, but the owner makes sure it gets done.
@@ -69,15 +69,15 @@ These cannot be given to one person; they are kept small and do not block anyone
 
 ## Start here: what each person can do now
 
-Only the P0 source discovery (NAZ-01, NAZ-02) has run in Databricks. These tasks had no unmet dependencies when this table was written:
+The P0 checks NAZ-01–04 have run in Databricks (evidence log, 2026-10-07). Status as of 2026-10-07:
 
 | Person | Can start now | Waits for |
 |---|---|---|
-| Nazar | NAZ-01, NAZ-05 for D4, D13, D15 and D16, NAZ-06, NAZ-16 | NAZ-02/03/04 wait for NAZ-01. NAZ-07 waits for D9 (needs NAZ-03) and D15. |
-| Yaropolk | YAR-01, YAR-02 (D14); review the D13 and D15 proposals | YAR-03 and YAR-04 wait for H1 (NAZ-21). YAR-04 also needs D10. |
-| Max | MAX-01, MAX-02 for D5, D11 and D12 | D6 and D10 wait for `DESCRIBE` (NAZ-02); D7 waits for the `%run` evidence (NAZ-04). MAX-03 waits for H2 (YAR-13). |
+| Nazar | NAZ-05 (all decisions unblocked; D17 needs the team's answer), NAZ-06, NAZ-16 | NAZ-07 waits for D9 and D15. NAZ-10 also waits for D13. |
+| Yaropolk | YAR-01, YAR-02 (D14); confirm the NAZ-05 proposal | YAR-03 and YAR-04 wait for H1 (NAZ-21). YAR-04 also needs D10. YAR-12 needs NAZ-07 and D15. |
+| Max | MAX-01, MAX-02 (D5, D6, D7, D10, D11, D12: their P0 inputs exist); confirm the NAZ-05 proposal | MAX-03 waits for H2 (YAR-13). MAX-09 needs NAZ-07, NAZ-08, YAR-12, D7 and D15. |
 
-Critical path: NAZ-01 → NAZ-03 (D8) → NAZ-05 (D9, D13, D15) → NAZ-07 → NAZ-08 → NAZ-09 → NAZ-10 → NAZ-21 (H1) → YAR-04 → YAR-12 → YAR-05 → YAR-06 → YAR-13 (H2) → MAX-03 → MAX-09 → MAX-10 → MAX-07 → MAX-15, MAX-16 → MAX-17.
+Suggested execution order (a summary, not a dependency chain; each task's **Depends on** line is authoritative): NAZ-05 → NAZ-07 → NAZ-08 → NAZ-09 → NAZ-10 → NAZ-15, NAZ-17 → NAZ-21 (H1) → YAR-03, YAR-04 → YAR-05 → YAR-06 → YAR-07, YAR-08 → YAR-10, YAR-11 → YAR-13 (H2) → MAX-03 → MAX-04 → MAX-10 → MAX-06 → MAX-07 → MAX-08 → MAX-16 → MAX-15 → MAX-18 → MAX-17. Work that can run alongside it once its own dependencies are met: YAR-12 (after NAZ-07), MAX-09 (after YAR-12), MAX-11, MAX-12, MAX-13 (after MAX-10), MAX-14 (after MAX-04 and MAX-10), YAR-14 (after MAX-13), YAR-09 (after MAX-07).
 
 ## Phases
 
@@ -87,7 +87,7 @@ Phase tags on each task are time labels only: **P0** access and source checks, *
 |---|---|
 | 1 (Nazar) | P0: NAZ-01–04. P1: NAZ-05. P2: NAZ-06–10. P5: NAZ-15, NAZ-16, NAZ-17. Handoff: NAZ-21 (H1) |
 | 2 (Yaropolk) | P0: YAR-01. P1: YAR-02. P2: YAR-03–07, YAR-12. P3: YAR-08. P5: YAR-10, YAR-11. Handoff: YAR-13 (H2). After H2: YAR-09 (P4), YAR-14 (P3) |
-| 3 (Max) | P0: MAX-01. P1: MAX-02. P2: MAX-03, MAX-04, MAX-09. P3: MAX-10–14. P4: MAX-06, MAX-07. P5: MAX-08, MAX-15–17 |
+| 3 (Max) | P0: MAX-01. P1: MAX-02. P2: MAX-03, MAX-04, MAX-09. P3: MAX-10–14. P4: MAX-06, MAX-07. P5: MAX-08, MAX-15, MAX-16, MAX-18, then MAX-17 |
 
 P1 acceptance: D4–D7, D9–D16 marked "agreed" with all three names and a date; D17 decided, or both handoff paths documented in each handoff note.
 
@@ -102,7 +102,7 @@ Deliverables:
 2. The `catalog`, `schema_prefix` and `source` values used, and which workspace path of D17 applies.
 3. The 8 Bronze tables with their column lists (source columns + `_ingested_at`, `_source_table`).
 4. Links to the evidence-log rows: P0 checks (NAZ-01–04), source inventory and `DESCRIBE` (NAZ-02), Bronze run (NAZ-08), profiling (NAZ-09).
-5. The allowed-list constants as written in `00_config`, the documentation they were compared with, and any mismatch logged under D13.
+5. The allowed-list constants as written in `00_config`, the documentation they were cross-checked against, which values were observed and which were only documented, and any discrepancy resolved under D13.
 6. The observed `o_orderpriority` values, including the confirmed urgent literal.
 7. The exact commands that run Stage 1 (widgets, notebooks, order).
 8. The run_id helpers (`new_run_id()`, `require_run_id()`) and how they were tested.
@@ -112,7 +112,7 @@ Deliverables:
 Acceptance checks (run by Yaropolk):
 - **A1** `%run ./00_config` with the documented widgets resolves every name in design §2.
 - **A2** Bronze has the 8 tables; each has the source columns plus the 2 metadata columns; each Bronze count equals the receiver's own source count, compared at runtime.
-- **A3** Design §5.5 value-profiling rows are filled with query, date and result; the constants match the documented domain and the cited source.
+- **A3** Design §5.5 value-profiling rows are filled with query, date and result; the constants match the profiled values, each value's classification against the cited documentation is shown, and every discrepancy is resolved under D13 (design §6).
 - **A4** A grep of `notebooks/` finds no catalog, schema or source literal outside `00_config`, and no hard-coded row count. The P0 diagnostic notebooks in `checks/p0/` are excluded: they are not part of the pipeline and take their catalog and source from their own widgets.
 - **A5** Two consecutive executions of a test entry notebook (`%run ./00_config`, `run_id = new_run_id()`, `%run` of a child that prints `require_run_id()`) give two different run_ids, and the child prints its caller's id; a child run with no run_id defined fails.
 - **A6** Every remaining assumption is listed in the note.
@@ -159,7 +159,7 @@ These lists are completion conditions, not a second checklist: they are met when
 Remaining duties after H2 (they verify Max's work and cannot happen earlier): YAR-09 (review the answer numbers) and YAR-14 (reproduce the run from the README).
 
 ### Max is finished when…
-- MAX-01–MAX-04 and MAX-06–MAX-17 are ticked with evidence.
+- MAX-01–MAX-04 and MAX-06–MAX-18 are ticked with evidence.
 - D5, D6, D7, D10, D11 and D12 are agreed.
 - The submission confirmation is in the evidence log, dated before the due date.
 
@@ -202,9 +202,10 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
   - Done when: all four behaviours are shown in the evidence log, and the `%run` `[VERIFY]` tags are resolved (or design §3 is changed through D7/D15 if `%run` does not behave as assumed).
 
 - [ ] **NAZ-05 · P1 · Drive D4, D9, D13, D15, D16 and D17 to agreement.** D4 member mapping; D9 config parameters and schema names; D13 the allowed-list procedure (design §6, transferred from YAR-02 because Nazar applies it in NAZ-10); D15 the run_id and DQ interface (design §3.1); D16 this task distribution; D17 the workspace model.
-  - Files: `docs/plan.md` (decision log); `docs/design.md` §2, §3.1 and §6 if anything changes
-  - Depends on: D4, D13, D15, D16: nothing (**start now**). D9: D8 (NAZ-03). D15 is confirmed against NAZ-04. D17: NAZ-01, YAR-01, MAX-01 (each member knows their workspace).
-  - Done when: D4, D9, D13, D15 and D16 are marked "agreed" with all three names and a date, and D17 is decided or recorded as "both paths documented".
+  - Files: `docs/plan.md` (decision log, evidence log); `docs/design.md` §2, §3.1 and §6 if anything changes
+  - Depends on: nothing left (D8 is decided and NAZ-04 is done). D17 needs the team's answer on shared vs separate workspaces.
+  - Process: one proposal message to Yaropolk and Max covering all six decisions; one confirmation from each (chat reply or PR review) is enough.
+  - Done when: D4, D9, D13, D15 and D16 are marked "agreed" with all three names and a date; D17 is decided or recorded as "both paths documented"; and an evidence-log row links the confirmations.
   - D7 (lifecycle) — transferred → MAX-02 (D16), because Max implements the runner and the stale-output guard.
 
 - [ ] **NAZ-06 · P2 · Merge the uv setup.** `pyproject.toml`, `uv.lock` and `.gitignore` are committed on `docs/initial-plan` (local `uv lock`/`uv sync` evidence dated 2026-10-07). Get them reviewed and merged into `main`.
@@ -230,7 +231,7 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 - [ ] **NAZ-10 · P2 · Allowed-list constants.** Follow the design §6 procedure: compare the NAZ-09 output with the TPC-H documentation, log any mismatch in the decision log, then write the constants.
   - Files: `notebooks/00_config.py`; `docs/plan.md` (decision log, if there is a mismatch)
   - Depends on: NAZ-09; D13 (NAZ-05)
-  - Done when: `ALLOWED_SHIP_MODES`, `ALLOWED_RETURN_FLAGS` and `ALLOWED_LINE_STATUSES` hold the documented domain, the source is cited, and the PR is approved by one other member (Yaropolk preferred, as the consumer in `03_validate`).
+  - Done when: `ALLOWED_SHIP_MODES`, `ALLOWED_RETURN_FLAGS` and `ALLOWED_LINE_STATUSES` are built from the profiled values; every value is classified as observed and documented, documented but not observed, or observed but not documented, against the cited documentation; every discrepancy is resolved in the decision log; and the PR is approved by one other member (Yaropolk preferred, as the consumer in `03_validate`).
 
 - NAZ-11 — transferred → MAX-09 (`run_pipeline`, `pipeline_runs`) and YAR-12 (`dq_helpers`, `dq_check_results`) (D16).
 - NAZ-12 — transferred → MAX-10 (D16).
@@ -414,12 +415,12 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 
 - [ ] **MAX-17 · P5 · Public repo check and submission.** *Transferred from NAZ-20.* Check that the repo is public from a logged-out browser, then submit before the due date (from NAZ-16; follow up with the course if it was not announced).
   - Files: `docs/plan.md` (evidence log)
-  - Depends on: NAZ-16, MAX-15, MAX-16
+  - Depends on: NAZ-16, MAX-15, MAX-16, MAX-18
   - Done when: the logged-out check and the submission confirmation are in the evidence log, dated before the due date.
 
-- [ ] **MAX-18 · P5 · Final documentation cleanup.** *New, proposed by Nazar on 2026-10-07; needs Max's agreement.* After every member has finished, make the submission self-contained. First move the definitions, assumptions, validation explanation, run instructions and results that the final reader needs into the README, the notebooks or the deck. Then review which working documents (`CLAUDE.md`, `docs/plan.md`, `docs/design.md`, `docs/requirements.md`, `docs/handoffs.md`) and diagnostics (`checks/`) to keep, remove only what is no longer needed, and fix every remaining link. Do not remove required evidence, attribution, `pyproject.toml`/`uv.lock` or configuration.
+- [ ] **MAX-18 · P5 · Final documentation cleanup.** *New, proposed by Nazar on 2026-10-07; needs Max's agreement (part of the NAZ-05 proposal).* Before submission, make the submission self-contained. First move the definitions, assumptions, validation explanation, run instructions and results that the final reader needs into the README, the notebooks or the deck. Then review which working documents (`CLAUDE.md`, `docs/plan.md`, `docs/design.md`, `docs/requirements.md`, `docs/handoffs.md`) and diagnostics (`checks/`) to keep, remove only what is no longer needed, and fix every remaining link. Do not remove required evidence, attribution, `pyproject.toml`/`uv.lock` or configuration.
   - Files: `README.md`, the notebooks, the working documents
-  - Depends on: MAX-15, MAX-16, and all other tasks ticked
+  - Depends on: MAX-15, MAX-16, MAX-11, MAX-12, MAX-14, YAR-09, YAR-14
   - Done when: no notebook or final README text depends on task or decision IDs or on a removed document, all links resolve, and the PR is approved by one other member.
 
 ## Optional follow-ups (not acceptance gates; unassigned)
@@ -460,17 +461,17 @@ Each task lists: **Files** (to create or edit), **Depends on** (what must be rea
 | D1 | 2026-10-07 | Workspace: Databricks Free Edition or not yet known, so everything is parameterised | Nazar | decided (Nazar) |
 | D2 | 2026-10-07 | All 8 TPC-H tables in Bronze and Silver; Gold covers Logistics only | Nazar | decided (Nazar) |
 | D3 | 2026-10-07 | PySpark/SQL notebooks in `.py` source format; no Lakeflow, bundles or CI | Nazar | decided (Nazar) |
-| D4 | 2026-10-07 | Member mapping M1 Nazar, M2 Yaropolk, M3 Max | Nazar (NAZ-05) | provisional |
+| D4 | 2026-10-07 | Member mapping M1 Nazar, M2 Yaropolk, M3 Max | Nazar (NAZ-05) | proposed; approved by Nazar (2026-10-07); Yaropolk, Max pending |
 | D5 | 2026-10-07 | Notebook charts satisfy the visualisation and monitoring requirements; dashboard, Job and alert are optional | Max (MAX-02) | proposed |
 | D6 | 2026-10-07 | Silver keeps TPC-H column names; Gold uses business names | Max (MAX-02) | proposed |
 | D7 | 2026-10-07 | Lifecycle: Bronze → staging → validate (append DQ) → publish Silver → Gold; failed run leaves outputs flagged as stale via `pipeline_runs`. Driver moved from Nazar (NAZ-05) to Max by D16 | Max (MAX-02) | proposed |
 | D8 | 2026-10-07 | Catalog default `workspace`: the only non-system, non-sample catalog (NAZ-01); `CREATE SCHEMA` and the capability checks passed there after admin rights were granted (NAZ-03 run 2; run 1 was denied). Each member sets their own writable catalog through the `catalog` widget if their workspace differs (D17) | Nazar (NAZ-03) | decided (Nazar) |
-| D9 | – | Config and schema names (design §2) | Nazar (NAZ-05) | open (P1) |
+| D9 | 2026-10-07 | Config contract (design §2): widgets `catalog` (default `workspace`), `schema_prefix` (`nachalniki_logistics`), `source` (`samples.tpch`); schemas `{catalog}.{prefix}_bronze\|_staging\|_silver\|_gold\|_audit`; the names `00_config` provides are listed in design §2 | Nazar (NAZ-05) | proposed; approved by Nazar (2026-10-07); Yaropolk, Max pending |
 | D10 | – | Silver frozen columns and Gold contracts | Max (MAX-02) | open (P1) |
 | D11 | – | Metric definitions (design §7) | Max (MAX-02) | open (P1) |
 | D12 | – | Monitoring grain: commit month, with boundary months labelled | Max (MAX-02) | open (P1) |
-| D13 | – | Allowed-list procedure (design §6). Driver moved from Yaropolk (YAR-02) to Nazar by D16 | Nazar (NAZ-05) | open (P1) |
+| D13 | 2026-10-07 | Allowed-list procedure (design §6): lists built by profiling the source and cross-checked against the TPC-H documentation; each value classified as observed and documented, documented but not observed, or observed but not documented; every discrepancy resolved in this log before the constants are frozen; unexpected values are never silently accepted and their rows are never dropped. Driver moved from Yaropolk (YAR-02) to Nazar by D16 | Nazar (NAZ-05) | proposed; approved by Nazar (2026-10-07); Yaropolk, Max pending |
 | D14 | – | 3NF method; any decomposition after profiling | Yaropolk (YAR-02, YAR-03) | open (P1, P2) |
-| D15 | 2026-10-07 | run_id and DQ interface (design §3.1): every execution (full pipeline or standalone stage) explicitly starts a fresh `run_id` with `new_run_id()`, even if the session already holds one; child notebooks only read it via `require_run_id()`; `00_config` never assigns it; `raise_if_failed` filters by the active `run_id` and the relevant rule IDs | Nazar (NAZ-05) | proposed |
-| D16 | 2026-10-07 | Sequential handoff distribution Nazar → Yaropolk → Max (this plan): Max owns integration, final README, deck and submission; transferred tasks keep their IDs as stubs | Nazar (NAZ-05) | proposed (needs all three names) |
-| D17 | – | Workspace model: one shared workspace or one per member (both handoff paths documented until decided) | Nazar (NAZ-05) | open (P0/P1) |
+| D15 | 2026-10-07 | run_id and DQ interface (design §3.1): every execution (full pipeline or standalone stage) explicitly starts a fresh `run_id` with `new_run_id()`, even if the session already holds one; child notebooks only read it via `require_run_id()`; `00_config` never assigns it; `raise_if_failed` filters by the active `run_id` and the relevant rule IDs. The `%run` behaviour it relies on is shown in the NAZ-04 evidence rows; the helpers themselves are tested in NAZ-07 and H1 (A5) | Nazar (NAZ-05) | proposed; approved by Nazar (2026-10-07); Yaropolk, Max pending |
+| D16 | 2026-10-07 | Sequential handoff distribution Nazar → Yaropolk → Max (this plan): Max owns integration, final README, deck and submission; transferred tasks keep their IDs as stubs; final cleanup (MAX-18) comes before submission (MAX-17) | Nazar (NAZ-05) | proposed; approved by Nazar (2026-10-07); Yaropolk, Max pending |
+| D17 | – | Workspace model: one shared workspace or one per member (both handoff paths documented until decided). Asked in the NAZ-05 proposal | Nazar (NAZ-05) | open (P0/P1) |
