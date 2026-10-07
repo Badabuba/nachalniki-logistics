@@ -1,0 +1,26 @@
+{
+    "workspace.makc_logistics_e2e_gold":  {
+                                              "state":  "SUCCEEDED",
+                                              "statement_id":  "01f1c298-736c-1cec-8861-b9fb59aeb8ac"
+                                          },
+    "workspace.makc_logistics_e2e_audit":  {
+                                               "state":  "SUCCEEDED",
+                                               "statement_id":  "01f1c298-75d0-18b1-b471-47744969e74b"
+                                           },
+    "workspace.makc_logistics_e2e_snapshot":  {
+                                                  "state":  "SUCCEEDED",
+                                                  "statement_id":  "01f1c298-7293-1e40-96c0-002eacd8d3fb"
+                                              },
+    "workspace.makc_logistics_e2e_bronze":  {
+                                                "state":  "SUCCEEDED",
+                                                "statement_id":  "01f1c298-7690-15eb-af82-9cc857cb8ad2"
+                                            },
+    "workspace.makc_logistics_e2e_staging":  {
+                                                 "state":  "SUCCEEDED",
+                                                 "statement_id":  "01f1c298-74f9-14b9-b148-ef9b05da16a4"
+                                             },
+    "workspace.makc_logistics_e2e_silver":  {
+                                                "state":  "SUCCEEDED",
+                                                "statement_id":  "01f1c298-7418-1933-87c5-f7e8a43f8893"
+                                            }
+}
