@@ -42,7 +42,7 @@ If the documents disagree, the precedence is PDF > requirements.md > design.md >
 | Markdown, contract consistency, code review | local | manual |
 | Source access, `DESCRIBE`, CHECK/PK DDL, `percentile_cont` | Databricks | run 2026-10-07 (NAZ-01–03; plan.md evidence log) |
 | `%run` sharing, error stop, caller `run_id` and widgets | Databricks (serverless job runs) | run 2026-10-07 (NAZ-04; plan.md evidence log) |
-| run_id helpers, Bronze ingest, profiling | Databricks (serverless job runs) | run 2026-10-07 (NAZ-07–09; plan.md evidence log); interactive A5 session pending (`a5_interactive`) |
+| run_id helpers, Bronze ingest, profiling | Databricks (serverless job runs; A5 also interactive) | run 2026-10-07 (NAZ-07–09; plan.md evidence log) |
 | FK DDL | Databricks | not run (YAR-06) |
 | Pipeline run, DQ results, rerun/portability, answers, charts | Databricks | not run (plan P3–P4) |
 
